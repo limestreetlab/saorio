@@ -39,7 +39,7 @@ $(".conversationRow").click( function(){
   $.post("ajax/messages_ajax.php", dataSend, 
   //start callback
   function(dataReceive) { 
-      
+     
       //variable declarations
       let myself = dataReceive.user; //the $user in php
       let sender; //username of a msg sender
@@ -53,6 +53,7 @@ $(".conversationRow").click( function(){
         timeElapsed = this.timeElapsed; 
         sender = this.sender; 
         message = this.message;
+        
         chatBubble = makeChatBubble(myself, sender, message, timeElapsed);
 
         $("#chatPanel").append(chatBubble); //add the chat to the chat panel for display
@@ -76,17 +77,17 @@ function updateChat() {
   $.post("ajax/messages_ajax.php", dataSend,  
     //start callback
     function(dataReceive) { 
-      
-      //will receive json of [hasNewChats: bool, user: str, and conversation: arr]
-      if (dataReceive.hasNewChats) {
+      //will receive json of [user, newMessages]
+      if (dataReceive.newMessages.length > 0) {
         
         let myself = dataReceive.user; //the $user in the session
         //for each message exchanged between me and the other person (who)
-        $.each(dataReceive.conversation, function() {
+        $.each(dataReceive.newMessages, function() {
         
           let timeElapsed = this.timeElapsed; 
           let sender = this.sender; 
           let message = this.message;
+
           let chatBubble = makeChatBubble(myself, sender, message, timeElapsed);
 
           $("#chatPanel").append(chatBubble); //add the chat to the chat panel for display
@@ -131,10 +132,10 @@ $( "#chatMessageBtn" ).click( function(clickEvent) {
   let recipient = $("#conversationDisplay").data("user"); //retrieve the data-user tag value from #conversationDisplay inserted when .conversationRow is clicked
   let dataSend = {sendMessage: true, message: msg, recipient: recipient};
   
-  if (msg.trim() != "") { //if the message is not empty, post it tp php script
+  if (msg.trim() != "") { //if the message is not empty, post it to php script
     $.post( "ajax/messages_ajax.php", dataSend, function(result) {
             if (!result.success) {
-              alert("Error occurred and message couldn't be sent"); 
+              alert("Error occurred in our system. Sorry for the inconvenience."); 
             } else {       
               $("#chatMessage").val(""); 
               $("#chatMessage").focus();

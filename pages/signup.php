@@ -10,7 +10,7 @@
 
   <div class="row mb-0 justify-content-center">
     <div class="col-6">
-      <input type="text" class="form-control" id="user" name="user" minlength="5" maxlength="20" pattern="[a-z0-9]{5,20}" title="username must be between 5 and 20 characters long and include only lowercase letters and digits" onBlur="checkUsername()" placeholder="Pick a username" required>
+      <input type="text" class="form-control" id="user" name="user" minlength="5" maxlength="20" pattern="[a-z0-9]{5,20}" title="username must be 5 to 20 characters long and include only lowercase letters and digits." placeholder="Pick a username" required>
     </div>
   </div>
 
@@ -22,13 +22,31 @@
 
   <div class="row mb-3 justify-content-center">
     <div class="col-6">
-      <input type="password" class="form-control" id="password" name="password" minlength="5" maxlength="20" placeholder="Password" required>
+      <input type="password" class="form-control" id="password" name="password" minlength="5" maxlength="50" placeholder="Password" required>
+    </div>
+  </div>
+  
+  <div class="row mb-0 justify-content-center">
+    <div class="col-6">
+      <input type="password" class="form-control" id="passwordRepeat" name="passwordRepeat" minlength="5" maxlength="50" placeholder="Confirm password" required>
     </div>
   </div>
 
   <div class="row mb-3 justify-content-center">
     <div class="col-6">
+      <span id="passwordMatched" class="form-text" rows="1"></span>
+    </div>
+  </div>
+
+  <div class="row mb-0 justify-content-center">
+    <div class="col-6">
       <input type="email" class="form-control" id="email" name="email" minlength="8" maxlength="40" placeholder="Email" required>
+    </div>
+  </div>
+
+  <div class="row mb-3 justify-content-center">
+    <div class="col-6">
+      <span id="emailValidation" class="form-text" rows="1"></span>
     </div>
   </div>
 
@@ -61,19 +79,18 @@ if (isset($_SESSION["user"])) {
   session_destroy();
 }
 
-if ( isset($_REQUEST["user"], $_REQUEST["password"]) ) {
-  $user = strtolower(filter_var(trim($_REQUEST["user"]), FILTER_SANITIZE_STRING)); //usernames are lowercase
-  $password = filter_var(trim($_REQUEST["password"]), FILTER_SANITIZE_STRING); //raw password
-  $password_hash = password_hash($password, PASSWORD_DEFAULT); //hashed password
-  $email = filter_var(trim($_REQUEST["email"]), FILTER_SANITIZE_STRING);
-  $firstname = filter_var(trim($_REQUEST["firstname"]), FILTER_SANITIZE_STRING);
-  $lastname = filter_var(trim($_REQUEST["lastname"]), FILTER_SANITIZE_STRING);
+if ( isset($_REQUEST["user"], $_REQUEST["password"], $_REQUEST["email"]) ) {
   
-  //input data into database
-  queryDB($signupQuery, [":user" => $user, ":password" => $password_hash, ":email" => $email]); //create a new user
-  queryDB($initializeProfileQuery, [":user" => $user, ":firstname" => $firstname, ":lastname" => $lastname]); //initialize a profile for this new user
+  require_once CLASS_DIR . "Signup.php";
   
-  echo "<div class='alert alert-success'>Account has been successfully created. Please log in.</div>";
+  $signup = new Signup($_REQUEST["user"], $_REQUEST["password"], $_REQUEST["passwordRepeat"], $_REQUEST["email"], $_REQUEST["firstname"], $_REQUEST["lastname"]);
+  $signupResult = $signup->register();
+  $signupMessages = $signup->getMessages();
+
+  foreach ($signupMessages as $message) {
+    echo $message;
+  }
+
 }
 
 ?>

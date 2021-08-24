@@ -3,18 +3,17 @@
 <?php
 
 if (!$isLoggedIn) {
-  header( "Location: " . SITE_ROOT ) ;
+  header( "Location: " .  REL_SITE_ROOT);
   exit();
 }
 
 require_once INCLUDE_DIR . "queries.php";
+require_once CLASS_DIR . "UploadedImageFile.php";
 
 
 //variables declarations
 $updateStatus = "";
 $aboutMinWords = 20;
-$imageMIME = ["image/jpeg", "image/png", "image/gif", "image/svg+xml"];
-$profilePictureMaxSize = "1500000"; //in bytes, so 1.5mb
 
 $updateProfile = intval($_REQUEST["updateProfile"]); //retrieve profileUpdate value, 0 or 1, indicating if cancel or save profile clicked
 if ($updateProfile) { //user clicks save profile button
@@ -43,40 +42,14 @@ if ($updateProfile) { //user clicks save profile button
 
 
 //update the profile picture
-if ( isset($_FILES["profilePicture"]) && $_FILES["profilePicture"]["error"] == 0) { //if photo is uploaded without error
-  
-  //getting info of the uploaded file
-  $type = $_FILES["profilePicture"]["type"]; //browser provided mime, can be cheated
-  $size = $_FILES["profilePicture"]["size"]; //size in bytes
-  $extension = strtolower(pathinfo($_FILES["profilePicture"]["name"], PATHINFO_EXTENSION)); //file extension of the uploaded file
-  $filename = "$user-profile.$extension"; //create a filename to be used as username-profile.ext
-  $tempFilePath = $_FILES["profilePicture"]["tmp_name"]; //the temporary absolute path
+if ( isset($_FILES["profilePicture"]) && $_FILES["profilePicture"]["error"] == 0) {
 
-  //checking for upload clearance
-  if ($size > $profilePictureMaxSize) { //max size exceeded
+  $uploadedPhoto = new UploadedImageFile($_FILES["profilePicture"], $user); //instantiate a new image upload object
+  $uploadedPhoto->upload(); //upload the file
+  $uploadResult = $uploadedPhoto->getMessages(); //array of messages for upload status
 
-    $updateStatus = $updateStatus . "<div class='alert alert-warning'>The uploaded file exceeds " . $profilePictureMaxSize/1000000 . " MB.</div>";
-  
-  } elseif (!in_array($type, $imageMIME) ) { //not an allowed mime
-    
-    $updateStatus = $updateStatus . "<div class='alert alert-warning'>The uploaded file isn't an allowed format.</div>";
-  
-  } else { //cleared for upload
+}
 
-    $permFilePath = UPLOAD_DIR . "$filename"; //absolute path to save the uploaded file
-    if(move_uploaded_file($tempFilePath, $permFilePath)) {
-
-      $param = [":url" => $permFilePath, ":mime" => $type, ":user" => $user];
-      queryDB($pictureUpdateQuery, $param);
-      $updateStatus = $updateStatus."<div class='alert alert-success'>Your profile picture is updated.</div>";
-    
-    } else {
-      
-      $updateStatus = $updateStatus."<div class='alert alert-warning'>Profile picture could not be uploaded.</div>";
-    
-    }
-  }
-} 
 
 //profile display block
 echo "<div class='row mb-3'><div class='col-12'><h3>$firstname's Profile</h3></div></div>"; //heading
@@ -90,8 +63,6 @@ if (isset($_REQUEST["editProfile"])) {
   //retrieve user's existing profile items from DB and set to variables to be displayed in edit form
   $profile = queryDB($getProfileQuery, [":user" => $user])[0]; //get the profile row from DB
   extract($profile); //extract the variables from profile, as DB column names
-
-  //set boolean for radio and check boxes in form
 
   //the profile edit form
   $editProfileForm = "

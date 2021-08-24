@@ -1,45 +1,27 @@
 <?php
 
   if (!$isLoggedIn) {
-    header( "Location: " . SITE_ROOT ) ;
+    header( "Location: " .  REL_SITE_ROOT);
     exit();
   }
 
   require_once INCLUDE_DIR . "queries.php";
   
 
-  //php code block for adding a friend
-  if (isset($_REQUEST["addFriend"])) {
-    
-    //the user to send request to
-    $addFriend = filter_var(trim($_REQUEST["addFriend"]), FILTER_SANITIZE_STRING);
-    
-    //to change relationship in friends table
-    $param = [":a" => $user, ":b" => $addFriend];  
-    queryDB($addAFriendQuery, $param); //reflect the friend request status to database
-    
-    //a message is sent to the user to add to let him know of a friend request
-    $addFriendFirstname = queryDB($getNameAndPictureQuery, [":user" => $addFriend])[0]["firstname"];
-    $friendRequestMessage = "Hi $addFriendFirstname, 
-                             I would like to add you as a friend and sent you a request. ";
-    sendMessage($user, $addFriend, $friendRequestMessage); //send the friend request message
-    
-  }
-
   //php and html block to retrieve and display all members
   $members = queryDB($getAllMembersQuery); //get all members into an array of users, defined to return user, firstname, lastname, profilePictureURL
   $numberOfMembers = count($members);
 
-  //the profile display frame
+  //the members display template
   echo "<main class='container'>";
   echo "<br><div class='h4 text-primary'>Saorio's $numberOfMembers Strong Members</div><br>";
   echo "<section class='row row-cols-4'>"; //row-cols-* assigns number of items per row
 
   //loop block to display each member profile
-  for ($m = 0; $m < $numberOfMembers; $m++) { 
+  foreach ($members as $member) { 
     
     //retrieve info about this member
-    $mUser = $members[$m]["user"]; //user
+    $userObj = new User($member["user"]); //user obj
     $mFirstname = ucfirst(strtolower($members[$m]["firstname"])); //firstname
     $mLastname = ucfirst(strtolower($members[$m]["lastname"])); //lastname
     $profilePicture = getPhotoPath($members[$m]["profilePictureURL"]); //rel path for img
@@ -50,7 +32,6 @@
       continue; //skip this iteration if the user himself
     }    
 
-    $relationship = getRelationship($user, $mUser);
     switch ($relationship) {
       case 0: 
         $mRelationship = $stranger;
@@ -81,36 +62,6 @@
 
   echo "</section></main>"; //close the container and row tags
 
-  //helper function to check the relationship between two users
-  //@param string user a for this user, string user b for another user
-  //@return int 0 for stranger, 1 for existing friend, 2 for friend request sent, 3 for friend request received, 4 for friend request rejected
-  function getRelationship(string $a, string $b) {
-    global $checkIfFriendsQuery;
-    //check if a and b are in the friends table at all
-    $hasAnyRelationship = queryDB("SELECT * FROM friends WHERE user1 = '$a' AND user2 = '$b' UNION SELECT * FROM friends WHERE user1 = '$b' AND user2 = '$a'");
-    if (!$hasAnyRelationship) {
-
-      return 0; //no relationship
-
-    } elseif (queryDB($checkIfFriendsQuery, [":a" => $a, ":b" => $b])) { //existing friends
-
-      return 1;
-
-    } elseif ( queryDB("SELECT * FROM friends WHERE user1 = '$b' AND user2 = '$a' AND status = 'rejected'") ) { //I have rejected his request
-      
-      return 4;
-
-    } else { //some friend request pending
-
-      if( queryDB("SELECT * FROM friends WHERE user1 = '$b' AND user2 = '$a' AND status = 'requested'") ) { //I received the request
-        return 3; 
-      } else {
-        return 2; //either I sent the request and it's rejected by him or pending response
-      }
-      
-    }
-
-  }
 
 ?>
 

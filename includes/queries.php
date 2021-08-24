@@ -11,7 +11,7 @@ $initializeProfileQuery = "INSERT INTO profiles (user, firstname, lastname) VALU
 $profileUpdateQuery = "UPDATE profiles SET about = :about, gender = :gender, ageGroup = :ageGroup, location = :location, job = :job, company = :company, major = :major, school = :school, interests = :interests, quote = :quote WHERE user = :user"; 
 $pictureUpdateQuery = "UPDATE profiles SET profilePictureURL = :url, profilePictureMIME = :mime WHERE user = :user"; 
 $getProfileQuery = "SELECT * FROM profiles WHERE user = :user";
-$getNameAndPictureQuery = "SELECT firstname, lastname, profilePictureURL FROM profiles WHERE user = :user";
+$getBasicProfileQuery = "SELECT firstname, lastname, profilePictureURL FROM profiles WHERE user = :user";
 
 
 //for friends
@@ -27,10 +27,10 @@ $getAllMembersQuery = "SELECT members.user, profiles.firstname, profiles.lastnam
 $getFriendRequestQuery = "SELECT user1 AS requester FROM friends WHERE user2 = :user AND status = 'requested'";
 
 //for messages
-$getMyConversationWithQuery = "SELECT timestamp, sender, recipient, message FROM (SELECT * FROM messages WHERE sender = :me AND recipient = :who UNION SELECT * FROM messages WHERE sender = :who AND recipient = :me) AS conversation ORDER BY timestamp ASC";
+$getMyConversationWithQuery = "SELECT timestamp, sender, recipient, message FROM (SELECT * FROM messages WHERE sender = :me AND recipient = :chatWith UNION SELECT * FROM messages WHERE sender = :chatWith AND recipient = :me) AS conversation ORDER BY timestamp ASC";
 $getPeopleIHaveConversationsWithQuery = "SELECT MAX(timestamp) AS lastTime, who FROM ( SELECT sender AS who, timestamp FROM messages WHERE recipient = :me UNION SELECT recipient AS who, timestamp FROM messages WHERE sender = :me) AS m GROUP BY who ORDER BY lastTime DESC";
 $sendMessageQuery = "INSERT INTO messages VALUES (NULL, :time, :from, :to, :message)";
-$getMyConversationWithSinceQuery = "SELECT timestamp, sender, recipient, message FROM (SELECT * FROM messages WHERE sender = :me AND recipient = :who AND timestamp > :since UNION SELECT * FROM messages WHERE sender = :who AND recipient = :me AND timestamp > :since) AS conversation ORDER BY timestamp ASC";
+$getMyConversationWithSinceQuery = "SELECT timestamp, sender, recipient, message FROM (SELECT * FROM messages WHERE sender = :me AND recipient = :chatWith AND timestamp > :since UNION SELECT * FROM messages WHERE sender = :chatWith AND recipient = :me AND timestamp > :since) AS conversation ORDER BY timestamp ASC";
 
 
 

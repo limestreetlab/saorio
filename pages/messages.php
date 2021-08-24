@@ -10,7 +10,7 @@
 <?php
 
 if (!$isLoggedIn) {
-  header( "Location: " . SITE_ROOT ) ;
+  header( "Location: " .  REL_SITE_ROOT);
   exit();
 }
 
@@ -35,7 +35,7 @@ for ($i = 0; $i < $numberOfConversations; $i++) { //for each person that I have 
   //get variables for each conversation person
   $person = $people[$i]["who"]; //username of the person I chatted with
   $time = $people[$i]["lastTime"]; //last message timestamp
-  $personInfo = queryDB($getNameAndPictureQuery, [":user" => $person])[0]; //his name and picture data
+  $personInfo = queryDB($getBasicProfileQuery, [":user" => $person])[0]; //his name and picture data
   $firstname = ucfirst(strtolower($personInfo["firstname"])); //his firstname
   $lastname = ucfirst(strtolower($personInfo["lastname"])); //first lastname
   $profilePicture = getPhotoPath($personInfo["profilePictureURL"]); //path to his profile image

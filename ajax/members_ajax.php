@@ -3,21 +3,21 @@
 
 header("Content-Type: application/json"); //return json output
     
-require_once INCLUDE_DIR . "ini.php"; 
-require_once INCLUDE_DIR . "functions.php";
+require_once "./../includes/ini.php"; //rel path to ini.php 
+require_once CLASS_DIR . "Friendship.php";
 require_once INCLUDE_DIR . "queries.php";
 
-if ( isset($_REQUEST["user1"], $_REQUEST["user2"], $_REQUEST["status"]) ) {
+if ( isset($_REQUEST["requestFrom"], $_REQUEST["requestTo"], $_REQUEST["status"]) ) {
+  
+  $friendship = new Friendship($_REQUEST["requestTo"], $_REQUEST["requestFrom"]);
   $status = $_REQUEST["status"];
-  $user1 = $_REQUEST["user1"];
-  $user2 = $_REQUEST["user2"];
 
   switch($status) {
     case "confirmed":
-      queryDB($confirmFriendRequestQuery, [":requestSender" => $user1, ":requestRecipient" => $user2]);
+      $friendship->confirmRequest();
       break;
     case "rejected":
-      queryDB($rejectFriendRequestQuery, [":requestSender" => $user1, ":requestRecipient" => $user2]);
+      $friendship->rejectRequest();
       break;
   }
 

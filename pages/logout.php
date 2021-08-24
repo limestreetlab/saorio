@@ -1,10 +1,16 @@
 <?php
-//ADD a header to redirect back to index.php with a logout msg to be displayed in index
+
 if (isset($_SESSION["user"])) {
+
+  session_unset();
   session_destroy();
-  echo "You have been successfully logged out. Good bye.";
+  header( "Location: " .  REL_SITE_ROOT);
+  exit;
+
 } else {
+
   echo "<div class='alert alert-warning'>You are not logged in.</div>";
+
 }
 
 ?>

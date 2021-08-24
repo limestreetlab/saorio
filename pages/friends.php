@@ -1,7 +1,7 @@
 <?php
 
 if (!$isLoggedIn) {
-  header( "Location: " . SITE_ROOT ) ;
+  header( "Location: " .  REL_SITE_ROOT);
   exit();
 }
 require_once INCLUDE_DIR . "queries.php";

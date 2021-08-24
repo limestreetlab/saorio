@@ -1,4 +1,5 @@
 
+//frontend function to respond to a friend request
 $(".friendRequestConfirmationBtn").click( function() {
 
   //retrieve data from the friend-confirm button and assign to js
@@ -19,7 +20,7 @@ $(".friendRequestConfirmationBtn").click( function() {
   
   $("#friendRequestConfirmationModalRejectBtn").on("click", function() { //register a handler for this member
 
-    var dataSend = {user2: myself, user1: requestFrom, status: "rejected"}; //data to send
+    var dataSend = {requestTo: myself, requestFrom: requestFrom, status: "rejected"}; //data to send
     $.post("ajax/members_ajax.php", dataSend, updateRelationshipStatus(requestFrom, 4) );
 
   }); //close reject button click handler
@@ -29,7 +30,7 @@ $(".friendRequestConfirmationBtn").click( function() {
   
   $("#friendRequestConfirmationModalAcceptBtn").on("click", function() { //register a handler for this member
 
-    var dataSend = {user2: myself, user1: requestFrom, status: "confirmed"}; //data to send
+    var dataSend = {requestTo: myself, requestFrom: requestFrom, status: "confirmed"}; //data to send
     $.post("ajax/members_ajax.php", dataSend, updateRelationshipStatus(requestFrom, 1) );
 
   }); //close accept button click handler

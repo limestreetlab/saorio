@@ -8,7 +8,6 @@ class UploadedImageFile {
   protected static $maxUploadSize = "1500000";
   protected static $imageMIME = ["image/jpeg", "image/png", "image/gif", "image/svg+xml"];
   protected $messages = [];
-  protected $user;
   protected $mime;
   protected $fileExtension;
   protected $fileSize;
@@ -16,20 +15,20 @@ class UploadedImageFile {
   protected $permFilePath;
   protected $filename;
 
-
-  public function __construct($uploadedFile, string $user) {
+  //constructor
+  public function __construct($uploadedFile) {
     
-    $this->user = $user;
     $this->mime = $uploadedFile["type"];
     $this->fileExtension = strtolower(pathinfo($uploadedFile["name"], PATHINFO_EXTENSION));
     $this->fileSize = $uploadedFile["size"];
     $this->tempFilePath = $uploadedFile["tmp_name"];
-    $this->filename = $this->user . "-profile" . $this->fileExtension;
+    $this->filename = $this->user . "-profile" . "." . $this->fileExtension;
     $this->permFilePath = UPLOAD_DIR . $this->filename;
 
   }
 
-  public function upload(): bool {
+  //main function to perform file checking, moving from temp to permanent destination (full abs path with file name and ext), and DB persistence 
+  public function upload(string $destination): bool {
 
     $isChecked = $this->check();
 
@@ -111,11 +110,9 @@ class UploadedImageFile {
 
   }
 
-  protected function printMessages(): void {
+  public function getMessages(): array {
 
-    foreach($this->messages as $message) {
-      echo $message;
-    }
+    return $this->messages;
 
   }
 

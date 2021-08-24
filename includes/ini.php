@@ -3,7 +3,7 @@
 initialized 1. $dbh for database, 2. $user and $isLoggedIn for username and logged in status
 */
 
-require_once $SERVER["DOCUMENT_ROOT"] . "includes/config.php"; //load config params
+require_once "config.php"; //load config params
 
 session_start(); //setting up a session
 

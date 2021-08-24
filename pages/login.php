@@ -29,23 +29,28 @@
 <?php
 
 require_once INCLUDE_DIR . "queries.php";
+require_once CLASS_DIR . "Login.php";
 
 if ( isset($_REQUEST["user"], $_REQUEST["password"]) ) {
-  $user = filter_var(trim($_REQUEST["user"]), FILTER_SANITIZE_STRING);
-  $password = filter_var(trim($_REQUEST["password"]), FILTER_SANITIZE_STRING);
 
-  $password_hash = queryDB($loginPasswordQuery, [":user" => $user])[0]["password"]; //retrieve the hashed password of this user
-  $isValidPassword = password_verify($password, $password_hash); //verify if entered password matches the hashed password
+  $user = $_REQUEST["user"]; 
+  $password = $_REQUEST["password"]; 
   
-  if ($isValidPassword) { //if entered password matches the hash
-    $data = queryDB($loginQuery, [":user" => $user]); //retrieve all data of this user
+  $login = new Login($user, $password);
+  $isVerified = $login->verify(); //check if credentials are valid
+  $loginMessages = $login->getMessages();
+
+  if ($isVerified) { //if valid credentials
     $firstname = ucfirst(strtolower(queryDB("SELECT firstname FROM profiles WHERE user = '$user'")[0]["firstname"])); //get the firstname
     $_SESSION["user"] = $user; //set session variable
     $_SESSION["firstname"] = $firstname; //set session variable
-    echo "<div class='alert alert-success'>Welcome back $firstname. Please <a href='index.php?reqPage=members&view=$user'>click here</a> to continue.</div>";
-  } else {
-    echo "<div class='alert alert-warning'>Invalid username/password.</div>";
+  } 
+
+  foreach ($loginMessages as $loginMessage) {
+    echo $loginMessage;
   }
+
+
 }
 
 ?>

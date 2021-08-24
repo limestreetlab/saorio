@@ -62,61 +62,6 @@ function getPhotoPath(string $path): string {
 
 }
 
-/*
-Function to return the largest datetime unit (year, week, day, miniute, second) has passed for a Unix timestamp
-For example, if for an input epoch, 2 years 3 months 8 days have passed, it returns 2 years; if 1 day 3 hours, it returns 1 day.
-@param $int epoch timestamp in seconds
-@return a string containing the largest datetime unit elapsed
-*/
-function getDateTimeElapsed(int $epoch): string {
-
-  $dtNow = new DateTime(); //DateTime obj for now
-  $dtThen = new DateTime("@$epoch"); //DateTime obj for input epoch
-  $diff = (array)($dtNow->diff($dtThen)); //calculate difference and cast into array
-  //get the datetime units, note there is no week unit
-  $year = $diff["y"];
-  $month = $diff["m"];
-  $day = $diff["d"];
-  $hour = $diff["h"];
-  $minute = $diff["i"];
-  $second = $diff["s"];
-
-  //if if-else block to waterfall through to the largest non-empty unit
-  if (!empty($year)) {
-    $value = $year;
-    $unit = "year";
-  } elseif (!empty($month)) {
-    $value = $month;
-    $unit = "month";
-  } elseif (!empty($day)) {
-    if ( (int)($day/7) > 0 ) {
-      $value = (int)($day/7);
-      $unit = "week";
-    } else {
-      $value = $day;
-      $unit = "day";
-    }
-  } elseif (!empty($hour)) {
-    $value = $hour;
-    $unit = "hour";
-  } elseif (!empty($minute)) {
-    $value = $minute;
-    $unit = "minute";
-  } else {
-    $value = $second;
-    $unit = "second";
-  }
-
-  if ($unit == "second" && $value < 60) { //in case less than 60 seconds
-    $output = "just now"; //call the output just now
-  } else { 
-    $unit =  $value > 1 ? $unit . "s" : $unit; //add a s (plural) if datetime unit above 1
-    $output = "$value $unit" . " ago"; 
-  }
-  
-  return ($output); 
-
-}//end function
 
 /*
 Function to get and display a user's picture and about contents
@@ -212,35 +157,6 @@ function showProfile(string $user): void {
   echo "</div>"; //close the col-8 div
   echo "<section class='row mt-3'><div class='col-12 border border-primary rounded-pill'>$about</div></section>";
   
-}//end function
-
-/*function to send a message from a sender to a recipient
-@param $sender username of the sender
-@param $recipient username of the recipient
-@param message the message to send
-@return array containing $success if the operation succeeded and if failed its error message
-*/
-function sendMessage(string $sender, string $recipient, string $message): array {
-  //sanitize and validate inputs
-  $time = time(); //set to now
-  $sender = filter_var(trim($sender), FILTER_SANITIZE_STRING);
-  $recipient = filter_var(trim($recipient), FILTER_SANITIZE_STRING);
-  $message = filter_var(trim($message), FILTER_SANITIZE_STRING);
-
-  global $sendMessageQuery; //use an external variable
-  $params = [":time" => $time, ":from" => $sender, ":to" => $recipient, ":message" => $message]; //params for sending a msg
-
-  try {
-    queryDB($sendMessageQuery, $params);
-    $success = true;
-    $error = null;
-  } catch (Exception $e) {
-    $success = false;
-    $error = $e->getMessage();
-  }
-  
-  return(["success" => $success, "error" => $error]);
-
 }//end function
 
 
