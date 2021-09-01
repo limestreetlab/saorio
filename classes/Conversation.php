@@ -1,99 +1,139 @@
 <?php 
 
-require_once INCLUDE_DIR . "queries.php";
-require_once INCLUDE_DIR . "functions.php";
-require_once CLASS_DIR . "Message.php";
-
 class Conversation {
 
- private $user; //this user
- private $chatWith; //that user
- private $messages = []; //array of messages in the conversation
- private $numberOfMessages; //conversation length
+  private $user; //this user
+  private $chatWith; //that user
+  private $messages = []; //array of messages in the conversation
+  private $numberOfMessages; //conversation length
 
- public function __construct($user, $chatWith) {
-  $this->user = $user;
-  $this->chatWith = $chatWith;
-  $this->messages = $this->retrieveMessages();
-  $this->numberOfMessages = count( $this->messages );
- }
+  /*
+  constructor for a Conversation between two users
+  */
+  public function __construct(string $user, string $chatWith) {
 
- public function getMessages(): array {
-  return $this->messages; 
- }
+    $this->user = $user;
+    $this->chatWith = $chatWith;
+    $this->messages = $this->retrieveMessages();
+    $this->numberOfMessages = count( $this->messages );
 
- /*function to retrieve messages in a conversation
- @return array of Message objects
- */
- private function retrieveMessages(): array {
-  
-  global $getMyConversationWithQuery;
-  $messages = [];
-  $params = [":chatWith" => "$this->chatWith", ":me" => "$this->user"];
-  $conversation = queryDB($getMyConversationWithQuery, $params); //get the conversation from database
-  $numberOfMessages = count($conversation);
-
-  for ($i = 0; $i < $numberOfMessages; $i++) {
-    $messageObj = new Message($conversation[$i]["sender"], $conversation[$i]["recipient"], $conversation[$i]["timestamp"], $conversation[$i]["message"]);
-    array_push($messages, $messageObj); 
   }
 
-  return $messages;
+  /*
+  getter for messages
+  @return array of Message objects
+  */
+  public function getMessages(): array {
 
- }
+    return $this->messages; 
 
- /*function to retrieve messages since a specified time
- @param $since epoch timestamp representing since when messages to retrieve
- @return array of Message objects
- */
- public function getMessagesSince(int $since): array {
+  }
 
-  global $getMyConversationWithSinceQuery;
-  $messages = [];
-  $params = [":chatWith" => $this->chatWith, ":me" => $this->user, ":since" => $since];
-  $messagesSince = queryDB($getMyConversationWithSinceQuery, $params); //get the conversation since last timestamp 
+ 
+  /*helper function to retrieve messages in a conversation
+  @return array of Message objects
+  */
+  private function retrieveMessages(): array {
 
-  if ($messagesSince) { //if there are messages since the timestamp
-    $n = count($messagesSince);
+    global $getConversationWithQuery;
 
-    for ($i = 0; $i < $n; $i++) {
-      $messageObj = new Message($messagesSince[$i]["sender"], $messagesSince[$i]["recipient"], $messagesSince[$i]["timestamp"], $messagesSince[$i]["message"]);
-      array_push($messages, $messageObj);
+    $out = [];
+    $params = [":chatWith" => "$this->chatWith", ":me" => "$this->user"];
+    $resultset = queryDB($getConversationWithQuery, $params); //get the conversation from database
+
+    foreach ($resultset as $row) {
+
+      $messageObj = new Message($row["sender"], $row["recipient"], $row["timestamp"], $row["message"]);
+      array_push($out, $messageObj); 
+
+    }
+
+    return $out;
+
+  }
+
+  /*function to retrieve messages since a specified time
+  @param $since epoch timestamp representing since when messages to retrieve
+  @return array of Message objects
+  */
+  public function getMessagesSince(int $since): array {
+
+    global $getConversationWithSinceQuery;
+
+    $out = [];
+    $params = [":chatWith" => $this->chatWith, ":me" => $this->user, ":since" => $since];
+    $resultset = queryDB($getConversationWithSinceQuery, $params); //get message data since last timestamp 
+
+    if ($resultset) { //if there are messages since the timestamp
+
+      foreach ($resultset as $row) {
+
+        $messageObj = new Message($row["sender"], $row["recipient"], $row["timestamp"], $row["message"]);
+        array_push($out, $messageObj);
+
+      }
+      
     }
     
+    return $out;  
+
   }
-  
-  return $messages;  
 
- }
+  /*
+  get the most recent Message in the Conversation
+  @return Message
+  */
+  public function getNewestMessage(): Message {
 
- //function to return the most recent message in a conversation
- public function getNewestMessage() {
-  $messages = $this->messages;
-  usort($messages, array($this, "messageComparator"));
-  return array_pop($messages);
- }
+    $messages = $this->messages; //copy this Conversation's Messages to a local var
+    usort($messages, array($this, "messageComparator")); //sort 
+    return array_pop($messages);
 
- //function to return the oldest message in a conversation
- public function getOldestMessage() {
-  $messages = $this->messages;
-  usort($messages, array($this, "messageComparator"));
-  return array_shift($messages);
- }
+  }
 
- //getter for number of messages
- public function getNumberOfMessages() {
-  return $this->numberOfMessages;
- }
+  /*
+  get the oldest Message in the Conversation
+  @return Message
+  */
+  public function getOldestMessage(): Message {
 
- //comparator function for sorting messages, more recent message (higher timestamp) is defined to be larger
- function messageComparator($a, $b) {
-  $timeDiff = intval($a->timestamp) - intval($b->timestamp);
-  return $timeDiff >= 0 ? 1 : -1;
- }
+    $messages = $this->messages;
+    usort($messages, array($this, "messageComparator"));
+    return array_shift($messages);
+
+  }
+
+  /*
+  getter for number of messages
+  @return number of messages in this Conversation
+  */
+  public function getNumberOfMessages(): int {
+
+    return $this->numberOfMessages;
+
+  }
+
+  /*
+  Comparator function for sorting Message objs based on timestamp
+  more recent message (larger timestamp) is defined to be larger
+  */
+  public function messageComparator(Message $a, Message $b) {
+
+    $timeDiff = intval($a->timestamp) - intval($b->timestamp);
+    
+    if ($timeDiff == 0) {
+      return 0;
+    } elseif ($timeDiff > 0) { //when first Msg is larger than second
+      return 1;
+    } else {  //when second Msg is larger than first
+      return -1;
+    }
+
+  }
+ 
 
 
-}
+} //end of class
 
 
 ?>

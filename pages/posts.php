@@ -1,6 +1,5 @@
 <?php
 
-require_once INCLUDE_DIR . "queries.php";
 
 if (!$isLoggedIn) {
   header( "Location: " .  REL_SITE_ROOT);

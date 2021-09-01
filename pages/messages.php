@@ -1,12 +1,3 @@
-<head>
-  <style>
-    .conversationRow:hover {
-      background-color: #f8f9fa;
-      cursor: pointer;
-    }
-  </style>
-</head>
-
 <?php
 
 if (!$isLoggedIn) {
@@ -14,57 +5,45 @@ if (!$isLoggedIn) {
   exit();
 }
 
-require_once INCLUDE_DIR . "queries.php";
-
-$userHighlight = null;
-if ( isset($_REQUEST["viewChat"]) ) {
-  $userHighlight = $_REQUEST["viewChat"];
+//REQUEST variable for selecting a particular chatter in list
+if (isset($_REQUEST["select"])) { 
+  $highlight = $_REQUEST["select"];
+} else {
+  $highlight = null;
 }
 
-//display chatters list and conversations using two columns inside a row
-echo "<main class='container'><main class='row'>"; //containing class
+$viewLoader->load("messages_list_start.phtml")->bind(["highlight" => $highlight])->render(); //start of view
 
-//first the chatters list which lists all persons I have had a conversation with in chronological order
-echo "<section class='col-4' id='conversationList' data-user-highlight='$userHighlight'>"; //chatters list, it contains a data-point, 'data-user-highlight', to inform js if a chatter's conversation should be highlight (=null or his username)
+$userObj = new User($user);
+$chatters = $userObj->getChatWith(); //retrieve list of conversations has had with
 
-$people = queryDB($getPeopleIHaveConversationsWithQuery, [":me" => $user]); //arrays of chatter's username and our latest chat timestamp
-$numberOfConversations = count($people); //number of people I have chatted with
+foreach ($chatters as $chatter) { //for each User obj in the list
 
-for ($i = 0; $i < $numberOfConversations; $i++) { //for each person that I have had conversation with
+  //generate data and assign to variables
+  $profile = $chatter->getProfile(true);
+  $profileData = $profile->getData();
+  $username = $profileData["user"];
+  $fullname = $profileData["firstname"] . " " . $profileData["lastname"];
+  $picture = $profileData["profilePictureURL"]; //root-relative path
+  $conversation = $userObj->getConversationWith($username);
+  $newestMessage = $conversation->getNewestMessage();
+  $messageData = $newestMessage->read();
+  $lastMessageSummary = substr($messageData["message"], 0, 100) . "...";
+  $lastMessageTime = $messageData["timeElapsed"];
 
-  //get variables for each conversation person
-  $person = $people[$i]["who"]; //username of the person I chatted with
-  $time = $people[$i]["lastTime"]; //last message timestamp
-  $personInfo = queryDB($getBasicProfileQuery, [":user" => $person])[0]; //his name and picture data
-  $firstname = ucfirst(strtolower($personInfo["firstname"])); //his firstname
-  $lastname = ucfirst(strtolower($personInfo["lastname"])); //first lastname
-  $profilePicture = getPhotoPath($personInfo["profilePictureURL"]); //path to his profile image
-  $timeElapsed = getDateTimeElapsed($time); //string showing how much time has passed since last message
+  //data array to bind
+  $data = ["chatWith" => $username, "picture" => $picture, "name" => $fullname, "message" => $lastMessageSummary, "ago" => $lastMessageTime];
 
-  //construct a row for each person and populate with his/her profile img, name, and last msg time
-  echo "<div class='row my-2 py-2 conversationRow' data-user='$person'>"; //outer container, importantly also embeds a data element for the username of who the chat is with
-    echo "<div class='d-flex flex-row justify-content-center'>"; //a flex container, inner container
-    echo "<img src='$profilePicture' class='img-fluid rounded-circle me-2' width='100' height='100'>"; //item 1, img
-    echo "<div class='d-flex flex-column justify-content-center align-items-start'>"; //item 2, flex-col container
-    echo "<div class='h5'>$firstname $lastname</div>"; //item 2-1, name nside flex-col container
-    echo "<div>$timeElapsed</div>"; //item 2-2, last msg time inside flex-col container
-    echo "</div>"; //close flex-col container
-    echo "</div>"; //close flex-row container
-  echo "</div>"; //close row
+  $viewLoader->load("messages_list.phtml")->bind($data)->render();
 
 }
-echo "</section>"; //end of loop, close the chatters list
 
-//start of conversation display
-echo "<section class='col-8 h-100' id='conversationDisplay'><div class='card h-100'>"; //the conversation display area
-echo "<div class='card-header'>Chats <i class='bi bi-chat-dots float-end'></i></div>";
-echo "<div class='card-body' id='chatPanel'></div>";
-echo "<div class='card-footer'><div class='input-group'><input type='text' class='form-control' id='chatMessage'><button class='btn btn-primary' id='chatMessageBtn' type='button'>Send</button></div></div>";
-echo "</div></section>"; //close conversation display area
+$viewLoader->load("messages_list_end.phtml")->render();
 
-echo "</main></main>"; //close containing class
+$viewLoader->load("messages_conversation_display.phtml")->render(); //end of view
 
 ?>
-<!--required js-->
+
+<!--accompanying js-->
 <script src="js/messages.js"></script>
 

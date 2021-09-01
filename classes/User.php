@@ -1,68 +1,124 @@
 <?php 
 
-require_once INCLUDE_DIR . "queries.php";
-require_once CLASS_DIR . "Friendship.php";
 
 class User {
  
   //variables declaration
-  public $user; //username
-  protected $profile; //profile object
-  protected $friends = []; //array of other user objects
-  protected $numberOfFriends; //length of the friends array
+  protected $user; //username
+  protected $profile; //Profile object, full one
+  protected $friends = []; //his friends list, array of user objects
+  protected $numberOfFriends; //number of his friends, length of the friends array
+  protected $chatWith = []; //list of users he has had a conversation with, array of user objects
   
-  //constructor
-  public function __construct($user) {
-    $this->user = $user;    
+  /*
+  constructor
+  @param $user username
+  */
+  public function __construct(string $username) {
+
+    $this->user = $username; 
+    $this->profile = new FullProfile($this->user); //instantiate a Profile obj  
+
   }
 
-  //function to get this user's friends
-  //@return array of User objects
+  /*
+  getter of this User's username
+  */
+  public function getUsername(): string {
+
+    return $this->user;
+    
+  }
+
+  /*
+  function to get this User's friends list
+  @return array of User objects
+  */
   public function getFriends(): array {
     
-    $friendsData = $this->queryFriends(); //getting friends data from database
+    global $getAllFriendsQuery;
 
-    foreach ($friendsData as $f) {
-      $friend = new User($f["user"]); //instantiate a User obj for each friend
+    $resultset = queryDB($getAllFriendsQuery, [":user" => $this->user]); //data of friends' usernames
+
+    foreach ($resultset as $row) {
+
+      $friend = new User($row["user"]); //instantiate a User obj for each friend
       array_push($this->friends, $friend); //append to array of friend objs
+
     }
 
     return $this->friends;
 
   }
   
-  //getter for this user's friends number
+  /*
+  getter for this user's friends number
+  @return his number of friends
+  */
   public function getNumberOfFriends(): int {
 
-    $this->numberOfFriends = count( $this->queryFriends() );
+    global $getAllFriendsQuery;
+
+    $resultset = queryDB($getAllFriendsQuery, [":user" => $this->user]); //data of friends' usernames
+
+    $this->numberOfFriends = count($resultset);
+
     return $this->numberOfFriends;
 
   }
 
-  //helper method to query database for this user's friends data
-  protected function queryFriends(): array {
+  /*
+  function to get the existing defined relationship between this user and another user
+  @param the other user's username
+  @return defined relationship code, 0 for stranger, 1 for existing friend, 2 for friend request sent, 3 for friend request received
+  */
+  public function getRelationshipWith (string $thatuser): int {
 
-    global $getAllFriendsQuery;
+    $friendship = new Friendship($this->user, $thatuser);
 
-    $friendsData = queryDB($getAllFriendsQuery, [":user" => $this->user]); //retrieve friends' usernames from db
-    return $friendsData;
-  }
-
-  //function to get the existing defined relationship between this user and another user
-  //@param the other user's username
-  //@return defined relationship code, int 0 for stranger, 1 for existing friend, 2 for friend request sent, 3 for friend request received, 4 for friend request rejected
-  public function getRelationshipWith (string $thatUser): int {
-
-    $friendship = new Friendship($this->user, $thatUser);
-    $relationshipCode = $friendship->getFriendship;
-    return $relationshipCode;
+    return $friendship->getFriendship();
 
   }
 
-  //function to retrieve this user's profile object
-  //@param $fullProfile = true or false to indicate whether a Profile obj or a BasicProfile obj to retrieve
-  //@return either a Profile or BasicProfile obj
-  public function getProfile(bool $fullProfile = true) {
+  /*
+  function to retrieve this user's profile object
+  @param $basic = true/false to indicate whether a BasicProfile obj or a FullProfile obj to retrieve
+  @return either a FullProfile or BasicProfile obj
+  */
+  public function getProfile(bool $basicProfile = true): BasicProfile {
+
+    return $basicProfile ? new BasicProfile($this->user) : $this->profile; //return his Profile obj, or create a new Basic Profile if basic if flagged
+
+  }
+
+  /*
+  function to retrieve all users that this user has had a conversation with
+  @return array of User objects
+  */
+  public function getChatWith(): array {
+
+    global $getChattedWithQuery;
+
+    $resultset = queryDB($getChattedWithQuery, [":me" => $this->user]);
+
+    foreach ($resultset as $row) {
+
+      $chatWith = new User($row["chatWith"]);
+      array_push($this->chatWith, $chatWith);
+    }
+
+    return $this->chatWith;
+
+  }
+
+  /*
+  function get this user's conversation with another particular user
+  @param $chatWith the username of the other person of the conversation to retrieve
+  @return Conversation object
+  */
+  public function getConversationWith(string $chatWith): Conversation {
+
+    return new Conversation($this->user, $chatWith);
 
   }
 
@@ -75,19 +131,6 @@ class User {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-}
+} //end class
 
 ?>

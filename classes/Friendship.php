@@ -1,35 +1,48 @@
 <?php
 
-require_once INCLUDE_DIR . "queries.php";
-require_once CLASS_DIR . "Message.php";
-
-
+/*
+class to encapsulate friendship between two users
+friends are non-directional
+some actions are directional, such as friend requests, A adds B, A removes B
+for directional data/actions, $thisuser and $thatuser are important
+*/
 class Friendship {
 
-    protected $user1; 
-    protected $user2;
-    protected $status;
-    protected $isFollowing;
+    //variables declaration
+    protected $thisuser; //username of the current user 
+    protected $thatuser; //username of the other user
+    protected $status; //defined relationship code, 0:stranger, 1:friend, 2:request sent (to thatuser), 3:request received (from thatuser)
+    protected $isFollowing; //given friends, flag if thisuser is following thatuser
 
-    public function __construct($user1, $user2) {
+    /*
+    constructor
+    @param $thisuser, $thatuser, usernames of two users defined in a relationship
+    */
+    public function __construct(string $thisuser, string $thatuser) {
 
-        $this->user1 = $user1;
-        $this->user2 = $user2;
+        $this->thisuser = $thisuser;
+        $this->thatuser = $thatuser;
     }
 
+    /*
+    Directional
+    a user (current user, thisuser) to add another user (the other user, thatuser) as a friend. 
+    */
     public function add(): bool {
 
         try {
 
+            //database call
             global $addAFriendQuery;
-            $params = [":a" => $this->user1, ":b" => $this->user2];
+            $params = [":a" => "$this->thisuser", ":b" => "$this->thatuser"];
             queryDB($addAFriendQuery, $params);
 
-            $contents = "Hi '$this->user2', I would like to add you as a friend and sent you a request. ";
-            $friendRequestMessage = new Message($this->user1, $this->user2, time(), $contents);
+            //send a message to the other user
+            $contents = "Hello '$this->thatuser', I would like to add you as a friend and sent you a request. ";
+            $friendRequestMessage = new Message($this->thisuser, $this->thatuser, time(), $contents);
             $friendRequestMessage->send();
 
-            $this->status = "requested";
+            $this->status = 2;
             return true;
 
         } catch (Exception $ex) {
@@ -38,40 +51,63 @@ class Friendship {
 
     }
 
+    /*
+    Directional
+    a user (current user, thisuser) removing an existing friend (the other user, thatuser) as a friend
+    */
     public function remove(): bool {
 
         try {
+
+            //database call
             global $removeAFriendQuery;
-            $params = [":a" => $this->user1, ":b" => $this->user2];    
+            $params = [":a" => "$this->thisuser", ":b" => "$this->thatuser"];    
             queryDB($removeAFriendQuery, $params);
-            $this->status = null;
+
+            $this->status = 0;
             return true;
+
         } catch (Exception $ex) {
             return false;
         }
     }
 
+    /*
+    Directional
+    for a user (current user) who has received a request from another user (the other user), accept the request and become friends
+    */
     public function confirmRequest(): bool {
 
         try {
+
+            //database call
             global $confirmFriendRequestQuery;
-            $params = [":requestSender" => $this->user2, ":requestRecipient" => $this->user1];
+            $params = [":requestSender" => "$this->thatuser", ":requestRecipient" => "$this->thisuser"];
             queryDB($confirmFriendRequestQuery, $params);
-            $this->status = "confirmed";
+
+            $this->status = 1;
             return true;
+
         } catch (Exception $ex) {
             return false;
         }
     }
 
+    /*
+    Directional
+    for a user (current user) who has received a request from another user (the other user), reject the request and remain strangers
+    */
     public function rejectRequest(): bool {
 
         try {
+
             global $rejectFriendRequestQuery;
-            $params = [":requestSender" => $this->user2, ":requestRecipient" => $this->user1];
+            $params = [":requestSender" => "$this->thatuser", ":requestRecipient" => "$this->thisuser"];
             queryDB($rejectFriendRequestQuery, $params);
-            $this->status = "rejected";
+
+            $this->status = 0;
             return true;
+
         } catch (Exception $ex) {
             return false;
         }
@@ -81,46 +117,46 @@ class Friendship {
     /*
     public function follow(): bool {
 
-
         $this->isFollowing = true;
         return true;
+
     }
 
     public function unfollow(): bool {
 
-
         $this->isFollowing = false;
         return true;
+
     }
     */
 
-    //function to get existing friendship, if any, between two users
-    //@return defined relationship code, int 0 for stranger, 1 for existing friend, 2 for friend request sent, 3 for friend request received, 4 for friend request rejected
+    /*
+    Directional
+    get existing relationship between current user and the other user
+    @return defined relationship code, 0 for stranger, 1 for existing friend, 2 for friend request sent, 3 for friend request received
+    */
     public function getFriendship(): int {
 
         global $checkIfFriendsQuery;
-        //check if user1 and user2 are in the friends table at all
-        $hasAnyRelationship = queryDB("SELECT * FROM friends WHERE user1 = '$this->user1' AND user2 = '$this->user2' UNION SELECT * FROM friends WHERE user1 = '$this->user2' AND user2 = '$this->user1'");
+        //check if two users are in the friends table at all
+        $anyResults = queryDB("SELECT * FROM friends WHERE user1 = '$this->thisuser' AND user2 = '$this->thatuser' UNION SELECT * FROM friends WHERE user1 = '$this->thatuser' AND user2 = '$this->thisuser'");
         
-        if (!$hasAnyRelationship) {
+        if (!$anyResults) {
 
             return 0; //no relationship
 
-        } elseif (queryDB($checkIfFriendsQuery, [":a" => "$this->user1", ":b" => "$this->user2"])) { //existing friends
+        } elseif (queryDB($checkIfFriendsQuery, [":a" => "$this->thisuser", ":b" => "$this->thatuser"])) { //existing friends
 
             return 1;
 
-        } elseif ( queryDB("SELECT * FROM friends WHERE user1 = '$this->user2' AND user2 = '$this->user1' AND status = 'rejected'") ) { //I have rejected his request
+        } elseif ( queryDB("SELECT * FROM friends WHERE user1 = '$this->thatuser' AND user2 = '$this->thisuser' AND status = 2") ) { //request received
         
-            return 4;
+            return 3;
 
         } else { //some friend request pending
 
-            if( queryDB("SELECT * FROM friends WHERE user1 = '$this->user2' AND user2 = '$this->user1' AND status = 'requested'") ) { //I received the request
-                return 3; 
-            } else {
-                return 2; //either I sent the request and it's rejected by him or pending response
-            }
+            return 2; //request sent
+
         }
         
     }

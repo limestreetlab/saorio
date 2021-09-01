@@ -12,6 +12,7 @@ define("DB_USER", "root");
 define("DB_PASSWORD", "007hk007");
 define("DB_PORT", "3307");
 
+//directory constants
 define("SITE_ROOT", $_SERVER["DOCUMENT_ROOT"] . "/Saorio/"); //absolute path to site root
 define("INCLUDE_DIR", SITE_ROOT . "includes/"); //absolute path to includes directory
 define("UPLOAD_DIR", SITE_ROOT . "uploads/"); //absolute path to uploads directory

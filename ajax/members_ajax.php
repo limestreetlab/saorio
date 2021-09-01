@@ -4,21 +4,25 @@
 header("Content-Type: application/json"); //return json output
     
 require_once "./../includes/ini.php"; //rel path to ini.php 
-require_once CLASS_DIR . "Friendship.php";
-require_once INCLUDE_DIR . "queries.php";
+require_once INCLUDE_DIR . "queryDatabase.php";
 
-if ( isset($_REQUEST["requestFrom"], $_REQUEST["requestTo"], $_REQUEST["status"]) ) {
+if ( isset($_REQUEST["requestFrom"], $_REQUEST["action"]) ) {
   
-  $friendship = new Friendship($_REQUEST["requestTo"], $_REQUEST["requestFrom"]);
-  $status = $_REQUEST["status"];
+  //assgin variables
+  $actionBy = $_SESSION["user"]; //the user doing the accept or reject
+  $actionTo = $_REQUEST["requestFrom"]; //request was sent by
+  $action = $_REQUEST["action"]; //>0 for accept, <0 for reject
+  //create Friendship object
+  $friendship = new Friendship($actionBy, $actionTo);
 
-  switch($status) {
-    case "confirmed":
-      $friendship->confirmRequest();
-      break;
-    case "rejected":
-      $friendship->rejectRequest();
-      break;
+  if ($action > 0) {
+
+    $friendship->confirmRequest();
+
+  } else {
+
+    $friendship->rejectRequest();
+    
   }
 
   $result = ["success" => true];   

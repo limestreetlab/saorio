@@ -19,7 +19,7 @@ $tables = [];
 $tablename = "members";
 $columns = "user VARCHAR(20), 
 password VARCHAR(100),
-email VARCHAR(30) UNIQUE,
+email VARCHAR(40) UNIQUE,
 PRIMARY KEY(user),
 INDEX(user(5))";
 $tables["$tablename"] = $columns;
@@ -28,29 +28,31 @@ $tables["$tablename"] = $columns;
 //the profiles table
 $tablename = "profiles";
 $columns = "user VARCHAR(20),
-firstname VARCHAR(20),
-lastname VARCHAR(20),
-about VARCHAR(1000) DEFAULT 'I am a yellow labrador retriever!',
-profilePictureURL VARCHAR(100) DEFAULT 'C:/Program Files/Ampps/www/saorio/uploads/avatar-profile.png',
-profilePictureMIME VARCHAR(30) DEFAULT 'image/png',
-gender CHAR(1) DEFAULT 'o',
-ageGroup TINYINT(1),
-location VARCHAR(30),
+firstname VARCHAR(20) NOT NULL,
+lastname VARCHAR(20) NOT NULL,
+about VARCHAR(1000),
+profilePictureURL VARCHAR(100) DEFAULT 'C:/Program Files/Ampps/www/saorio/uploads/avatar-profile.png' COMMENT 'absolute path',
+profilePictureMIME VARCHAR(30) DEFAULT 'image/png' COMMENT 'full mime of image/xxx',
+gender CHAR(1) COMMENT 'f, m',
+dob INT COMMENT 'date of birth in epoch UTC',
+city VARCHAR(30),
+country VARCHAR(30),
 job VARCHAR(30), 
 company VARCHAR(30),
-major VARCHAR(20),
-school VARCHAR(30) DEFAULT 'Saorio College',
+major VARCHAR(30),
+school VARCHAR(30),
 interests VARCHAR(30),
 quote VARCHAR(100),
+website VARCHAR(100) COMMENT 'his personal website',
+socialmedia VARCHAR(100) COMMENT 'his social media account',
 PRIMARY KEY(user),
 index(user(5))";
 $tables["$tablename"] = $columns;
 
 //the messages table
-//timestamp is unix epoch UTC time
 $tablename = "messages";
 $columns = "id INT UNSIGNED AUTO_INCREMENT,
-timestamp INT UNSIGNED NOT NULL,
+timestamp INT UNSIGNED NOT NULL COMMENT 'unix epoch UTC timestamp',
 sender VARCHAR(20) NOT NULL,
 recipient VARCHAR(20) NOT NULL,
 message VARCHAR(1000) NOT NULL,
@@ -60,12 +62,11 @@ INDEX(recipient(5))";
 $tables["$tablename"] = $columns;
 
 //the friends table
-//status col for friend status where requested is always from user1 to user2
 $tablename = "friends";
 $columns = " id INT(10) UNSIGNED AUTO_INCREMENT,
-user1 VARCHAR(20),
-user2 VARCHAR(20),
-status ENUM('requested', 'confirmed', 'rejected'), 
+user1 VARCHAR(20) COMMENT 'requests are always from user1',
+user2 VARCHAR(20) COMMENT 'user2 always receives requests',
+status TINYINT(1) COMMENT '1 for confirmed, 2 for pending confirmation', 
 PRIMARY KEY (id),
 INDEX(user1(5)),
 INDEX(user2(5))";

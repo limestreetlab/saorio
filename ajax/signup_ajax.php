@@ -3,7 +3,7 @@
 header("Content-Type: application/json"); //return json output
 
 require_once "./../includes/ini.php"; //rel path to ini.php
-require_once INCLUDE_DIR . "functions.php";
+require_once INCLUDE_DIR . "queryDatabase.php";
 
 if (isset($_REQUEST["username"])) {
   $user = filter_var(trim($_REQUEST["username"]), FILTER_SANITIZE_STRING); //sanitize the user input

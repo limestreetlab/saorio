@@ -1,40 +1,44 @@
-//script to handle multiple messaging functions from attaching Send to send button and enter key to loading conversations for each person and updating chats
+/*
+front-end script to handle all conversation loading using ajax.
+there are two sections on page: 1. list of conversations on left, 2. display of a selected conversation on right
+script contains mutiple functions from attaching Send function to send button and enter-key to loading conversations and updating real-time chats
+*/
+
 $(document).ready(function() {
  
   initialClick(); //click to load one of the conversations
 
-}); //close document ready
+}); 
 
 /*
-functon to simulate a click on the chatter list to load one of the chatter's conversations
-it either clicks on the user at the top of the list or a particular user when the backend (messages.php) specifies one through a data-* inside the form
+functon to simulate a click on the chat list to load one of the conversations
+it either clicks on the user at top of list or a specified user if backend (messages.php) specifies one through a data-*
 */
 function initialClick() {
 
-  let firstPerson = $(".conversationRow").first().data("user"); //the data-user value of the first .conversationRow element
-  let specificPerson = $("#conversationList").data("user-highlight"); //the person to highlight specified by backend, if any
+  let firstPerson = $(".conversationRow").first().data("chatWith").trim(); //the data-chatWith value of first .conversationRow element
+  let specificPerson = $("#conversations").data("highlight").trim(); //the person to highlight specified by backend, if any
+  let highlight = firstPerson; //default value
 
   if (specificPerson) { //someone is specified
-    userHighlight = specificPerson; 
-  } else { 
-    userHighlight = firstPerson; 
-  }
+    highlight = specificPerson; 
+  } 
 
-  let conversationRowToHighlight = ".conversationRow[data-user='" + userHighlight + "']"; //make the query selector string for the element having data-user=firstPerson
+  let conversationRowToHighlight = ".conversationRow[data-chatWith='" + highlight + "']"; //make the query selector string
   $(conversationRowToHighlight).trigger("click"); //triggering a click event on that target element
 
 } //close function
 
 /*
-onclick event, used to load conversations with the clicked user onto chatPanel 
+onclick event, used to load conversations with the clicked user onto chatPanel on the right
 */
 $(".conversationRow").click( function(){
   
-  $("#chatPanel").empty(); //empty out the chat panel first
+  $("#chatPanel").empty(); //empty out the chat panel (display area) first
 
-  let chatter = $(this).data("user"); //the clickable element should embed a data-element (data-user) containing the username of the chat is with
-  $("#conversationDisplay").data("user", chatter); //add a data-user=person tag to #conversationDisplay
-  let dataSend = {chatRetrieve: true, chatWith: chatter}; //the data to send over to php using ajax
+  let chatWith = $(this).data("chatWith"); //the clickable element should embed a data-element containing the username of whom the chat is with
+  $("#conversationDisplay").data("user", chatWith); //add a data-* to #conversationDisplay
+  let dataSend = {chatRetrieve: true, chatWith: chatWith}; //the data to send over to php using ajax
   
   $.post("ajax/messages_ajax.php", dataSend, 
   //start callback
@@ -64,6 +68,7 @@ $(".conversationRow").click( function(){
     , "json"); //close $.post 
   
   updateChat(); //after a conversation is opened, update it automatically
+
 }); //close onclick
 
 /*
@@ -71,14 +76,14 @@ function to repeatedly check for new chat messages and display if any
 */
 function updateChat() {
   
-  let chatter = $("#conversationDisplay").data("user");//by design, the active conversation has its chatter's username embedded in a data-user attribute
-  let dataSend = {chatUpdate: true, chatWith: chatter};
+  let chatWith = $("#conversationDisplay").data("user");//by design, the active conversation has its chatter's username embedded in a data-user attribute
+  let dataSend = {chatUpdate: true, chatWith: chatWith};
   
   $.post("ajax/messages_ajax.php", dataSend,  
     //start callback
     function(dataReceive) { 
-      //will receive json of [user, newMessages]
-      if (dataReceive.newMessages.length > 0) {
+      //will receive json of [user, [newMessages]]
+      if (dataReceive.newMessages.length > 0) { //there are new messages
         
         let myself = dataReceive.user; //the $user in the session
         //for each message exchanged between me and the other person (who)
@@ -97,7 +102,7 @@ function updateChat() {
     
   , "json"); //close request
 
-  setTimeout(updateChat, 4000); //call self at a timeout
+  setTimeout(updateChat, 4000); //call self at timeout
   
 } //close function
 

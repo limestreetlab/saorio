@@ -2,31 +2,29 @@
 //landing page for the app, responsible for loading requested pages
 
 require_once "./includes/ini.php"; //SITE_ROOT, INCLUDE_DIR are defined in config.php and imported through ini.php, so cannot be used before including ini.php
-require_once INCLUDE_DIR . "functions.php"; //import functions
-require_once CLASS_DIR . "Template.php";
+require_once INCLUDE_DIR . "queryDatabase.php"; //import functions
+
 
 ob_start(); //turn on the output buffer
 
-$header = new Template("header.phtml", ["appName" => $appName]);
-echo $header->render();
+$viewLoader->load("header.phtml")->bind(["appName" => $appName])->render(); //header html
 
-$navbar = new Template("navbar_open.phtml");
-echo $navbar->render();
+$viewLoader->load("navbar_open.phtml")->render(); //navbar open html
 
 //php code block for loading requested page
 $reqPage = isset($_REQUEST["reqPage"]) ? $_REQUEST["reqPage"] : null; //set $reqPage to page requested
-require_once INCLUDE_DIR . "navbarMenu.php"; //must be after $reqPage is set, as $reqPage is used in setting .active nav-item
 
-$navbar_end = new Template("navbar_close.phtml");
-echo $navbar_end->render();
+$nav = NavMenu::getInstance(); //NavMenu is a singleton class, obtain obj using getInstance(), must be after $reqPage is set as it is used in navmenu
+echo $nav->getNavMenu($isLoggedIn);
+
+$viewLoader->load("navbar_close.phtml")->render(); //navbar end html
 
 $protectedPage = ["posts", "profile", "friends", "members", "messages"]; //pages that are considered protected (loggin needed)
 $isProtectedPage = in_array($reqPage, $protectedPage); //boolean to indicate if page requested is a protected page
 
 if ($reqPage == null) { //page not requested
 
-  $landing_hero = new Template("landing_hero.phtml", ["appName" => $appName]);
-  echo $landing_hero->render();
+  $viewLoader->load("index_landing.phtml")->bind(["appName" => $appName])->render();
 
 } else { //a page is requested
 
@@ -38,8 +36,7 @@ if ($reqPage == null) { //page not requested
 
 }
 
-$footer = new Template("footer.phtml", ["year" => date("Y")]);
-echo $footer->render();
+$viewLoader->load("footer.phtml")->bind(["year" => date("Y")])->render(); //footer html
 
 ob_end_flush();
 

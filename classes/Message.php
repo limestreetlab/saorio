@@ -1,8 +1,5 @@
 <?php 
 
-require_once INCLUDE_DIR . "queries.php";
-require_once INCLUDE_DIR . "functions.php";
-
 class Message {
 
   public $sender;
@@ -21,10 +18,14 @@ class Message {
 
   }
 
-  //function to send a message to database
+  /*
+  send a Message obj to database
+  @return success
+  */
   public function send(): bool {
 
     global $sendMessageQuery;
+
     $this->message = filter_var(trim($this->message), FILTER_SANITIZE_STRING); //trim, sanitize
     $params = [":time" => $this->timestamp, ":from" => $this->sender, ":to" => $this->recipient, ":message" => $this->message];
 
@@ -32,12 +33,20 @@ class Message {
       queryDB($sendMessageQuery, $params);
       $success = true;
     } catch (Exception $ex) {
-      throw $ex;
       $success = false;
+      throw $ex;
     }
 
     return $success;
   
+  }
+
+  /*
+  get all instance varibles of a Message obj
+  @return associative array ["sender", "recipient", "message", "timeElapsed", "timestamp"]
+  */
+  public function read(): array {
+    return ["sender" => $this->sender, "recipient" => $this->recipient, "message" => $this->message, "timeElapsed" => $this->timeElapsed, "timestamp" => $this->timestamp];
   }
 
 

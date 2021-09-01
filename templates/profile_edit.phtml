@@ -1,0 +1,133 @@
+<!--html for editing a user's profile, using BS's Card-->
+<!--it differs from profile display by adding an edit icon, information name (education, location), and showing all fields regardless of nullness-->
+<br><br>
+<main class='container mt-5'><!--container-->
+  <main class='row justify-content-center'><!--outer row-->
+    <main class='col-10'><!--container of the Card-->
+
+      <div class='card shadow'>
+
+        <div class='row justify-content-center'><!--inner row before card-header-->
+          <div class='col-4 position-relative'>
+            <img class='rounded-circle profile-picture position-absolute top-0 start-50' src='{{picture}}'><!--profile picture-->
+            <span class='btn btn-light btn-sm rounded-circle position-absolute' id='picture-edit-btn'><i class='bi bi-camera-fill'></i></span><!--edit btn-->
+          </div>
+        </div> <!--close inner row-->
+
+        <div class='card-header bg-secondary border-0 pt-5 pb-5'>
+          <!--empty header-->
+        </div>
+
+        <main class='card-body'><!--Card body to contain profile's info-->
+
+        
+        <section class="row"><!--user activity stats-->
+            <div class="col">
+
+              <div class="d-flex flex-row justify-content-center mt-5">
+                <span class="px-2">
+                XX Friends
+                </span>
+
+                <span class="px-2">
+                XX Posts
+                </span>
+
+                <span class="px-2">
+                XX Comments
+                </span>
+             </div>
+            </div>
+          </section><!--end activity stats-->
+          
+
+          <section class='text-center my-4'>
+
+            <div class='h3'>{{firstname}}  {{lastname}}</div>
+
+            <div class='h5 my-4 position-relative w-100' id='location'>
+              {{city}} {{IF !empty('{{city}}') && !empty('{{country}}') }},{{ENDIF}} {{country}}
+              {{IF empty('{{city}}') && empty('{{country}}') }}Add a Location{{ENDIF}}<!--when empty section-->
+              <span class='btn btn-light btn-sm rounded-circle position-absolute edit-btn' id='location-edit-btn'><i class='bi bi-pencil-fill'></i></span>
+            </div>
+
+            <div class='h5 my-4 position-relative w-100' id='particulars'>
+              {{IF '{{gender}}' == 'male'}}<i class='bi bi-gender-male'></i>{{ENDIF}} 
+              {{IF '{{gender}}' == 'female'}}<i class='bi bi-gender-female'></i>{{ENDIF}} 
+              <span class='px-2' id='age'>{{age}}</span>
+              {{IF empty('{{gender}}') && empty('{{age}}')}}Add basic info{{ENDIF}} <!--when empty section-->
+              <span class='btn btn-light btn-sm rounded-circle position-absolute edit-btn' id='particulars-edit-btn'><i class='bi bi-pencil-fill'></i></span>
+            </div>
+
+            <div class='h6 my-4 position-relative w-100 id='work'>
+              {{job}} {{IF !empty('{{job}}') && !empty('{{company}}') }} at {{ENDIF}} {{company}}
+              {{IF empty('{{job}}') && empty('{{company}}')}}Add work info{{ENDIF}} <!--when empty section-->
+              <span class='btn btn-light btn-sm rounded-circle position-absolute edit-btn' id='work-edit-btn'><i class='bi bi-pencil-fill'></i></span>
+            </div>
+
+            <div class='h6 my-4 position-relative w-100' id='study'>
+              {{major}} {{IF !empty('{{major}}') && !empty('{{school}}') }} at {{ENDIF}} {{school}}
+              {{IF empty('{{major}}') && empty('{{school}}')}}Add education info{{ENDIF}} <!--when empty section-->
+              <span class='btn btn-light btn-sm rounded-circle position-absolute edit-btn' id='study-edit-btn'><i class='bi bi-pencil-fill'></i></span>
+            </div>
+
+          </section>
+
+          <hr class='mb-0'>
+
+          <section class='row'>
+
+            <div class='col-12'>
+              <div class='h6 mt-4 mb-2 position-relative w-100' id='about'>About
+              <span class='btn btn-light btn-sm rounded-circle position-absolute edit-btn' id='about-edit-btn'><i class='bi bi-pencil-fill'></i></span>
+              </div>
+              {{about}}{{IF empty('{{about}}')}}Write something about yourself{{ENDIF}}
+            </div>
+
+            <div class='col-12'>
+              <div class='h6 mt-4 mb-2 position-relative w-100' id='interests'>Interests
+              <span class='btn btn-light btn-sm rounded-circle position-absolute edit-btn' id='interests-edit-btn'><i class='bi bi-pencil-fill'></i></span>
+              </div>
+              {{interests}}{{IF empty('{{interests}}')}}Add interests{{ENDIF}}
+            </div>
+
+            <div class='col-12'>
+              <div class='h6 mt-4 mb-2 position-relative w-100' id='quote'>Favorite quote
+              <span class='btn btn-light btn-sm rounded-circle position-absolute edit-btn' id='quote-edit-btn'><i class='bi bi-pencil-fill'></i></span>
+              </div>
+              {{quote}}{{IF empty('{{quote}}')}}Add a favorite quote{{ENDIF}}
+            </div>
+
+            <div class='col-4'>
+              <div class='h6 mt-4 mb-2 position-relative w-100' id='email'>Email
+              <span class='btn btn-light btn-sm rounded-circle position-absolute edit-btn' id='email-edit-btn'><i class='bi bi-pencil-fill'></i></span>
+              </div>
+              {{email}}{{IF empty('{{email}}')}}Add an email{{ENDIF}}
+            </div>
+
+            <div class='col-4'>
+              <div class='h6 mt-4 mb-2 position-relative w-100' id='website'>Website
+              <span class='btn btn-light btn-sm rounded-circle position-absolute edit-btn' id='website-edit-btn'><i class='bi bi-pencil-fill'></i></span>
+              </div>
+              {{website}}{{IF empty('{{website}}')}}Add a website{{ENDIF}}
+            </div>
+
+            <div class='col-4'>
+              <div class='h6 mt-4 mb-2 position-relative w-100' id='socialmedia'>Social media
+              <span class='btn btn-light btn-sm rounded-circle position-absolute edit-btn' id='socialmedia-edit-btn'><i class='bi bi-pencil-fill'></i></span>
+              </div>
+              {{socialmedia}}{{IF empty('{{socialmedia}}')}}Add a social link{{ENDIF}}
+            </div>
+
+          </section>
+
+          <div class='text-center'>
+            <button type='button' class='col-4 btn btn-primary mt-5 mb-3 rounded-pill'>Finish</button>
+          </div>
+
+
+        </main><!--close card-body-->
+
+    </main><!--close Card container-->
+  </main><!--close outer row-->
+</main><!--close container-->

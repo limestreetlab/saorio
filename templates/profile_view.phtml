@@ -1,0 +1,123 @@
+
+<!--html for displaying a user's profile, using BS's Card-->
+<br><br><!--push the container down-->
+<main class='container mt-5'><!--container-->
+  <main class='row justify-content-center'><!--outer row-->
+    <main class='col-10'><!--container of the Card-->
+
+      <div class='card shadow'>
+
+        <div class='row justify-content-center'><!--inner row before card-header-->
+          <div class='col-4 position-relative'>
+            <img class='rounded-circle profile-picture position-absolute top-0 start-50' src='{{picture}}'>
+          </div>
+        </div> <!--close inner row-->
+
+        <div class='card-header bg-secondary border-0 pt-5 pb-5'>
+          <!--empty header-->
+        </div>
+
+        <main class='card-body'><!--Card body to contain profile's info-->
+
+          <section class="row"><!--user activity stats-->
+            <div class="col">
+
+              <div class="d-flex flex-row justify-content-center mt-5">
+                <span class="px-2">
+                XX Friends
+                </span>
+
+                <span class="px-2">
+                XX Posts
+                </span>
+
+                <span class="px-2">
+                XX Comments
+                </span>
+             </div>
+            </div>
+          </section><!--end activity stats-->
+
+          <section class='text-center my-4'><!--basic info-->
+
+            <div class='h2'>{{firstname}}  {{lastname}}</div>
+
+            <div class='h5 my-4 edit-btn-container' id='location'>
+              {{city}} 
+              {{IF !empty('{{city}}') && !empty('{{country}}') }},{{ENDIF}} 
+              {{country}}
+            </div>
+            
+            <div class='h5 my-4 edit-btn-container' id='particulars'>
+              {{IF '{{gender}}' == 'male'}}<i class='bi bi-gender-male'></i>{{ENDIF}} 
+              {{IF '{{gender}}' == 'female'}}<i class='bi bi-gender-female'></i>{{ENDIF}} 
+              <span class='px-2' id='age'>{{age}}</span>
+            </div>
+            
+            <div class='h6 edit-btn-container id='work'>
+              {{job}} 
+              {{IF !empty('{{job}}') && !empty('{{company}}') }} at {{ENDIF}} 
+              {{company}}
+            </div>
+            
+            <div class='h6 edit-btn-container' id='study'>
+              {{major}} 
+              {{IF !empty('{{major}}') && !empty('{{school}}') }} at {{ENDIF}} 
+              {{school}}
+            </div>
+
+          </section><!--end basic info-->
+
+          <hr class='mb-0'>
+
+          <section class='row'><!--additional info-->
+
+            <div class='col-12'>
+              {{IF !empty('{{about}}')}}
+                <div class='h6 mt-4 mb-2 edit-btn-container'>About</div>{{about}} 
+              {{ENDIF}}
+              
+            </div>
+
+            <div class='col-12'>
+              {{IF !empty('{{interests}}')}}
+                <div class='h6 mt-4 mb-2 edit-btn-container'>Interests</div>{{interests}} 
+              {{ENDIF}}
+            </div>
+
+            <div class='col-12'>
+              {{IF !empty('{{quote}}')}}
+                <div class='h6 mt-4 mb-2 edit-btn-container'>Favorite quote</div>{{quote}} 
+              {{ENDIF}}
+            </div>
+
+            <div class='col-4'>
+              {{IF !empty('{{email}}')}}
+                <div class='h6 mt-4 mb-2 edit-btn-container'>Email</div>{{email}} 
+              {{ENDIF}}
+            </div>
+
+            <div class='col-4'>
+              {{IF !empty('{{website}}')}}
+                <div class='h6 mt-4 mb-2 edit-btn-container'>Website</div>{{website}} 
+              {{ENDIF}}
+            </div>
+
+            <div class='col-4'>
+              {{IF !empty('{{socialmedia}}')}}
+                <div class='h6 mt-4 mb-2 edit-btn-container'>Social media</div>{{socialmedia}} 
+              {{ENDIF}}
+            </div>
+
+          </section><!--end additional info-->
+
+          <div class='text-center'>
+            <a href="index.php?reqPage=profile&editProfile=true"><button type='button' class='col-4 btn btn-primary mt-5 mb-3 rounded-pill'>Update Profile</button></a>
+          </div>
+
+
+        </main><!--close card-body-->
+
+    </main><!--close Card container-->
+  </main><!--close outer row-->
+</main><!--close container-->

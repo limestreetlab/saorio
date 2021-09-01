@@ -1,8 +1,5 @@
 <?php
 
-require_once CLASS_DIR . "User.php";
-require_once INCLUDE_DIR . "queries.php";
-
 
 class Signup {
 

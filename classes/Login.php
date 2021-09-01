@@ -1,6 +1,5 @@
 <?php
 
-require_once INCLUDE_DIR . "queries.php";
 
 class Login {
 
@@ -10,7 +9,7 @@ class Login {
     private $messages = [];
 
     //constructor
-    public function __construct($user, $password) {
+    public function __construct(string $user, string $password) {
 
         $this->user = filter_var(trim($user), FILTER_SANITIZE_STRING);
         $this->password = trim($password);
