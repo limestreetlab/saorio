@@ -5,7 +5,7 @@ if (isset($_SESSION["user"])) {
   session_destroy();
 }
 
-$viewLoader->load("signup_form.phtml")->render();
+$viewLoader->load("signup_form.html")->render();
 
 if ( isset($_REQUEST["user"], $_REQUEST["password"], $_REQUEST["email"], $_REQUEST["firstname"], $_REQUEST["lastname"]) ) {
   

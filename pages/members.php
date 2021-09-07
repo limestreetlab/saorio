@@ -10,7 +10,7 @@
   $members = $mysql->request($mysql->readAllUsersQuery); //get the entire set of usernames from database 
   $numberOfMembers = count($members); 
 
-  $viewLoader->load("members_list_start.phtml")->bind(["appName" => $appName, "numberOfUsers" => $numberOfMembers])->render(); //page open html
+  $viewLoader->load("members_list_start.html")->bind(["appName" => $appName, "numberOfUsers" => $numberOfMembers])->render(); //page open html
   
   $userObj = new User($user);
   
@@ -35,12 +35,12 @@
     
     //apply this member's data in a view
     $data = ["hisPicture" => $hisPicture, "hisFullname" => $hisFirstname . ' ' . $hisLastname, "hisUsername" => $hisUsername, "relationship" => $relationship];
-    $viewLoader->load("members_card.phtml")->bind($data)->render(); //include each member's card view
+    $viewLoader->load("members_card.html")->bind($data)->render(); //include each member's card view
     
   } //end for-loop
 
-  $viewLoader->load("members_list_end.phtml")->render(); //page close html
-  $viewLoader->load("friend_request_confirmation_modal.phtml")->render(); //modal 
+  $viewLoader->load("members_list_end.html")->render(); //page close html
+  $viewLoader->load("friend_request_confirmation_modal.html")->render(); //modal 
 
 
 ?>

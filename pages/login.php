@@ -2,7 +2,7 @@
 <?php
 
 
-$viewLoader->load("login_form.phtml")->render();
+$viewLoader->load("login_form.html")->render();
 
 if ( isset($_REQUEST["user"], $_REQUEST["password"]) ) {
 

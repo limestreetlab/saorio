@@ -12,7 +12,7 @@ if (isset($_REQUEST["select"])) {
   $highlight = null;
 }
 
-$viewLoader->load("messages_list_start.phtml")->bind(["highlight" => $highlight])->render(); //start of view
+$viewLoader->load("messages_list_start.html")->bind(["highlight" => $highlight])->render(); //start of view
 
 $userObj = new User($user);
 $chatters = $userObj->getChatWith(); //retrieve list of conversations has had with
@@ -34,13 +34,13 @@ foreach ($chatters as $chatter) { //for each User obj in the list
   //data array to bind
   $data = ["chatWith" => $username, "picture" => $picture, "name" => $fullname, "message" => $lastMessageSummary, "ago" => $lastMessageTime];
 
-  $viewLoader->load("messages_list.phtml")->bind($data)->render();
+  $viewLoader->load("messages_list.html")->bind($data)->render();
 
 }
 
-$viewLoader->load("messages_list_end.phtml")->render();
+$viewLoader->load("messages_list_end.html")->render();
 
-$viewLoader->load("messages_conversation_display.phtml")->render(); //end of view
+$viewLoader->load("messages_conversation_display.html")->render(); //end of view
 
 ?>
 

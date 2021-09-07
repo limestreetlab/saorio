@@ -5,9 +5,9 @@ require_once "./includes/ini.php"; //SITE_ROOT, INCLUDE_DIR are defined in confi
 
 ob_start(); //turn on the output buffer
 
-$viewLoader->load("header.phtml")->bind(["appName" => $appName])->render(); //header html
+$viewLoader->load("header.html")->bind(["appName" => $appName])->render(); //header html
 
-$viewLoader->load("navbar_open.phtml")->render(); //navbar open html
+$viewLoader->load("navbar_open.html")->render(); //navbar open html
 
 //php code block for loading requested page
 $reqPage = isset($_REQUEST["reqPage"]) ? $_REQUEST["reqPage"] : null; //set $reqPage to page requested
@@ -15,14 +15,14 @@ $reqPage = isset($_REQUEST["reqPage"]) ? $_REQUEST["reqPage"] : null; //set $req
 $nav = NavMenu::getInstance(); //NavMenu is a singleton class, obtain obj using getInstance(), must be after $reqPage is set as it is used in navmenu
 echo $nav->getNavMenu($isLoggedIn);
 
-$viewLoader->load("navbar_close.phtml")->render(); //navbar end html
+$viewLoader->load("navbar_close.html")->render(); //navbar end html
 
 $protectedPage = ["posts", "profile", "friends", "members", "messages"]; //pages that are considered protected (loggin needed)
 $isProtectedPage = in_array($reqPage, $protectedPage); //boolean to indicate if page requested is a protected page
 
 if ($reqPage == null) { //page not requested
 
-  $viewLoader->load("index_landing.phtml")->bind(["appName" => $appName])->render();
+  $viewLoader->load("index_landing.html")->bind(["appName" => $appName])->render();
 
 } else { //a page is requested
 
@@ -34,7 +34,7 @@ if ($reqPage == null) { //page not requested
 
 }
 
-$viewLoader->load("footer.phtml")->bind(["year" => date("Y")])->render(); //footer html
+$viewLoader->load("footer.html")->bind(["year" => date("Y")])->render(); //footer html
 
 ob_end_flush();
 

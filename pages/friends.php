@@ -9,7 +9,7 @@ $userObj = new User($user);
 $friends = $userObj->getFriends(); //get a list of friends
 $numberOfFriends = count($friends);
 
-$viewLoader->load("friends_list_start.phtml")->bind(["firstname" => $firstname, "numberOfFriends" => $numberOfFriends])->render();
+$viewLoader->load("friends_list_start.html")->bind(["firstname" => $firstname, "numberOfFriends" => $numberOfFriends])->render();
 
 //loop block for each user
 foreach ($friends as $friend) { 
@@ -22,11 +22,11 @@ foreach ($friends as $friend) {
   $hisLastname = $hisProfileData["lastname"];
   $hisProfilePicture = $hisProfileData["profilePictureURL"];
 
-  $viewLoader->load("friends_card.phtml")->bind(["picture" => $hisProfilePicture, "fullname" => $hisFirstname . "" . $hisLastname])->render();
+  $viewLoader->load("friends_card.html")->bind(["picture" => $hisProfilePicture, "fullname" => $hisFirstname . "" . $hisLastname])->render();
 
 }
 
-$viewLoader->load("friends_list_end.phtml")->render();
+$viewLoader->load("friends_list_end.html")->render();
 
 
 ?>
