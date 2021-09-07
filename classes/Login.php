@@ -14,7 +14,7 @@ class Login {
 
         $this->user = filter_var(trim($user), FILTER_SANITIZE_STRING);
         $this->password = trim($password);
-        $this->mysql = MySQL::getInstance();
+        $this->mysql = new MySQL();
 
     }
 

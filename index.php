@@ -12,7 +12,7 @@ $viewLoader->load("navbar_open.html")->render(); //navbar open html
 //php code block for loading requested page
 $reqPage = isset($_REQUEST["reqPage"]) ? $_REQUEST["reqPage"] : null; //set $reqPage to page requested
 
-$nav = NavMenu::getInstance(); //NavMenu is a singleton class, obtain obj using getInstance(), must be after $reqPage is set as it is used in navmenu
+$nav = new NavMenu(); //NavMenu obj, must be after $reqPage is set as it is used in navmenu
 echo $nav->getNavMenu($isLoggedIn);
 
 $viewLoader->load("navbar_close.html")->render(); //navbar end html

@@ -8,14 +8,13 @@ require_once $_SERVER["DOCUMENT_ROOT"] . "/Saorio/includes/" . "config.php"; //l
 
 final class MySQL {
 
-  private static $mysql = null; //single instance
   private $dsn; //data source name
   private $dbh; //database handle 
   
   /*
-  constructor, private as Singleton class
+  constructor, establish a handle to mysql database
   */
-  private function __construct() {
+  public function __construct() {
 
     try {
 
@@ -27,19 +26,6 @@ final class MySQL {
       exit("Database connection failed: " . $ex->getMessage());
 
     }
-
-  }
-
-  /*
-  method to access the single instance
-  */
-  public static function getInstance() {
-
-    if (self::$mysql == null) {
-      self::$mysql = new MySQL();
-    }
-
-    return self::$mysql;
 
   }
 

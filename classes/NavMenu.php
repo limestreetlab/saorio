@@ -1,6 +1,5 @@
 <?php
 
-//Singleton class
 class NavMenu {
 
   private $loggedInMenu = ["Home" => "home", "Profile" => "profile", "Posts" => "posts", "Messages" => "messages", "Friends" => "friends", "Members" => "members", "Log Out" => "logout"];
@@ -9,21 +8,13 @@ class NavMenu {
   private $html;
 
   
-  private static $instance = null; //single instance
-
-  //constructor, private as Singleton class
+  //constructor
   private function __construct() {
   }
 
-  //method to get the single instance
-  public static function getInstance() {
-    if (self::$instance == null) {
-      self::$instance = new NavMenu();
-    } 
-    return self::$instance;
-  }
-
-  //instance method to get the nav-menu (comprises of nav-items) html codes
+  /*
+  instance method to get the nav-menu (comprises of nav-items) html codes
+  */
   public function getNavMenu(bool $logged): string {
 
       $menu = $logged ? $this->loggedInMenu : $this->unLoggedInMenu;

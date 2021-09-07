@@ -12,7 +12,7 @@ class BasicProfile {
   public function __construct(string $user) {
     
     $this->user = $user;
-    $this->mysql = MySQL::getInstance();
+    $this->mysql = new MySQL();
     $profileData = $this->mysql->request($this->mysql->readBasicProfileQuery, [":user" => "$this->user"])[0]; //grab fname, lname, picture of this user
     $this->firstname = $profileData["firstname"];
     $this->lastname = $profileData["lastname"];
