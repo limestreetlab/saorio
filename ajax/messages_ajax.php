@@ -4,7 +4,6 @@
 header("Content-Type: application/json"); //return json output
     
 require_once "./../includes/ini.php"; //rel path to ini.php 
-require_once INCLUDE_DIR . "queryDatabase.php";
 
 /*
 script to retrieve and return a whole conversation between two persons to the Ajax caller

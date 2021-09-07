@@ -5,7 +5,7 @@ This script simply sends table creation codes to MySQL.
 Tables are members, messages, friends, profiles.
 */
 
-require_once "includes/config.php";
+require_once "./includes/config.php";
 require_once INCLUDE_DIR . "ini.php";
 
 echo "<!DOCTYPE html>
@@ -33,7 +33,7 @@ lastname VARCHAR(20) NOT NULL,
 about VARCHAR(1000),
 profilePictureURL VARCHAR(100) DEFAULT 'C:/Program Files/Ampps/www/saorio/uploads/avatar-profile.png' COMMENT 'absolute path',
 profilePictureMIME VARCHAR(30) DEFAULT 'image/png' COMMENT 'full mime of image/xxx',
-gender CHAR(1) COMMENT 'f, m',
+gender CHAR(10) COMMENT 'female, male, intersex',
 dob INT COMMENT 'date of birth in epoch UTC',
 city VARCHAR(30),
 country VARCHAR(30),

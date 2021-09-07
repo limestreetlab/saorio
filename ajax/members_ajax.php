@@ -4,7 +4,6 @@
 header("Content-Type: application/json"); //return json output
     
 require_once "./../includes/ini.php"; //rel path to ini.php 
-require_once INCLUDE_DIR . "queryDatabase.php";
 
 if ( isset($_REQUEST["requestFrom"], $_REQUEST["action"]) ) {
   
@@ -25,8 +24,7 @@ if ( isset($_REQUEST["requestFrom"], $_REQUEST["action"]) ) {
     
   }
 
-  $result = ["success" => true];   
-  echo json_encode($result); 
+  echo json_encode(["success" => true]);   
   exit();
 }
 

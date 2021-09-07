@@ -11,6 +11,7 @@ class Signup {
     private $firstname;
     private $lastname;
     private $messages = [];
+    protected $mysql; //object for mysql database access
 
     //constructor
     public function __construct($user, $password, $passwordRepeat, $email, $firstname, $lastname) {
@@ -21,6 +22,7 @@ class Signup {
         $this->email = $email;
         $this->firstname = $firstname;
         $this->lastname = $lastname;
+        $this->mysql = MySQL::getInstance();
 
     }
 
@@ -163,7 +165,7 @@ class Signup {
         }
 
         //check for duplicate email in database
-        $emailExists = queryDB("SELECT * from members WHERE email = '$this->email'");
+        $emailExists = $this->mysql->request("SELECT * from members WHERE email = '$this->email'");
         if ($emailExists) {
             $success = false;
             $msg = "<div class='alert alert-warning'>The email address is already used for an existing account.</div>";
@@ -222,12 +224,10 @@ class Signup {
     //function to persist validated data to database
     private function persist(): bool {
 
-        global $signupQuery;
-
         try {
             $passwordHash = password_hash($this->password, PASSWORD_DEFAULT); //hashed password
             $params = [":user" => $this->user, ":password" => $passwordHash, ":email" => $this->email];
-            queryDB($signupQuery, $params);
+            $this->mysql->request($this->mysql->createMemberQuery, $params);
             $success = true;
         } catch (Exception $ex) {
             $success = false;
@@ -241,11 +241,9 @@ class Signup {
     //optional function to initialize basic profile data
     private function initializeProfile(): bool {
 
-        global $initializeProfileQuery;
-
         try {
             $params = [":user" => $this->user, ":firstname" => $this->firstname, ":lastname" => $this->lastname];
-            queryDB($initializeProfileQuery, $params);
+            $this->mysql->request($this->mysql->createBasicProfileQuery, $params);
             $success = true;
           } catch (Exception $ex) {
             $success = false;

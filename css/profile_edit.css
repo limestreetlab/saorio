@@ -1,0 +1,53 @@
+#profile-picture {
+  width: 180px;
+  transform: translate(-50%, -30%);
+}
+
+.edit-img-btn {
+  left: calc(50% + 90px); /* 50% of img + half of img width */
+  transform: translate(-50%, 50%);
+}
+
+/*edit btn appears 15% on the right*/
+.edit-btn {
+  right: 15%;
+}
+
+/*move the edit btn up more when data are edited inline*/
+.edit-inline {
+  top: -40%;
+}
+
+.w-10 {
+  width: 10% !important;
+  min-width: 40px;
+}
+
+/*remove scrollbar in textarea but allow scrolling*/
+textarea {
+  overflow-y: scroll;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+/*remove scrollbar in textarea*/
+textarea::-webkit-scrollbar {
+  display: none;
+}
+
+/*remove the focus border which is black*/
+.form-control-plaintext:focus {
+  outline: none;
+} 
+
+/*to replicate .form-control:focus blue glow color when in focus*/
+.form-control-focus {
+  box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, .25);
+  border: 0.3px solid rgba(13, 110, 253, 0.7) !important;
+  border-radius: 4px;
+}
+
+ 
+
+
+

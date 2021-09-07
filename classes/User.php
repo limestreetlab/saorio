@@ -1,6 +1,5 @@
 <?php 
 
-
 class User {
  
   //variables declaration
@@ -9,6 +8,7 @@ class User {
   protected $friends = []; //his friends list, array of user objects
   protected $numberOfFriends; //number of his friends, length of the friends array
   protected $chatWith = []; //list of users he has had a conversation with, array of user objects
+  protected $mysql; //object for mysql database access
   
   /*
   constructor
@@ -18,6 +18,7 @@ class User {
 
     $this->user = $username; 
     $this->profile = new FullProfile($this->user); //instantiate a Profile obj  
+    $this->mysql = MySQL::getInstance(); 
 
   }
 
@@ -36,9 +37,7 @@ class User {
   */
   public function getFriends(): array {
     
-    global $getAllFriendsQuery;
-
-    $resultset = queryDB($getAllFriendsQuery, [":user" => $this->user]); //data of friends' usernames
+    $resultset = $this->mysql->request($this->mysql->readAllFriendsQuery, [":user" => $this->user]); //data of friends' usernames
 
     foreach ($resultset as $row) {
 
@@ -57,9 +56,7 @@ class User {
   */
   public function getNumberOfFriends(): int {
 
-    global $getAllFriendsQuery;
-
-    $resultset = queryDB($getAllFriendsQuery, [":user" => $this->user]); //data of friends' usernames
+    $resultset = $this->mysql->request($this->mysql->readAllFriendsQuery, [":user" => $this->user]); //data of friends' usernames
 
     $this->numberOfFriends = count($resultset);
 
@@ -97,9 +94,7 @@ class User {
   */
   public function getChatWith(): array {
 
-    global $getChattedWithQuery;
-
-    $resultset = queryDB($getChattedWithQuery, [":me" => $this->user]);
+    $resultset = $this->mysql->request($this->mysql->readChattedWithQuery, [":me" => $this->user]);
 
     foreach ($resultset as $row) {
 

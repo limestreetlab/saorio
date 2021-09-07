@@ -1,11 +1,11 @@
 
 <!--html for displaying a user's profile, using BS's Card-->
 <br><br><!--push the container down-->
-<main class='container mt-5'><!--container-->
+<main class='container mt-5 mb-5'><!--container-->
   <main class='row justify-content-center'><!--outer row-->
     <main class='col-10'><!--container of the Card-->
 
-      <div class='card shadow'>
+      <div class='card shadow pb-3'>
 
         <div class='row justify-content-center'><!--inner row before card-header-->
           <div class='col-4 position-relative'>
@@ -42,25 +42,25 @@
 
             <div class='h2'>{{firstname}}  {{lastname}}</div>
 
-            <div class='h5 my-4 edit-btn-container' id='location'>
+            <div class='h5 my-4' id='location'>
               {{city}} 
               {{IF !empty('{{city}}') && !empty('{{country}}') }},{{ENDIF}} 
               {{country}}
             </div>
             
-            <div class='h5 my-4 edit-btn-container' id='particulars'>
+            <div class='h6 my-4' id='particulars'>
               {{IF '{{gender}}' == 'male'}}<i class='bi bi-gender-male'></i>{{ENDIF}} 
               {{IF '{{gender}}' == 'female'}}<i class='bi bi-gender-female'></i>{{ENDIF}} 
               <span class='px-2' id='age'>{{age}}</span>
             </div>
             
-            <div class='h6 edit-btn-container id='work'>
+            <div class='h6'  id='work'>
               {{job}} 
               {{IF !empty('{{job}}') && !empty('{{company}}') }} at {{ENDIF}} 
               {{company}}
             </div>
             
-            <div class='h6 edit-btn-container' id='study'>
+            <div class='h6' id='study'>
               {{major}} 
               {{IF !empty('{{major}}') && !empty('{{school}}') }} at {{ENDIF}} 
               {{school}}
@@ -74,38 +74,38 @@
 
             <div class='col-12'>
               {{IF !empty('{{about}}')}}
-                <div class='h6 mt-4 mb-2 edit-btn-container'>About</div>{{about}} 
+                <div class='h6 mt-4 mb-2'>About</div>{{about}} 
               {{ENDIF}}
               
             </div>
 
             <div class='col-12'>
               {{IF !empty('{{interests}}')}}
-                <div class='h6 mt-4 mb-2 edit-btn-container'>Interests</div>{{interests}} 
+                <div class='h6 mt-4 mb-2'>Interests</div>{{interests}} 
               {{ENDIF}}
             </div>
 
             <div class='col-12'>
               {{IF !empty('{{quote}}')}}
-                <div class='h6 mt-4 mb-2 edit-btn-container'>Favorite quote</div>{{quote}} 
+                <div class='h6 mt-4 mb-2'>Favorite quote</div>{{quote}} 
               {{ENDIF}}
             </div>
 
             <div class='col-4'>
               {{IF !empty('{{email}}')}}
-                <div class='h6 mt-4 mb-2 edit-btn-container'>Email</div>{{email}} 
+                <div class='h6 mt-4 mb-2'>Email</div>{{email}} 
               {{ENDIF}}
             </div>
 
             <div class='col-4'>
               {{IF !empty('{{website}}')}}
-                <div class='h6 mt-4 mb-2 edit-btn-container'>Website</div>{{website}} 
+                <div class='h6 mt-4 mb-2'>Website</div>{{website}} 
               {{ENDIF}}
             </div>
 
             <div class='col-4'>
               {{IF !empty('{{socialmedia}}')}}
-                <div class='h6 mt-4 mb-2 edit-btn-container'>Social media</div>{{socialmedia}} 
+                <div class='h6 mt-4 mb-2'>Social media</div>{{socialmedia}} 
               {{ENDIF}}
             </div>
 

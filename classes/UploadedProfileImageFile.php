@@ -9,12 +9,14 @@ class UploadedProfileImageFile extends UploadedImageFile {
     const MAX_HEIGHT = 300; //max height allowed in px
     //new instance variables
     protected $filename; //filename to save to, without ext
+    protected $mysql; //object for mysql database access
 
     //@Override
     public function __construct($uploadedFile) {
 
         parent::__construct($uploadedFile); //super constructor
         $this->filename = $_SESSION["user"] . "-profile"; //<username>-profile as filename
+        $this->mysql = MySQL::getInstance();
 
     }
 
@@ -52,12 +54,11 @@ class UploadedProfileImageFile extends UploadedImageFile {
     //@Override
     protected function persist(): bool {
 
-        global $updateProfilePictureQuery; //sql query string from import, named params = [:url, :mime, :user];
         $params = [":url" => "$this->permFilePath", ":mime" => "$this->mime", ":user" => $_SESSION["user"] ];
 
         try {
 
-            queryDB($updateProfilePictureQuery, $params);
+            $this->mysql->request($this->mysql->updateProfilePictureQuery, $params);
             $success = true;
 
         } catch (Exception $ex) {

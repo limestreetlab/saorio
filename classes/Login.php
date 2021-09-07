@@ -7,24 +7,25 @@ class Login {
     private $password; //raw password entered
     private $passwordHash; //hashed password in database
     private $messages = [];
+    protected $mysql; //object for mysql database access
 
     //constructor
     public function __construct(string $user, string $password) {
 
         $this->user = filter_var(trim($user), FILTER_SANITIZE_STRING);
         $this->password = trim($password);
+        $this->mysql = MySQL::getInstance();
 
     }
 
     //main function to verify entered credentials against database
     public function verify(): bool {
 
-        global $loginPasswordQuery;
         $isVerified = false;
 
         if ( $this->checkIfUserExists() ) {
 
-            $this->passwordHash = queryDB($loginPasswordQuery, [":user" => $this->user])[0]["password"]; //retrieve hashed password from database for this username
+            $this->passwordHash = $this->mysql->request($this->mysql->readPasswordQuery, [":user" => $this->user])[0]["password"]; //retrieve hashed password from database for this username
             $isVerified = password_verify( $this->password, $this->passwordHash ); //compare entered pass with hashed pass 
             
             if (!$isVerified) {
@@ -43,7 +44,8 @@ class Login {
     //helper function to check if entered username exists in db
     private function checkIfUserExists(): bool {
 
-        $dataForThisUser = queryDB("SELECT * FROM members WHERE user = '$this->user'");
+        $dataForThisUser = $this->mysql->request($this->mysql->readMembersTableQuery, [":user" => $this->user]);
+        
         if ( $dataForThisUser ) {
 
             $usernameExists = true;

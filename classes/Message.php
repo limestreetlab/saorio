@@ -7,6 +7,7 @@ class Message {
   public $timestamp;
   public $timeElapsed;
   public $message;
+  protected $mysql; //object for mysql database access
 
   public function __construct(string $sender, string $recipient, int $timestamp, string $message) {
 
@@ -15,6 +16,7 @@ class Message {
     $this->timestamp = $timestamp;
     $this->timeElapsed = self::getDateTimeElapsed( intval($this->timestamp) );
     $this->message = $message;
+    $this->mysql = MySQL::getInstance();
 
   }
 
@@ -24,13 +26,11 @@ class Message {
   */
   public function send(): bool {
 
-    global $sendMessageQuery;
-
     $this->message = filter_var(trim($this->message), FILTER_SANITIZE_STRING); //trim, sanitize
     $params = [":time" => $this->timestamp, ":from" => $this->sender, ":to" => $this->recipient, ":message" => $this->message];
 
     try {
-      queryDB($sendMessageQuery, $params);
+      $this->mysql->request($this->mysql->createMessageQuery, $params);
       $success = true;
     } catch (Exception $ex) {
       $success = false;

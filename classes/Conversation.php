@@ -6,6 +6,7 @@ class Conversation {
   private $chatWith; //that user
   private $messages = []; //array of messages in the conversation
   private $numberOfMessages; //conversation length
+  private $mysql; //object for mysql database access
 
   /*
   constructor for a Conversation between two users
@@ -16,6 +17,7 @@ class Conversation {
     $this->chatWith = $chatWith;
     $this->messages = $this->retrieveMessages();
     $this->numberOfMessages = count( $this->messages );
+    $this->mysql = MySQL::getInstance();
 
   }
 
@@ -35,11 +37,9 @@ class Conversation {
   */
   private function retrieveMessages(): array {
 
-    global $getConversationWithQuery;
-
     $out = [];
     $params = [":chatWith" => "$this->chatWith", ":me" => "$this->user"];
-    $resultset = queryDB($getConversationWithQuery, $params); //get the conversation from database
+    $resultset = $this->mysql->request($this->mysql->readConversationWithQuery, $params); //get the conversation from database
 
     foreach ($resultset as $row) {
 
@@ -58,11 +58,9 @@ class Conversation {
   */
   public function getMessagesSince(int $since): array {
 
-    global $getConversationWithSinceQuery;
-
     $out = [];
     $params = [":chatWith" => $this->chatWith, ":me" => $this->user, ":since" => $since];
-    $resultset = queryDB($getConversationWithSinceQuery, $params); //get message data since last timestamp 
+    $resultset = $this->mysql->request($this->mysql->readConversationWithSinceQuery, $params); //get message data since last timestamp 
 
     if ($resultset) { //if there are messages since the timestamp
 

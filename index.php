@@ -2,8 +2,6 @@
 //landing page for the app, responsible for loading requested pages
 
 require_once "./includes/ini.php"; //SITE_ROOT, INCLUDE_DIR are defined in config.php and imported through ini.php, so cannot be used before including ini.php
-require_once INCLUDE_DIR . "queryDatabase.php"; //import functions
-
 
 ob_start(); //turn on the output buffer
 

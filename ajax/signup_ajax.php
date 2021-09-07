@@ -3,12 +3,13 @@
 header("Content-Type: application/json"); //return json output
 
 require_once "./../includes/ini.php"; //rel path to ini.php
-require_once INCLUDE_DIR . "queryDatabase.php";
+
+$mysql = MySQL::getInstance(); //object for mysql database access
 
 if (isset($_REQUEST["username"])) {
+  
   $user = filter_var(trim($_REQUEST["username"]), FILTER_SANITIZE_STRING); //sanitize the user input
-  $query = "SELECT * from members WHERE user = '$user'"; //ths SQL query to check if username already exists 
-  $result = queryDB($query); 
+  $result = $mysql->request($mysql->$readMembersTableQuery, [":user" => $user]); 
 
   if (count($result)) { //if result isn't empty, so username already exists
    
@@ -20,8 +21,7 @@ if (isset($_REQUEST["username"])) {
   
   }
   
-  $output = ["availability" => $availability];
-  echo json_encode($output);
+  echo json_encode(["availability" => $availability]);
   exit();
 
 }
@@ -30,7 +30,7 @@ if (isset($_REQUEST["email"])) {
 
   $email = filter_var(trim($_REQUEST["email"]), FILTER_SANITIZE_STRING); //sanitize user input
   $query = "SELECT * FROM members where email = '$email'"; //SQL to select if any data exist for this email
-  $result = queryDB($query); 
+  $result = $mysql->request($query); 
 
   if (count($result)) { //if result isn't empty, so email already exists
    
@@ -42,8 +42,7 @@ if (isset($_REQUEST["email"])) {
   
   }
 
-  $output = ["emailExists" => $emailExists];
-  echo json_encode($output);
+  echo json_encode(["emailExists" => $emailExists]);
   exit();
 
 }

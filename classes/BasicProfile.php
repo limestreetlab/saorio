@@ -7,14 +7,13 @@ class BasicProfile {
   public $firstname;
   public $lastname;
   public $profilePictureURL; //relative path
+  protected $mysql; //object for mysql database access
 
   public function __construct(string $user) {
     
-    global $getBasicProfileQuery;
-
     $this->user = $user;
-
-    $profileData = queryDB($getBasicProfileQuery, [":user" => "$this->user"])[0]; //grab fname, lname, picture of this user
+    $this->mysql = MySQL::getInstance();
+    $profileData = $this->mysql->request($this->mysql->readBasicProfileQuery, [":user" => "$this->user"])[0]; //grab fname, lname, picture of this user
     $this->firstname = $profileData["firstname"];
     $this->lastname = $profileData["lastname"];
     $this->profilePictureURL = self::convertPicturePathAbs2Rel( $profileData["profilePictureURL"] ); //get the abs-path from db and convert it to root-rel path

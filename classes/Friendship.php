@@ -13,6 +13,7 @@ class Friendship {
     protected $thatuser; //username of the other user
     protected $status; //defined relationship code, 0:stranger, 1:friend, 2:request sent (to thatuser), 3:request received (from thatuser)
     protected $isFollowing; //given friends, flag if thisuser is following thatuser
+    protected $mysql; //object for mysql database access
 
     /*
     constructor
@@ -22,6 +23,8 @@ class Friendship {
 
         $this->thisuser = $thisuser;
         $this->thatuser = $thatuser;
+        $this->mysql = MySQL::getInstance();
+        
     }
 
     /*
@@ -33,9 +36,8 @@ class Friendship {
         try {
 
             //database call
-            global $addAFriendQuery;
-            $params = [":a" => "$this->thisuser", ":b" => "$this->thatuser"];
-            queryDB($addAFriendQuery, $params);
+            $params = [":requestSender" => "$this->thisuser", ":requestRecipient" => "$this->thatuser"];
+            $this->mysql->request($this->mysql->createFriendRequestQuery, $params);
 
             //send a message to the other user
             $contents = "Hello '$this->thatuser', I would like to add you as a friend and sent you a request. ";
@@ -60,9 +62,8 @@ class Friendship {
         try {
 
             //database call
-            global $removeAFriendQuery;
             $params = [":a" => "$this->thisuser", ":b" => "$this->thatuser"];    
-            queryDB($removeAFriendQuery, $params);
+            $this->mysql->request($this->mysql->deleteFriendshipQuery, $params);
 
             $this->status = 0;
             return true;
@@ -81,9 +82,8 @@ class Friendship {
         try {
 
             //database call
-            global $confirmFriendRequestQuery;
             $params = [":requestSender" => "$this->thatuser", ":requestRecipient" => "$this->thisuser"];
-            queryDB($confirmFriendRequestQuery, $params);
+            $this->mysql->request($this->sql->updateFriendRequestQuery, $params);
 
             $this->status = 1;
             return true;
@@ -101,9 +101,8 @@ class Friendship {
 
         try {
 
-            global $rejectFriendRequestQuery;
             $params = [":requestSender" => "$this->thatuser", ":requestRecipient" => "$this->thisuser"];
-            queryDB($rejectFriendRequestQuery, $params);
+            $this->mysql->request($this->mysql->deleteFriendRequestQuery, $params);
 
             $this->status = 0;
             return true;
@@ -137,19 +136,18 @@ class Friendship {
     */
     public function getFriendship(): int {
 
-        global $checkIfFriendsQuery;
         //check if two users are in the friends table at all
-        $anyResults = queryDB("SELECT * FROM friends WHERE user1 = '$this->thisuser' AND user2 = '$this->thatuser' UNION SELECT * FROM friends WHERE user1 = '$this->thatuser' AND user2 = '$this->thisuser'");
+        $anyResults = $this->mysql->request("SELECT * FROM friends WHERE user1 = '$this->thisuser' AND user2 = '$this->thatuser' UNION SELECT * FROM friends WHERE user1 = '$this->thatuser' AND user2 = '$this->thisuser'");
         
         if (!$anyResults) {
 
             return 0; //no relationship
 
-        } elseif (queryDB($checkIfFriendsQuery, [":a" => "$this->thisuser", ":b" => "$this->thatuser"])) { //existing friends
+        } elseif ($this->mysql->request($this->mysql->readFriendshipQuery, [":a" => "$this->thisuser", ":b" => "$this->thatuser"])) { //existing friends
 
             return 1;
 
-        } elseif ( queryDB("SELECT * FROM friends WHERE user1 = '$this->thatuser' AND user2 = '$this->thisuser' AND status = 2") ) { //request received
+        } elseif ( $this->mysql->request("SELECT * FROM friends WHERE user1 = '$this->thatuser' AND user2 = '$this->thisuser' AND status = 2") ) { //request received
         
             return 3;
 

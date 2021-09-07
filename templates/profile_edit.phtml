@@ -1,133 +1,361 @@
-<!--html for editing a user's profile, using BS's Card-->
-<!--it differs from profile display by adding an edit icon, information name (education, location), and showing all fields regardless of nullness-->
-<br><br>
-<main class='container mt-5'><!--container-->
-  <main class='row justify-content-center'><!--outer row-->
-    <main class='col-10'><!--container of the Card-->
+<!--
+Description:
+  html for displaying a user's own profile and edit buttons, it mirrors the profile display view
+  it uses Bootstrap 5, BS icons, BS datetimepicker called Tempus Dominus
+  profile data can be edited by clicking on the edit button
+  data are put inside a readonly form control, mostly input or textarea
+  data are edited either in-line or in a form (in-form).
+Edit forms:
+  edit forms are put next to the relevant edit data and made invisible (display:none)
+  when the edit button is clicked, the form shows (display:block) while that button and the data section hide
+  when the cancel or save button inside the form is clicked, the reverse happens (what hidden is re-shown, shown is re-hidden)
+  for in-form edits, edit button uses .edit-btn, .edit-inform, and tags data-form=<the accompanying edit form id> and data-for=<data section id>
+  the edit form has two buttons, cancel and save, which have ids <id of form>-cancel and <id of form>-save, so if form's id is name-edit-form the cancel button is name-edit-form-cancel
+  each edit form has .d-none to make them invisible
+  also, edit buttons have a <span> container and <i> icon inside, both can be clicked, so data-form and data-for are duplicated in both elements
+  importantly, each data entry form control has a .input and a #<field>-input where <field> must correspond to the database fieldname
+  when save btn is clicked, script reads .input values in form and parse the <field> names from #<field>-input, to create an object for sending to database
+  sometimes when a section contains only empty data, some text is shown such as 'Add a location' when all location fields are empty. Tag such text with .empty
+  opposite to .empty sometimes when all fields in a section are filled, some text is shown such as 'at' and ','. tag such text with .full
+Edit inline:
+  the edit button has data-for=<data section id>.
+  when edit button is clicked, the line will become highlighted and editable; when leave line, the data will be saved
+-->
 
-      <div class='card shadow'>
+<!--Accompanying CSS-->
+<link rel='stylesheet' href='css/profile_edit.css'>
+<!--datetimepicker Tempus Dominus CSS-->
+<link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/Eonasdan/tempus-dominus@v6-alpha1/dist/css/tempus-dominus.css'>
+<!--font awesome css, for datetimepicker's arrow icons-->
+<link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css'>
+<!--Accompanying JS-->
+<script src='js/profile_edit.js'></script>
+<!--Popperjs -->
+<script src='https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js' crossorigin='anonymous'></script>
+<!--Tempus Dominus JavaScript -->
+<script src='https://cdn.jsdelivr.net/gh/Eonasdan/tempus-dominus@v6-alpha1/dist/js/tempus-dominus.js' crossorigin='anonymous'></script>
+
+
+<br><br>
+<main class='container mt-5 mb-5'>
+  <main class='row justify-content-center'>
+    <section class='col-10'>
+      
+      <div class='card shadow pb-3'>
 
         <div class='row justify-content-center'><!--inner row before card-header-->
           <div class='col-4 position-relative'>
-            <img class='rounded-circle profile-picture position-absolute top-0 start-50' src='{{picture}}'><!--profile picture-->
-            <span class='btn btn-light btn-sm rounded-circle position-absolute' id='picture-edit-btn'><i class='bi bi-camera-fill'></i></span><!--edit btn-->
+            <!--profile picture-->
+            <img class='rounded-circle position-absolute top-0 start-50' id='profile-picture' src='{{picture}}'>
+            <!--profile picture edit button-->
+            <span class='btn btn-light btn-sm rounded-circle edit-img-btn position-absolute'><i class='bi bi-camera-fill'></i></span>
           </div>
-        </div> <!--close inner row-->
+        </div><!--close inner row-->
 
-        <div class='card-header bg-secondary border-0 pt-5 pb-5'>
+        <div class='card-header bg-secondary border-0 pt-5 pb-5'> 
           <!--empty header-->
         </div>
 
-        <main class='card-body'><!--Card body to contain profile's info-->
+        <div class='card-body'><!--Card body to contain profile's info-->
 
-        
-        <section class="row"><!--user activity stats-->
-            <div class="col">
+          <section class='row'><!--user activity stats-->
+            <div class='col'>
 
-              <div class="d-flex flex-row justify-content-center mt-5">
-                <span class="px-2">
-                XX Friends
+              <div class='d-flex flex-row justify-content-center mt-5'>
+                <span class='px-2'>
+                  22 Friends
                 </span>
 
-                <span class="px-2">
-                XX Posts
+                <span class='px-2'>
+                  20 Followers
                 </span>
 
-                <span class="px-2">
-                XX Comments
+                <span class='px-2'>
+                  19 Posts  
                 </span>
-             </div>
+              
+              </div>
+
             </div>
           </section><!--end activity stats-->
-          
 
-          <section class='text-center my-4'>
+          <main class='text-center my-4'><!--basic info-->
 
-            <div class='h3'>{{firstname}}  {{lastname}}</div>
+            <div class='h2'>{{firstname}} {{lastname}}</div>
 
-            <div class='h5 my-4 position-relative w-100' id='location'>
-              {{city}} {{IF !empty('{{city}}') && !empty('{{country}}') }},{{ENDIF}} {{country}}
-              {{IF empty('{{city}}') && empty('{{country}}') }}Add a Location{{ENDIF}}<!--when empty section-->
-              <span class='btn btn-light btn-sm rounded-circle position-absolute edit-btn' id='location-edit-btn'><i class='bi bi-pencil-fill'></i></span>
-            </div>
+            <!--Location section-->
+            <section class='my-0 position-relative w-100'>
+              <!--edit button-->
+              <span class='btn btn-light btn-sm rounded-circle position-absolute edit-btn edit-inform' id='location-edit-btn' data-form='location-edit-form' data-for='location'><i class='bi bi-pencil-fill' data-form='location-edit-form' data-for='location'></i></span>
+              <!--location data-->
+              <div class="h5 my-4 {{IF empty('{{city}}') && empty('{{country}}')}}h6{{ENDIF}}" id="location">
+                <span id="city" class="h5">{{city}}</span>
+                <span class="full">{{IF !empty('{{city}}') && !empty('{{country}}')}}, {{ENDIF}} </span>
+                <span class="empty">{{IF empty('{{city}}') && empty('{{country}}')}}Add a location {{ENDIF}}</span>
+                <span id="country" class="h5 ms-1">{{country}}</span>
+              </div>
+              <!--Location Edit Form-->
+              <form class='row gy-3 w-50 ms-auto me-auto mb-3 d-none' id='location-edit-form'>
+              <div class='h5 text-primary mb-0'>Location info</div>
+              <div class='col-6 form-floating'>
+                <input type='text' class='form-control ps-3 input' id='city-input' placeholder='Add a city' value='{{city}}'>
+                <label for='city' class='form-label mx-2 ps-3'>City</label>
+              </div>
+              <div class='col-6 form-floating'>
+                <input type='text' class='form-control ps-3 input' id='country-input' placeholder='Add a country' value='{{country}}'>
+                <label for='country' class='form-label mx-2 ps-3'>Country</label>
+              </div>
+              <div class='text-center'>
+                <button type='button' class='col-3 my-2 btn btn-primary rounded-pill mx-2' id='location-edit-form-cancel'>Cancel</button>
+                <button type='button' class='col-3 my-2 btn btn-primary rounded-pill mx-2' id='location-edit-form-save'>Save</button>
+              </div>
+              </form>
+              <!--Edit Form End-->
+            </section>
+            <!--End Location section-->
 
-            <div class='h5 my-4 position-relative w-100' id='particulars'>
-              {{IF '{{gender}}' == 'male'}}<i class='bi bi-gender-male'></i>{{ENDIF}} 
-              {{IF '{{gender}}' == 'female'}}<i class='bi bi-gender-female'></i>{{ENDIF}} 
-              <span class='px-2' id='age'>{{age}}</span>
-              {{IF empty('{{gender}}') && empty('{{age}}')}}Add basic info{{ENDIF}} <!--when empty section-->
-              <span class='btn btn-light btn-sm rounded-circle position-absolute edit-btn' id='particulars-edit-btn'><i class='bi bi-pencil-fill'></i></span>
-            </div>
+            <!--Age and Gender-->
+            <section class='d-flex justify-content-center my-0 position-relative w-100'>
+              <!--edit button-->
+              <span class='btn btn-light btn-sm rounded-circle position-absolute edit-btn edit-inform' id='particulars-edit-btn' data-form='particulars-edit-form' data-for='particulars'><i class='bi bi-pencil-fill' data-form='particulars-edit-form' data-for='particulars'></i></span>
+              <!--data-->
+              <div class='h6 my-0' id='particulars'>
+                <span id='gender'>
+                <!--gender icon-->
+                {{IF '{{gender}}' == 'male'}}<i class='bi bi-gender-male'></i>{{ENDIF}}
+                {{IF '{{gender}}' == 'female'}}<i class='bi bi-gender-female'></i>{{ENDIF}} 
+                </span>
+                <!--age-->
+                <span id="age" class="px-2 py-0">{{age}}</span>
+                <span class="empty">{{IF empty('{{gender}}') && empty('{{age}}')}}Add gender and birth date{{ENDIF}}</span>
+              </div>
 
-            <div class='h6 my-4 position-relative w-100 id='work'>
-              {{job}} {{IF !empty('{{job}}') && !empty('{{company}}') }} at {{ENDIF}} {{company}}
-              {{IF empty('{{job}}') && empty('{{company}}')}}Add work info{{ENDIF}} <!--when empty section-->
-              <span class='btn btn-light btn-sm rounded-circle position-absolute edit-btn' id='work-edit-btn'><i class='bi bi-pencil-fill'></i></span>
-            </div>
+              <!--Age Edit Form-->  
+              <form class='row gy-3 w-50 ms-auto me-auto mb-3 d-none' id='particulars-edit-form'>
+                <div class='h5 text-primary mb-0'>Basic info</div>
+                <!--gender dropdown list-->
+                <div class='col-8 ms-auto me-auto'>
+                  <select class='form-select ps-3 input' id="gender-input">
+                    <option selected disabled>Gender</option>
+                    <option value='male'>Male</option>
+                    <option value='female'>Female</option>
+                    <option value='intersex'>Intersex</option>
+                  </select>        
+                </div>
+                <!--date of birth datepicker-->
+                <div class='col-8 ms-auto me-auto'>
+                  <div class="text-start text-muted">birth date</div>
+                  <div class='input-group' id='datepicker' data-td-target-input='nearest' data-td-target-toggle='nearest'> 
+                    <input id='dob-input' type='text' class='form-control ps-3 input' data-td-target='#datepicker'/>
+                    <span class='input-group-text' data-td-target='#datepicker' data-td-toggle='datetimepicker'>
+                      <span class='bi bi-calendar'></span>
+                    </span>
+                  </div>
+                </div>
 
-            <div class='h6 my-4 position-relative w-100' id='study'>
-              {{major}} {{IF !empty('{{major}}') && !empty('{{school}}') }} at {{ENDIF}} {{school}}
-              {{IF empty('{{major}}') && empty('{{school}}')}}Add education info{{ENDIF}} <!--when empty section-->
-              <span class='btn btn-light btn-sm rounded-circle position-absolute edit-btn' id='study-edit-btn'><i class='bi bi-pencil-fill'></i></span>
-            </div>
+                <div class='text-center'>
+                <button type='button' class='col-3 my-2 btn btn-primary rounded-pill mx-2' id='particulars-edit-form-cancel'>Cancel</button>
+                <button type='button' class='col-3 my-2 btn btn-primary rounded-pill mx-2' id='particulars-edit-form-save'>Save</button>
+                </div>
+              </form> 
+              <!--Age Edit Form End-->
+            </section>
+            <!--End age section-->
 
-          </section>
+            <!--Work section-->
+            <section class='my-3 position-relative w-100'>
+              <!--edit button-->
+              <span class='btn btn-light btn-sm rounded-circle position-absolute edit-btn edit-inform' id='work-edit-btn' data-for='work' data-form='work-edit-form'><i class='bi bi-pencil-fill' data-for='work' data-form='work-edit-form'></i></span>
+              <!--data-->
+              <div class="h5 my-4 {{IF empty('{{job}}') && empty('{{company}}')}}h6{{ENDIF}}" id="work">
+                <span id="job" class="h5">{{job}}</span>
+                <span class="full">{{IF !empty('{{job}}') && !empty('{{company}}')}} at {{ENDIF}} </span>
+                <span class="empty">{{IF empty('{{job}}') && empty('{{company}}')}}Add a job {{ENDIF}}</span>
+                <span id="company" class="h5">{{company}}</span>
+              </div>              
+              <!--Work Edit Form-->
+              <form class='row gy-3 w-75 ms-auto me-auto mb-3 d-none' id='work-edit-form'>
+                <div class='h5 text-primary mb-0'>Work info</div>
+                <div class='col-8 ms-auto me-auto form-floating'>
+                  <input type='text' class='form-control ps-3 input' id='job-input' placeholder='Add a job' value='{{job}}'>
+                  <label for='job' class='form-label mx-2 ps-3'>Job title</label>
+                </div>
+                <div class='col-8 ms-auto me-auto form-floating'>
+                  <input type='text' class='form-control ps-3 input' id='company-input' placeholder='Add a workplace' value='{{company}}'>
+                  <label for='company' class='form-label mx-2 ps-3'>Company name</label>
+                </div>
+                <div class='text-center'>
+                  <button type='button' class='col-2 my-2 btn btn-primary rounded-pill mx-2' id='work-edit-form-cancel'>Cancal</button>
+                  <button type='button' class='col-2 my-2 btn btn-primary rounded-pill mx-2' id='work-edit-form-save'>Save</button>
+                </div>
+              </form>
+              <!--End Work Edit Form-->
+            </section>
+            <!--end work section-->
+
+            <!--Study section-->
+            <section class='my-3 position-relative w-100'>
+              <!--edit button-->
+              <span class='btn btn-light btn-sm rounded-circle position-absolute edit-btn edit-inform' id='study-edit-btn' data-form='study-edit-form' data-for='study'><i class='bi bi-pencil-fill' data-form='study-edit-form' data-for='study'></i></span>
+              <!--data-->
+              <div class="h5 my-4 {{IF empty('{{major}}') && empty('{{school}}')}}h6{{ENDIF}}" id="study">
+                <span id="major" class="h5">{{major}}</span>
+                <span class="full">{{IF !empty('{{major}}') && !empty('{{school}}')}} at {{ENDIF}} </span>
+                <span class="empty">{{IF empty('{{major}}') && empty('{{school}}')}}Add a school {{ENDIF}}</span>
+                <span id="school" class="h5">{{school}}</span>
+              </div>      
+              <!--School Edit Form-->
+              <form class='row gy-3 w-75 ms-auto me-auto d-none' id='study-edit-form'>
+                <div class='h5 text-primary mb-0'>Education info</div>
+                <div class='col-8 ms-auto me-auto form-floating'>
+                  <input type='text' class='form-control ps-3 input' id='major-input' placeholder='Add a subject' value='{{major}}'>
+                  <label for='major' class='form-label mx-2 ps-3'>Study subject</label>
+                </div>
+                <div class='col-8 ms-auto me-auto form-floating'>
+                  <input type='text' class='form-control ps-3 input' id='school-input' placeholder='Add a school' value='{{school}}'>
+                  <label for='school' class='form-label mx-2 ps-3'>School name</label>
+                </div>
+                <div class='text-center'>
+                  <button type='button' class='col-2 my-2 btn btn-primary rounded-pill mx-2' id='study-edit-form-cancel'>Cancel</button>
+                  <button type='button' class='col-2 my-2 btn btn-primary rounded-pill mx-2' id='study-edit-form-save'>Save</button>
+                </div>
+              </form>
+              <!--End School Edit Form-->
+            </section>
+            <!--End study seciton-->
+
+          </main><!--End basic info-->
+
 
           <hr class='mb-0'>
+          <!--Additional info-->
+          <main class='row'>
 
-          <section class='row'>
-
-            <div class='col-12'>
-              <div class='h6 mt-4 mb-2 position-relative w-100' id='about'>About
-              <span class='btn btn-light btn-sm rounded-circle position-absolute edit-btn' id='about-edit-btn'><i class='bi bi-pencil-fill'></i></span>
+            <!--About section-->
+            <section class='col-12'>
+              <div class='h6 mt-4 mb-2 position-relative w-100'>About
+                <!--edit button-->
+                <span class='btn btn-light btn-sm position-absolute rounded-circle edit-btn edit-inline' id='about-edit-btn'><i class='bi bi-pencil-fill' data-for='about'></i></span>
               </div>
-              {{about}}{{IF empty('{{about}}')}}Write something about yourself{{ENDIF}}
-            </div>
+              <!--data-->
+              <textarea class='m-0 p-1 form-control-plaintext w-100' id='about' rows='2' placeholder="{{IF empty('{{about}}')}}Write something about yourself{{ENDIF}}" readonly>{{about}}</textarea>
+            </section>
+            <!--end About-->
 
-            <div class='col-12'>
-              <div class='h6 mt-4 mb-2 position-relative w-100' id='interests'>Interests
-              <span class='btn btn-light btn-sm rounded-circle position-absolute edit-btn' id='interests-edit-btn'><i class='bi bi-pencil-fill'></i></span>
+            <!--Interests-->
+            <section class='col-12'>
+              <div class='h6 mt-4 mb-2 position-relative w-100'>Interests
+                <!--edit button-->
+                <span class='btn btn-light btn-sm rounded-circle position-absolute edit-btn edit-inline' id='interests-edit-btn'><i data-for='interests' class='bi bi-pencil-fill'></i></span>
               </div>
-              {{interests}}{{IF empty('{{interests}}')}}Add interests{{ENDIF}}
-            </div>
+              <!--data-->
+              <textarea class='m-0 p-1 form-control-plaintext w-100' id='interests' placeholder="{{IF empty('{{interests}}')}}Add your interests{{ENDIF}}" rows='1' readonly>{{interests}}</textarea>
+            </section>
+            <!--End Interests-->
 
-            <div class='col-12'>
-              <div class='h6 mt-4 mb-2 position-relative w-100' id='quote'>Favorite quote
-              <span class='btn btn-light btn-sm rounded-circle position-absolute edit-btn' id='quote-edit-btn'><i class='bi bi-pencil-fill'></i></span>
+            <!--Quote-->
+            <section class='col-12'>
+              <div class='h6 mt-4 mb-2 position-relative w-100'>Favorite quote
+                <!--edit button-->
+                <span class='btn btn-light btn-sm rounded-circle position-absolute edit-btn edit-inline' id='quote-edit-btn' data-for='quote'><i class='bi bi-pencil-fill' data-for='quote'></i></span>
               </div>
-              {{quote}}{{IF empty('{{quote}}')}}Add a favorite quote{{ENDIF}}
-            </div>
+              <!--data-->
+              <textarea class='m-0 p-1 form-control-plaintext w-100' id='quote' rows='1' placeholder="{{IF empty('{{quote}}')}}Add a favorite quote{{ENDIF}}" readonly>{{quote}}</textarea>
+            </section>
+            <!--end quote-->
 
-            <div class='col-4'>
-              <div class='h6 mt-4 mb-2 position-relative w-100' id='email'>Email
-              <span class='btn btn-light btn-sm rounded-circle position-absolute edit-btn' id='email-edit-btn'><i class='bi bi-pencil-fill'></i></span>
+            <!--Contact section-->
+            <section class='row' id='contact'>
+
+              <!--email-->
+              <div class='col-4'>
+              <div class='h6 mt-4 mb-2 position-relative w-100 edit-btn-container'>Email 
+                <!--edit button-->
+                <span class='btn btn-light btn-sm rounded-circle position-absolute edit-btn edit-inform' id='contact-edit-btn' data-form='contact-edit-form' data-for='contact'><i class='bi bi-pencil-fill' data-form='contact-edit-form' data-for='contact'></i></span>
               </div>
-              {{email}}{{IF empty('{{email}}')}}Add an email{{ENDIF}}
-            </div>
-
-            <div class='col-4'>
-              <div class='h6 mt-4 mb-2 position-relative w-100' id='website'>Website
-              <span class='btn btn-light btn-sm rounded-circle position-absolute edit-btn' id='website-edit-btn'><i class='bi bi-pencil-fill'></i></span>
+              <!--data-->
+              <div class="m-0 p-0" id="email">
+                {{email}} 
+                <span class="empty">{{IF empty( '{{email}}' )}} Add an email {{ENDIF}}</span>
+              </div>      
               </div>
-              {{website}}{{IF empty('{{website}}')}}Add a website{{ENDIF}}
-            </div>
+              <!--end email-->
 
-            <div class='col-4'>
-              <div class='h6 mt-4 mb-2 position-relative w-100' id='socialmedia'>Social media
-              <span class='btn btn-light btn-sm rounded-circle position-absolute edit-btn' id='socialmedia-edit-btn'><i class='bi bi-pencil-fill'></i></span>
+              <!--website-->
+              <div class='col-4'>
+              <div class='h6 mt-4 mb-2 position-relative w-100 edit-btn-container'>Website
+                <!--edit button-->
+                <span class='btn btn-light btn-sm rounded-circle position-absolute edit-btn edit-inform' id='contact-edit-btn' data-form='contact-edit-form' data-for='contact'><i class='bi bi-pencil-fill' data-form='contact-edit-form' data-for='contact'></i></span>
               </div>
-              {{socialmedia}}{{IF empty('{{socialmedia}}')}}Add a social link{{ENDIF}}
-            </div>
+              <!--data-->
+              <div class="m-0 p-0" id="website">
+                {{website}} 
+                <span class="empty">{{IF empty( '{{website}}' )}} Add your website {{ENDIF}}</span>
+              </div>      
+              </div>
+              <!--end website-->
 
-          </section>
+              <!--social media-->
+              <div class='col-4'>
+              <div class='h6 mt-4 mb-2 position-relative w-100 edit-btn-container'>Social media
+                <!--edit button-->
+                <span class='btn btn-light btn-sm rounded-circle position-absolute edit-btn edit-inform' id='contact-edit-btn' data-form='contact-edit-form' data-for='contact'><i class='bi bi-pencil-fill' data-form='contact-edit-form' data-for='contact'></i></span>
+              </div>
+              <!--data-->
+              <div class="m-0 p-0" id="socialmedia">
+                {{socialmedia}} 
+                <span class="empty">{{IF empty( '{{socialmedia}}' )}} Add a social media {{ENDIF}}</span>
+              </div>      
+              </div>
+              <!--end social media-->
 
-          <div class='text-center'>
-            <button type='button' class='col-4 btn btn-primary mt-5 mb-3 rounded-pill'>Finish</button>
-          </div>
+            </section>
+            <!--Contact Edit Form-->
+            <form class='row gy-3 w-50 ms-auto me-auto mb-3 d-none' id='contact-edit-form'>
+              <div class='h5 text-center text-primary mb-0'>Contacts</div>
+              <div class='col-12 ms-auto me-auto form-floating'>
+              <input type='email' class='form-control ps-3 input' id='email-input' placeholder='Add an email' value='{{email}}'>
+              <label for='email' class='form-label mx-2 ps-3'>Email</label>
+              </div>
+              <div class='col-6 ms-auto me-auto form-floating'>
+              <input type='url' class='form-control ps-3 input' id='website-input' placeholder='Add a website' value='{{website}}'>
+              <label for='website' class='form-label mx-2 ps-3'>Website</label>
+              </div>
+              <div class='col-6 ms-auto me-auto form-floating'>
+              <input type='text' class='form-control ps-3 input' id='socialmedia-input' placeholder='Add a social media' value='{{socialmedia}}'>
+              <label for='sociallink' class='form-label mx-2 ps-3'>Social media</label>
+              </div>
+              <div class='text-center'>
+              <button type='button' class='col-3 my-2 btn btn-primary rounded-pill mx-2' id='contact-edit-form-cancel'>Cancel</button>
+              <button type='button' class='col-3 my-2 btn btn-primary rounded-pill mx-2' id='contact-edit-form-save'>Save</button>
+              </div>
+            </form>
+            <!--end of Contact Form-->
+            <!--end Contact section-->
 
 
-        </main><!--close card-body-->
+          </main>
+          <!--end additional info-->
 
-    </main><!--close Card container-->
-  </main><!--close outer row-->
-</main><!--close container-->
+        </div><!--close card body-->
+      </div><!--close card container-->
+    </section>
+  </main>
+</main><!--close outer container-->
+  
+
+<!--Bootstrap Toast component used for showing update failure-->
+<section class="position-fixed bottom-0 start-50 translate-middle-x p-4">
+  
+  <div class="toast hide">
+    <div class="toast-header">
+      <strong class="me-auto">Update failed</strong>
+      <button type="button" class="btn-close" id="toast-close"></button>
+    </div>
+    <div class="toast-body">
+      The update failed. Sorry for the inconvenience.
+    </div>
+  </div>
+</section>
+
+    

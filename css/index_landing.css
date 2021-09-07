@@ -1,0 +1,10 @@
+#landing-img {
+  min-width: 80%;
+  min-height: 300px;
+  width: auto;
+  height: auto;
+  background-image: url("../assets/img/landing-hero.jpg");
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;  
+}
