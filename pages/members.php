@@ -6,7 +6,7 @@
   }
   
   //data retrieval
-  $mysql = new MySQL(); //object for mysql database access
+  $mysql = MySQL::getinstance(); //object for mysql database access
   $members = $mysql->request($mysql->readAllUsersQuery); //get the entire set of usernames from database 
   $numberOfMembers = count($members); 
 

@@ -9,7 +9,7 @@ class NavMenu {
 
   
   //constructor
-  private function __construct() {
+  public function __construct() {
   }
 
   /*

@@ -33,7 +33,7 @@ lastname VARCHAR(20) NOT NULL,
 about VARCHAR(1000),
 profilePictureURL VARCHAR(100) DEFAULT 'C:/Program Files/Ampps/www/saorio/uploads/avatar-profile.png' COMMENT 'absolute path',
 profilePictureMIME VARCHAR(30) DEFAULT 'image/png' COMMENT 'full mime of image/xxx',
-gender CHAR(10) COMMENT 'female, male, intersex',
+gender VARCHAR(10) COMMENT 'female, male, intersex',
 dob INT COMMENT 'date of birth in epoch UTC',
 city VARCHAR(30),
 country VARCHAR(30),
@@ -73,9 +73,10 @@ INDEX(user2(5))";
 $tables["$tablename"] = $columns;
 
 //create table for every member of $tables
+$mysql = MySQL::getInstance();
 foreach ($tables as $table => $columns) {
     $sql = "CREATE TABLE IF NOT EXISTS $table ($columns)";
-    $dbh->query($sql);
+    $mysql->request($sql);
     echo "The table $table is now in database ". DB_NAME. "<br>";
 }
 

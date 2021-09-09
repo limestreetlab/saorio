@@ -4,11 +4,13 @@
 //full profile class
 class FullProfile extends BasicProfile {
 
+  //additional instance variables
   public $about;
   public $gender;
   public $dob;
   public $age;
-  public $location;
+  public $city;
+  public $country;
   public $job;
   public $company;
   public $school;
@@ -17,6 +19,7 @@ class FullProfile extends BasicProfile {
   public $quote;
   public $website;
   public $email;
+  public $socialmedia;
 
   /*
   constructor
@@ -32,7 +35,7 @@ class FullProfile extends BasicProfile {
     
     } catch (Exception $ex) {
       
-      error_log("Cannot retrieve profile data: " . $ex);
+      error_log("Cannot retrieve profile data: " . $ex->getMessage());
       throw $ex;
       
     }
@@ -40,7 +43,7 @@ class FullProfile extends BasicProfile {
     $this->about = $profileData["about"];
     $this->gender = $profileData["gender"];
     $this->dob = $profileData["dob"]; //epoch timestamp
-    $this->age = $this->calculateAge(); //calculate age from dob
+    $this->setAge(); //instance method to set age from dob
     $this->city = $profileData["city"]; 
     $this->country = $profileData["country"];
     $this->job = $profileData["job"]; 
@@ -386,24 +389,21 @@ class FullProfile extends BasicProfile {
   }
 
   /*
-  helper function to calculate age of user, using his date of birth
-  @return age integer or null
+  helper function to calculate and set age of user, using his date of birth
   */
-  protected function calculateAge() {
+  protected function setAge(): void {
 
     if (isset($this->dob)) {
 
       $nowDateTime = new DateTime(); //DateTime obj for today
       $dobDateTime = (new DateTime())->setTimestamp($this->dob); //from epoch timestamp to DateTime obj
       $ageDateInterval = $dobDateTime->diff($nowDateTime); //DateInterval obj between today and dob
-      $age = intval($ageDateInterval->format("%y")); //get the year value of the DateInterval obj and cast to int
+      $this->age = intval($ageDateInterval->format("%y")); //get the year value of the DateInterval obj and cast to int
     
     } else {
-      $age = null;
+      $this->age = null;
     }
     
-    return $age;    
-
   }
 
 } //close class

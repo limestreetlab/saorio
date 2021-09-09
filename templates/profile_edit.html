@@ -1,10 +1,9 @@
 <!--
 Description:
-  html for displaying a user's own profile and edit buttons, it mirrors the profile display view
+  html for displaying a user's own profile and edit buttons, its appearance mirrors the profile display view
   it uses Bootstrap 5, BS icons, BS datetimepicker called Tempus Dominus
   profile data can be edited by clicking on the edit button
-  data are put inside a readonly form control, mostly input or textarea
-  data are edited either in-line or in a form (in-form).
+  data are edited either in its existing line (inline) or in a form (inform).
 Edit forms:
   edit forms are put next to the relevant edit data and made invisible (display:none)
   when the edit button is clicked, the form shows (display:block) while that button and the data section hide
@@ -24,12 +23,13 @@ Edit inline:
 
 <!--Accompanying CSS-->
 <link rel='stylesheet' href='css/profile_edit.css'>
+<!--Accompanying JS-->
+<script src='js/profile_edit.js'></script>
+<script src='js/profile_datepicker.js'></script>
 <!--datetimepicker Tempus Dominus CSS-->
 <link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/Eonasdan/tempus-dominus@v6-alpha1/dist/css/tempus-dominus.css'>
 <!--font awesome css, for datetimepicker's arrow icons-->
 <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css'>
-<!--Accompanying JS-->
-<script src='js/profile_edit.js'></script>
 <!--Popperjs -->
 <script src='https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js' crossorigin='anonymous'></script>
 <!--Tempus Dominus JavaScript -->
@@ -88,10 +88,10 @@ Edit inline:
               <!--edit button-->
               <span class='btn btn-light btn-sm rounded-circle position-absolute edit-btn edit-inform' id='location-edit-btn' data-form='location-edit-form' data-for='location'><i class='bi bi-pencil-fill' data-form='location-edit-form' data-for='location'></i></span>
               <!--location data-->
-              <div class="h5 my-4 {{IF empty('{{city}}') && empty('{{country}}')}}h6{{ENDIF}}" id="location">
+              <div class="h5 my-4" id="location">
                 <span id="city" class="h5">{{city}}</span>
                 <span class="full">{{IF !empty('{{city}}') && !empty('{{country}}')}}, {{ENDIF}} </span>
-                <span class="empty">{{IF empty('{{city}}') && empty('{{country}}')}}Add a location {{ENDIF}}</span>
+                <span class="empty h6">{{IF empty('{{city}}') && empty('{{country}}')}}Add a location {{ENDIF}}</span>
                 <span id="country" class="h5 ms-1">{{country}}</span>
               </div>
               <!--Location Edit Form-->
@@ -119,34 +119,35 @@ Edit inline:
               <!--edit button-->
               <span class='btn btn-light btn-sm rounded-circle position-absolute edit-btn edit-inform' id='particulars-edit-btn' data-form='particulars-edit-form' data-for='particulars'><i class='bi bi-pencil-fill' data-form='particulars-edit-form' data-for='particulars'></i></span>
               <!--data-->
-              <div class='h6 my-0' id='particulars'>
+              <div class='h5 my-0' id='particulars'>
                 <span id='gender'>
                 <!--gender icon-->
                 {{IF '{{gender}}' == 'male'}}<i class='bi bi-gender-male'></i>{{ENDIF}}
-                {{IF '{{gender}}' == 'female'}}<i class='bi bi-gender-female'></i>{{ENDIF}} 
+                {{IF '{{gender}}' == 'female'}}<i class='bi bi-gender-female'></i>{{ENDIF}}
+                {{IF '{{gender}}' == 'intersex'}}<i class='bi bi-gender-ambiguous'></i>{{ENDIF}}  
                 </span>
                 <!--age-->
                 <span id="age" class="px-2 py-0">{{age}}</span>
                 <span class="empty">{{IF empty('{{gender}}') && empty('{{age}}')}}Add gender and birth date{{ENDIF}}</span>
               </div>
 
-              <!--Age Edit Form-->  
+              <!--Particulars Edit Form-->  
               <form class='row gy-3 w-50 ms-auto me-auto mb-3 d-none' id='particulars-edit-form'>
                 <div class='h5 text-primary mb-0'>Basic info</div>
                 <!--gender dropdown list-->
                 <div class='col-8 ms-auto me-auto'>
                   <select class='form-select ps-3 input' id="gender-input">
-                    <option selected disabled>Gender</option>
-                    <option value='male'>Male</option>
-                    <option value='female'>Female</option>
-                    <option value='intersex'>Intersex</option>
+                    <option disabled>Gender</option>
+                    <option value='male' {{IF '{{gender}}' == 'male'}} selected {{ENDIF}}>Male</option>
+                    <option value='female' {{IF '{{gender}}' == 'female'}} selected {{ENDIF}}>Female</option>
+                    <option value='intersex' {{IF '{{gender}}' == 'intersex'}} selected {{ENDIF}}>Intersex</option>
                   </select>        
                 </div>
                 <!--date of birth datepicker-->
                 <div class='col-8 ms-auto me-auto'>
                   <div class="text-start text-muted">birth date</div>
                   <div class='input-group' id='datepicker' data-td-target-input='nearest' data-td-target-toggle='nearest'> 
-                    <input id='dob-input' type='text' class='form-control ps-3 input' data-td-target='#datepicker'/>
+                    <input id='dob-input' type='text' class='form-control ps-3 input' data-td-target='#datepicker' value='{{dob}}'/>
                     <span class='input-group-text' data-td-target='#datepicker' data-td-toggle='datetimepicker'>
                       <span class='bi bi-calendar'></span>
                     </span>
@@ -158,19 +159,19 @@ Edit inline:
                 <button type='button' class='col-3 my-2 btn btn-primary rounded-pill mx-2' id='particulars-edit-form-save'>Save</button>
                 </div>
               </form> 
-              <!--Age Edit Form End-->
+              <!--Particulars Edit Form End-->
             </section>
-            <!--End age section-->
+            <!--End gender and age section-->
 
             <!--Work section-->
             <section class='my-3 position-relative w-100'>
               <!--edit button-->
               <span class='btn btn-light btn-sm rounded-circle position-absolute edit-btn edit-inform' id='work-edit-btn' data-for='work' data-form='work-edit-form'><i class='bi bi-pencil-fill' data-for='work' data-form='work-edit-form'></i></span>
               <!--data-->
-              <div class="h5 my-4 {{IF empty('{{job}}') && empty('{{company}}')}}h6{{ENDIF}}" id="work">
+              <div class="h5 my-4" id="work">
                 <span id="job" class="h5">{{job}}</span>
                 <span class="full">{{IF !empty('{{job}}') && !empty('{{company}}')}} at {{ENDIF}} </span>
-                <span class="empty">{{IF empty('{{job}}') && empty('{{company}}')}}Add a job {{ENDIF}}</span>
+                <span class="empty h6">{{IF empty('{{job}}') && empty('{{company}}')}}Add a job {{ENDIF}}</span>
                 <span id="company" class="h5">{{company}}</span>
               </div>              
               <!--Work Edit Form-->
@@ -198,10 +199,10 @@ Edit inline:
               <!--edit button-->
               <span class='btn btn-light btn-sm rounded-circle position-absolute edit-btn edit-inform' id='study-edit-btn' data-form='study-edit-form' data-for='study'><i class='bi bi-pencil-fill' data-form='study-edit-form' data-for='study'></i></span>
               <!--data-->
-              <div class="h5 my-4 {{IF empty('{{major}}') && empty('{{school}}')}}h6{{ENDIF}}" id="study">
+              <div class="h5 my-4" id="study">
                 <span id="major" class="h5">{{major}}</span>
                 <span class="full">{{IF !empty('{{major}}') && !empty('{{school}}')}} at {{ENDIF}} </span>
-                <span class="empty">{{IF empty('{{major}}') && empty('{{school}}')}}Add a school {{ENDIF}}</span>
+                <span class="empty h6">{{IF empty('{{major}}') && empty('{{school}}')}}Add a school {{ENDIF}}</span>
                 <span id="school" class="h5">{{school}}</span>
               </div>      
               <!--School Edit Form-->
@@ -313,21 +314,22 @@ Edit inline:
             <!--Contact Edit Form-->
             <form class='row gy-3 w-50 ms-auto me-auto mb-3 d-none' id='contact-edit-form'>
               <div class='h5 text-center text-primary mb-0'>Contacts</div>
+
               <div class='col-12 ms-auto me-auto form-floating'>
-              <input type='email' class='form-control ps-3 input' id='email-input' placeholder='Add an email' value='{{email}}'>
-              <label for='email' class='form-label mx-2 ps-3'>Email</label>
+                <input type='email' class='form-control ps-3 input' id='email-input' placeholder='Add an email' value='{{email}}'>
+                <label for='email' class='form-label mx-2 ps-3'>Email</label>
               </div>
               <div class='col-6 ms-auto me-auto form-floating'>
-              <input type='url' class='form-control ps-3 input' id='website-input' placeholder='Add a website' value='{{website}}'>
-              <label for='website' class='form-label mx-2 ps-3'>Website</label>
+                <input type='text' class='form-control ps-3 input' id='website-input' placeholder='Add a website' value='{{website}}'>
+                <label for='website' class='form-label mx-2 ps-3'>Website</label>
               </div>
               <div class='col-6 ms-auto me-auto form-floating'>
-              <input type='text' class='form-control ps-3 input' id='socialmedia-input' placeholder='Add a social media' value='{{socialmedia}}'>
-              <label for='sociallink' class='form-label mx-2 ps-3'>Social media</label>
+                <input type='text' class='form-control ps-3 input' id='socialmedia-input' placeholder='Add a social media' value='{{socialmedia}}'>
+                <label for='sociallink' class='form-label mx-2 ps-3'>Social media</label>
               </div>
               <div class='text-center'>
-              <button type='button' class='col-3 my-2 btn btn-primary rounded-pill mx-2' id='contact-edit-form-cancel'>Cancel</button>
-              <button type='button' class='col-3 my-2 btn btn-primary rounded-pill mx-2' id='contact-edit-form-save'>Save</button>
+                <button type='button' class='col-3 my-2 btn btn-primary rounded-pill mx-2' id='contact-edit-form-cancel'>Cancel</button>
+                <button type='button' class='col-3 my-2 btn btn-primary rounded-pill mx-2' id='contact-edit-form-save'>Save</button>
               </div>
             </form>
             <!--end of Contact Form-->
@@ -347,7 +349,7 @@ Edit inline:
 <!--Bootstrap Toast component used for showing update failure-->
 <section class="position-fixed bottom-0 start-50 translate-middle-x p-4">
   
-  <div class="toast hide">
+  <div class="toast hide" id="toast-failure">
     <div class="toast-header">
       <strong class="me-auto">Update failed</strong>
       <button type="button" class="btn-close" id="toast-close"></button>

@@ -4,17 +4,18 @@ create MySQL database connection and single access-point to database
 singleton class
 */
 
-require_once $_SERVER["DOCUMENT_ROOT"] . "/Saorio/includes/" . "config.php"; //load database credentials from config file
+require_once $_SERVER["DOCUMENT_ROOT"] . "/Saorio/includes/config.php"; //load database credentials from config file
 
 final class MySQL {
 
   private $dsn; //data source name
   private $dbh; //database handle 
+  private static $mysql = null; //single instance
   
   /*
-  constructor, establish a handle to mysql database
+  private constructor, establish a handle to mysql database
   */
-  public function __construct() {
+  private function __construct() {
 
     try {
 
@@ -26,6 +27,19 @@ final class MySQL {
       exit("Database connection failed: " . $ex->getMessage());
 
     }
+
+  }
+
+  /*
+  method to access the single instance
+  */
+  public static function getInstance() {
+
+    if (self::$mysql == null) {
+      self::$mysql = new MySQL();
+    }
+
+    return self::$mysql;
 
   }
 

@@ -16,7 +16,7 @@ class Message {
     $this->timestamp = $timestamp;
     $this->timeElapsed = self::getDateTimeElapsed( intval($this->timestamp) );
     $this->message = $message;
-    $this->mysql = new MySQL();
+    $this->mysql = MySQL::getinstance();
 
   }
 

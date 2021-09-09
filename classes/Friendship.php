@@ -23,7 +23,7 @@ class Friendship {
 
         $this->thisuser = $thisuser;
         $this->thatuser = $thatuser;
-        $this->mysql = new MySQL();
+        $this->mysql = MySQL::getinstance();
         
     }
 

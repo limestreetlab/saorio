@@ -4,13 +4,13 @@ header("Content-Type: application/json"); //return json output
 
 require_once "./../includes/ini.php"; //rel path to ini.php
 
-$mysql = new MySQL(); //object for mysql database access
+$mysql = MySQL::getinstance(); //object for mysql database access
 
 if (isset($_REQUEST["username"])) {
   
   $user = filter_var(trim($_REQUEST["username"]), FILTER_SANITIZE_STRING); //sanitize the user input
-  $result = $mysql->request($mysql->$readMembersTableQuery, [":user" => $user]); 
-
+  $result = $mysql->request($mysql->readMembersTableQuery, [":user" => $user]); 
+  
   if (count($result)) { //if result isn't empty, so username already exists
    
     $availability = false;

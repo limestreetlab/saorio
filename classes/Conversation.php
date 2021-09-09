@@ -17,7 +17,7 @@ class Conversation {
     $this->chatWith = $chatWith;
     $this->messages = $this->retrieveMessages();
     $this->numberOfMessages = count( $this->messages );
-    $this->mysql = new MySQL();
+    $this->mysql = MySQL::getinstance();
 
   }
 

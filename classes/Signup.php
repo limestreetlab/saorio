@@ -22,7 +22,7 @@ class Signup {
         $this->email = $email;
         $this->firstname = $firstname;
         $this->lastname = $lastname;
-        $this->mysql = new MySQL();
+        $this->mysql = MySQL::getinstance();
 
     }
 

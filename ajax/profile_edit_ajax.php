@@ -10,7 +10,7 @@ $profile = new FullProfile($user); //profile object to update
 $success = []; //to hold successful update for each field/value update
 
 //loop through all request parameter(s)
-foreach($_REQUEST as $field => $value) {
+foreach($_POST as $field => $value) {
 
   switch($field) {
 

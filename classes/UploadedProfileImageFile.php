@@ -16,7 +16,7 @@ class UploadedProfileImageFile extends UploadedImageFile {
 
         parent::__construct($uploadedFile); //super constructor
         $this->filename = $_SESSION["user"] . "-profile"; //<username>-profile as filename
-        $this->mysql = new MySQL();
+        $this->mysql = MySQL::getinstance();
 
     }
 

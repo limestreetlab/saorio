@@ -18,7 +18,7 @@ class User {
 
     $this->user = $username; 
     $this->profile = new FullProfile($this->user); //instantiate a Profile obj  
-    $this->mysql = new MySQL(); 
+    $this->mysql = MySQL::getinstance(); 
 
   }
 
