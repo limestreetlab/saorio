@@ -2,32 +2,45 @@
 <?php
 
 
-$viewLoader->load("login_form.html")->render();
-
+//user and password data received from login form
 if ( isset($_REQUEST["user"], $_REQUEST["password"]) ) {
 
+  //variables of what's submitted as is
   $user = $_REQUEST["user"]; 
   $password = $_REQUEST["password"]; 
   
-  $login = new Login($user, $password);
-  $isVerified = $login->verify(); //check if credentials are valid
-  $loginMessages = $login->getMessages();
+  $login = new Login($user, $password); //Login object to encapsulate
+  $message = null; //message for the calling frontend view to display
+  
+  if (!$login->checkUsername()) { //the entered username is invalid
 
-  if ($isVerified) { //if valid credentials
+    $message = "invalidUser"; 
 
-    $basicProfile = new BasicProfile($user);
-    $firstname = $basicProfile->getData()["firstname"];
+  } else { //valid username
 
-    $_SESSION["user"] = $user; //set session variable
-    $_SESSION["firstname"] = $firstname; //set session variable
+    if (!$login->verifyPassword()) { //valid username but invalid password
+
+      $message = "invalidPassword";
     
-  } 
+    } else { //valid credentials
+  
+      $message = "valid";
+  
+      $basicProfile = new BasicProfile($user);
+      $firstname = $basicProfile->getData()["firstname"];
+      
+      //set session variables to indicate valid login
+      $_SESSION["user"] = $user; 
+      $_SESSION["firstname"] = $firstname; 
+      
+    } 
 
-  foreach ($loginMessages as $loginMessage) {
-    echo $loginMessage;
   }
 
-
 }
+
+
+$viewLoader->load("login_form.html")->bind(["message" => $message])->render();
+
 
 ?>

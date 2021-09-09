@@ -27,13 +27,13 @@ class UploadedProfileImageFile extends UploadedImageFile {
 
         if ( $this->setPermFilePath(self::$uploadedDir, $this->filename) ) { //call setter to set $permFilePath 
 
-            if( $this->checkFile() ) { //if file is checked
+            if( $this->checkFile() ) { //if file is successfully checked
 
                 if ( $this->move() ) { //if file is moved from temp to perm
 
-                    if ($this->process() ){ //if file is processed
+                    if ($this->process() ){ //if file is successfully processed
 
-                        if( $this->persist() ){ //if file is persisted
+                        if( $this->persist() ){ //if file is successfully persisted
 
                             $success = true; //checked, moved, processed, persisted
 
@@ -63,7 +63,7 @@ class UploadedProfileImageFile extends UploadedImageFile {
 
         } catch (Exception $ex) {
             $success = false;
-            error_log("Cannot persist a profile picture upload: " . $ex);
+            error_log("Cannot persist a profile picture upload: " . $ex->getMessage());
         }
 
         return $success;

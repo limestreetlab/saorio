@@ -1,19 +1,22 @@
 <?php
-
-
+/*
+class to encapsulate data of and perform related operations for a user signup 
+*/
 class Signup {
 
     //variables declaration
-    private $user;
-    private $password;
-    private $passwordRepeat;
-    private $email;
-    private $firstname;
-    private $lastname;
-    private $messages = [];
+    private $user; //username
+    private $password; //password
+    private $passwordRepeat; //repeatedly typed password
+    private $email; //email address
+    private $firstname; //firstname
+    private $lastname; //lastname 
+    private $errorCodes = []; //array to append issues during data validation
     protected $mysql; //object for mysql database access
 
-    //constructor
+    /*
+    constructor
+    */
     public function __construct($user, $password, $passwordRepeat, $email, $firstname, $lastname) {
 
         $this->user = $user;
@@ -26,47 +29,49 @@ class Signup {
 
     }
 
-    //main register function to sign up users, performs validations and database entry
-    public function register(): bool {
+    /*
+    main register function to sign up users, performs validations and database entry
+    @return 2-element array [success, [error codes]] where an error code is given when some validation error occurs
+    error codes are defined as 0 for internal failure, 1 for whitespaces in username, 2 for special characters in username, 3 for username starting with a digit, 4 for username beyond min/max length, 
+    5 for whitespaces in password, 6 for password containing disallowed special characters, 7 for password beyond min/max length, 8 for repeated password not matching,
+    9 for invalid email address, 10 for email address already used, 11 for email beyond min/max length, 12 for name beyong min/max length, 13 for name having non-English alphabets
+    */
+    public function register(): array {
 
         $success = false;
 
         if ( $this->validate() ) {
 
             try {
+
                 $this->initializeProfile();
                 $this->persist();
-                $msg = "<div class='alert alert-success'>Account has been successfully created.</div>";
-                array_push($this->messages, $msg);               
                 $success = true; 
             
             } catch (Exception $ex) {
-                $msg = "<div class='alert alert-warning'>Signup failed due to our database issue. Sorry for the inconvenience.</div>";
-                array_push($this->messages, $msg);
-                error_log("Database error occurred during user signup. Exception message: $ex");
+
+                array_push($this->errorCodes, 0);
+                error_log("Database error occurred during user signup. Exception message: " . $ex->getMessage());
+                
             }
         }
 
-        return $success;
+        return [$success, $this->errorCodes];
 
     }
 
-    //helper function to factory-validate user inputs
+    /*
+    helper function to factory-validate user inputs
+    */
     private function validate(): bool {
 
-        if ( $this->checkUsername() && $this->checkPassword() && $this->checkEmail() && $this->checkName() ) { //fields checked
-            
-            return true;
-
-        } else { //some checks failed
-
-            return false;
-            
-        }
+        return ( $this->checkUsername() && $this->checkPassword() && $this->checkEmail() && $this->checkName() );
 
     }
 
-    //helper function to check username
+    /*
+    helper function to check if username is acceptable
+    */
     private function checkUsername(): bool {
         
         $success = true;
@@ -75,24 +80,21 @@ class Signup {
         //check for whitespace
         if ( strpos( $this->user, " ") ) { 
             $success = false;
-            $msg = "<div class='alert alert-warning'>Username should not contain any whitespace.</div>";
-            array_push($this->messages, $msg);
+            array_push($this->errorCodes, 1);
         }
 
         //check for special characters
         $specialCharacterPattern = "/[^a-zA-Z0-9]/"; //regex for not alphabets or numbers
         if ( preg_match($specialCharacterPattern, $this->user) ) { 
             $success = false;
-            $msg = "<div class='alert alert-warning'>Username should not contain any special characters.</div>";
-            array_push($this->messages, $msg);
+            array_push($this->errorCodes, 2);
         }
 
         //check if starting with a digit
         $beginningNumberPattern = "/^[0-9]/"; //regex for digit as first entry
         if ( preg_match($beginningNumberPattern, $this->user) ) { 
             $success = false;
-            $msg = "<div class='alert alert-warning'>Username should not begin with a number.</div>";
-            array_push($this->messages, $msg);
+            array_push($this->errorCodes, 3);
         }
 
         //check for length
@@ -101,15 +103,16 @@ class Signup {
         $length = strlen($this->user);
         if ( $length > $maxLength || $length < $minLength ) {
             $success = false;
-            $msg = "<div class='alert alert-warning'>Username should be between '$minLength' and '$maxLength' character long.</div>";
-            array_push($this->messages, $msg);
+            array_push($this->errorCodes, 4);
         }
 
         return $success;
 
     } //end check user
 
-    //helper function to check password
+    /*
+    helper function to check password validity
+    */
     private function checkPassword(): bool {
 
         $success = true;
@@ -118,16 +121,14 @@ class Signup {
         //check for whitespace
         if ( strpos( $this->password, " ") ) { 
             $success = false;
-            $msg = "<div class='alert alert-warning'>Password should not contain any whitespace.</div>";
-            array_push($this->messages, $msg);
+            array_push($this->errorCodes, 5);
         }
 
         //check for unallowed characters
         $passwordCharacterPattern = "/[^-+?.!_$%&a-zA-Z0-9]/"; //allows some special characters, but not slashes and brackets
         if ( preg_match($passwordCharacterPattern, $this->password) ) { 
             $success = false;
-            $msg = "<div class='alert alert-warning'>Password contains a disallowed special character.</div>";
-            array_push($this->messages, $msg);
+            array_push($this->errorCodes, 6);
         }
 
         //check for length
@@ -136,22 +137,22 @@ class Signup {
         $length = strlen($this->password);
         if ( $length > $maxLength || $length < $minLength ) {
             $success = false;
-            $msg = "<div class='alert alert-warning'>Password should be between '$minLength' and '$maxLength' character long.</div>";
-            array_push($this->messages, $msg);
+            array_push($this->errorCodes, 7);
         }
 
         //check for repeated password match
         if ( $this->password != $this->passwordRepeat ) {
             $success = false;
-            $msg = "<div class='alert alert-warning'>The entered passwords do not match.</div>";
-            array_push($this->messages, $msg);
+            array_push($this->errorCodes, 8);
         }
 
         return $success;
 
     } //end check password
 
-    //helper function to check email
+    /*
+    helper function to check email address validity
+    */
     private function checkEmail(): bool {
 
         $success = true;
@@ -160,33 +161,32 @@ class Signup {
         //check for address validity
         if ( !filter_var($this->email, FILTER_VALIDATE_EMAIL) ) {
             $success = false;
-            $msg = "<div class='alert alert-warning'>The entered email address is invalid.</div>";
-            array_push($this->messages, $msg);
+            array_push($this->errorCodes, 9);
         }
 
         //check for duplicate email in database
         $emailExists = $this->mysql->request("SELECT * from members WHERE email = '$this->email'");
         if ($emailExists) {
             $success = false;
-            $msg = "<div class='alert alert-warning'>The email address is already used for an existing account.</div>";
-            array_push($this->messages, $msg);
+            array_push($this->errorCodes, 10);
         }
 
         //check for length
-        $minLength = 8;
-        $maxLength = 30;
+        $minLength = 5;
+        $maxLength = 40;
         $length = strlen($this->email);
         if ( $length > $maxLength || $length < $minLength ) {
             $success = false;
-            $msg = "<div class='alert alert-warning'>Email should be between '$minLength' and '$maxLength' character long.</div>";
-            array_push($this->messages, $msg);
+            array_push($this->errorCodes, 11);
         }
 
         return $success;
 
     }
 
-    //helper function to check first and last names
+    /*
+    helper function to validate first and last names
+    */
     private function checkName(): bool {
 
         $success = true;
@@ -195,33 +195,29 @@ class Signup {
 
         //check for length
         $minLength = 2;
-        $maxLength = 20;
+        $maxLength = 30;
         $length1 = strlen($this->firstname);
         $length2 = strlen($this->lastname);
         if ( $length1 > $maxLength || $length1 < $minLength || $length2 > $maxLength || $length2 < $minLength ) {
             $success = false;
-            $msg = "<div class='alert alert-warning'>First name and last name should be between '$minLength' and '$maxLength' character long.</div>";
-            array_push($this->messages, $msg);
+            array_push($this->errorCodes, 12);
         }
 
         //check for non-characters
         $nonCharacterPattern = "/[^a-zA-Z]/"; //regex for non-alphabets
         if ( preg_match($nonCharacterPattern, $this->firstname) || preg_match($nonCharacterPattern, $this->lastname) ) { 
             $success = false;
-            $msg = "<div class='alert alert-warning'>Name should only contain English characters.</div>";
-            array_push($this->messages, $msg);
+            array_push($this->errorCodes, 13);
         }
 
         return $success;
 
     }
 
-    //messages getter
-    public function getMessages(): array {
-        return $this->messages;
-    }
 
-    //function to persist validated data to database
+    /*
+    function to persist validated data to database
+    */
     private function persist(): bool {
 
         try {
@@ -238,7 +234,9 @@ class Signup {
 
     }
 
-    //optional function to initialize basic profile data
+    /*
+    optional function to initialize basic profile data
+    */
     private function initializeProfile(): bool {
 
         try {

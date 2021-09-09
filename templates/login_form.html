@@ -4,18 +4,21 @@
 
 <form method="post" action="index.php?reqPage=login">
 
+  <!--username entry-->
   <div class="row mb-3 justify-content-center">
     <div class="col-6">
       <input type="text" class="form-control" name="user" id="user" placeholder="Username" minlength="5" maxlength="20" pattern="[a-z0-9]{5,20}" title="username is between 5 and 20 characters long and include only lowercase letters and digits" required> 
     </div>
   </div>
 
+  <!--password entry-->
   <div class="row mb-3 justify-content-center">
     <div class="col-6">
       <input type="password" class="form-control" name="password" id="password" name="password" minlength="5" maxlength="20" placeholder="Password" required>
     </div>
   </div>
   
+  <!--submit btn-->
   <div class="row mb-3 justify-content-center">
     <div class="col-6">
       <button type="submit" class="btn btn-primary col-12" id="signupBtn">Log in</button>
@@ -23,4 +26,35 @@
   </div>
 
 </form>
+
+<!--message to display after login credentials submitted, with backend providing a message variable containing pre-defined strings-->
+  <div class="row mt-3 justify-content-center">
+    <div class="col-6">
+      <!--display status using Bootstrap alert-->
+      {{IF '{{message}}' == 'valid'}}
+      <div class="alert alert-success text-center">
+        <i class="bi bi-check-circle-fill h5"></i><!--icon-->
+        <span class="ms-2"> You're now logged in.</span><!--message-->
+      </div>
+      {{ENDIF}}
+
+      {{IF '{{message}}' == 'invalidUser'}}
+      <div class="alert alert-warning text-center alert-dismissible">
+        <i class="bi bi-exclamation-triangle-fill h5"></i> <!--icon-->
+        <span class="ms-2"> The username does not exist.</span> <!--message-->
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button> <!--close btn-->
+      </div>
+      {{ENDIF}}
+
+      {{IF '{{message}}' == 'invalidPassword'}}
+      <div class="alert alert-warning text-center alert-dismissible">
+        <i class="bi bi-exclamation-triangle-fill h5"></i><!--icon-->
+        <span class="ms-2"> The password does not match.</span><!--message-->
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button> <!--close btn-->
+      </div>
+      {{ENDIF}}
+    </div>
+  </div>
+
+  
 </section>

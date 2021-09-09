@@ -1,5 +1,8 @@
 <?php
 
+/*
+class to create a Boostrap-based navmenu
+*/
 class NavMenu {
 
   private $loggedInMenu = ["Home" => "home", "Profile" => "profile", "Posts" => "posts", "Messages" => "messages", "Friends" => "friends", "Members" => "members", "Log Out" => "logout"];

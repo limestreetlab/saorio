@@ -40,7 +40,7 @@
 
   <div class="row mb-0 justify-content-center">
     <div class="col-6">
-      <input type="email" class="form-control" id="email" name="email" minlength="8" maxlength="40" placeholder="Email" required>
+      <input type="email" class="form-control" id="email" name="email" minlength="5" maxlength="40" placeholder="Email" required>
     </div>
   </div>
 
@@ -52,10 +52,10 @@
 
   <div class="row mb-3 justify-content-center">
     <div class="col-3">
-      <input type="text" class="form-control" id="firstname" name="firstname" minlength="2" maxlength="20" placeholder="First Name" required>
+      <input type="text" class="form-control" id="firstname" name="firstname" minlength="2" maxlength="30" placeholder="First Name" required>
     </div>
     <div class="col-3">
-      <input type="text" class="form-control" id="lastname" name="lastname" minlength="2" maxlength="20" placeholder="Last Name" required>
+      <input type="text" class="form-control" id="lastname" name="lastname" minlength="2" maxlength="30" placeholder="Last Name" required>
     </div>
   </div>
   
@@ -66,8 +66,13 @@
   </div>
 
 </form>
-</section>
 <!--end of signup form-->
+
+<!--message to display after signup form submitted, with backend providing variables containing [success, [errors]]-->
+
+
+</section>
+<!--end of signup-->
 
 <!--accompanying script to ajax-check and validate inputs-->
 <script src="js/signup.js"></script>

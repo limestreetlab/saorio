@@ -28,8 +28,8 @@ $tables["$tablename"] = $columns;
 //the profiles table
 $tablename = "profiles";
 $columns = "user VARCHAR(20),
-firstname VARCHAR(20) NOT NULL,
-lastname VARCHAR(20) NOT NULL,
+firstname VARCHAR(30) NOT NULL,
+lastname VARCHAR(30) NOT NULL,
 about VARCHAR(1000),
 profilePictureURL VARCHAR(100) DEFAULT 'C:/Program Files/Ampps/www/saorio/uploads/avatar-profile.png' COMMENT 'absolute path',
 profilePictureMIME VARCHAR(30) DEFAULT 'image/png' COMMENT 'full mime of image/xxx',
