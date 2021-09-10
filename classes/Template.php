@@ -3,7 +3,7 @@
 Class to bind PHP variables to placeholders in a given HTML template.
 Placeholder variables are defined as {{var}}.
 Conditional html can be included using {{If <condition>}} html...{{ENDIF}}, <condition> must be PHP-valid and no-nesting allowed
-Iterative html can be included using {{FOREACH <array> AS <var>}} html...{{ENDFOREACH}}
+Iterative html can be included using {{FOREACH <array1> AS <var1> <array2> AS <var2>...}} html...{{ENDFOREACH}}
 */
 class Template {
 
@@ -65,7 +65,7 @@ class Template {
 
       } 
 
-      $varPattern = '/{{\s*' . $key .'\s*}}/i' ; //patterns having {{ }}, with $key and potential whitespaces in between
+      $varPattern = '/{{\s*' . $key .'\s*}}/si' ; //patterns having {{ }}, with $key and potential whitespaces in between
       $this->view = preg_replace($varPattern, $value, $this->view); //replace placeholder pattern with data value
 
     }
@@ -120,7 +120,7 @@ class Template {
   } //function If end
 
   /*
-  helper function to parse FOREACH <array> AS <var> ...ENDFOREACH iterative html codes
+  helper function to parse FOREACH <array1> AS <var1> <array2> AS <var2> ... ENDFOREACH iterative html codes
   */
   protected function parseForeach(): void {
 
@@ -134,21 +134,38 @@ class Template {
 
       //parse the block for different elements
       preg_match($iterativePattern, $iterativeBlock, $match); //assign captured patterns to an array
-      $iterativeCondition = trim($match[1]); //whatever inside {{FOREACH}} after FOREACH, so var1,var2,... AS varname
+      $iterativeExpression = trim($match[1]); //whatever inside {{FOREACH}} after FOREACH, so var1,var2,... AS varname
       $iterativeContents = trim($match[2]); //contents between {{FOREACH...}}...{{ENDFOREACH}}
 
-      $loopVarPattern = '/(.*?)AS(.+)/si';
-      preg_match($loopVarPattern, $iterativeCondition, $match); //further parse the var1,var2...AS varname
-      $loopVariables = trim($match[1]); //string having variables delimited by comma
-      $loopVariables = explode(",", $loopVariables); //from string to array
-      $key = trim($match[2]); //variable name after AS
+      $loopExpressionPattern = '/(.*?)\s*AS\s*?(\w+)\s*/si'; //used to capture the varibles before AS, and variable name after AS
+      preg_match_all($loopExpressionPattern, $iterativeExpression, $matches); //capturing variables and names into $matches
+      $variables = $matches[1]; //string arrays, each string comprises variables delimited by comma
+      $variables = array_map(function ($s) {return explode(",", $s);}, $variables); //go from string arrays to array arrays
+      $keys = $matches[2]; //array of variable names after AS
+      $numberOfVariables = count($variables); //number of variable arrays for this for-loop
+      $numberOfIteration = count($variables[0]); //number of variables inside the first variable array
+      $loopContents = ""; //to accumulate contents for each loop iteration
 
-      $loopContents = ""; //string to accumulate contents for each iteration in a for-block
+      //ensure the numbers of iteration of each variable are equal 
+      for ($i = 1; $i < $numberOfVariables; $i++) {
+        if (count($variables[$i]) != $numberOfIteration) {
+          throw new Exception("numbers of variables to iterate through in a foreach loop must be equal.");
+        }
+      }
 
-      foreach ($loopVariables as $loopVariable) {
+      //looping through each iteration (outer loop) and substituting variables in each iteration (inner loop)
+      for ($i = 0; $i < $numberOfIteration; $i++) {
 
-        $varPattern = '/{{\s*' . $key .'\s*}}/i' ; //patterns having {{ }}, with $key and potential whitespaces in between
-        $loopContents .= preg_replace($varPattern, $loopVariable, $iterativeContents); //replace placeholder pattern with data value
+        $varReplacedContents = $iterativeContents; //initialized to raw contents with placeholders
+
+        for ($j = 0; $j < $numberOfVariables; $j++) { //for each iteration, replace placeholders with variables of this iteration
+
+          $varPattern = '/{{\s*' . $keys[$j] .'\s*}}/si' ; 
+          $varReplacedContents = preg_replace($varPattern, $variables[$j][$i], $varReplacedContents); //replace placeholder for this loop variable of this iteration
+
+        }
+
+        $loopContents .= $varReplacedContents; //concatenate to accumulate placeholder-replaced contents of each iteration
 
       }
 
@@ -162,7 +179,6 @@ class Template {
 
 
 } //end class
-
 
 ?>
 
