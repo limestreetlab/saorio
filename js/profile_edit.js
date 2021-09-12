@@ -37,7 +37,7 @@ function uploadPhoto() {
     }
 
     //validate size
-    const maxSize = 1500000; //set max size at 1.5mb
+    const maxSize = 2500000; //set max size at 2.5mb
     if (size > maxSize) {
       showToast("File too large", "The uploaded file size is " + (size/1000000).toPrecision(3) + "MB, exceeding our limit of " + (maxSize/1000000).toPrecision(2) + "MB.");
       return; //exit function

@@ -4,8 +4,8 @@
 abstract class UploadedImageFile {
 
   //static variables
-  protected static $maxUploadSize = "1500000"; //max allowed size in bytes
-  protected static $imageMIME = ["image/jpeg", "image/png", "image/gif", "image/svg+xml", "image/webp"]; //mime allowed
+  protected static $maxUploadSize = "2500000"; //max allowed size in bytes
+  protected static $imageMIME = ["image/jpeg", "image/png", "image/gif", "image/webp"]; //mime allowed
   //instance variables
   protected $errorCodes = []; //array to append issues to. -1 for system error, 1 for over max-size, 2 for non-mime format, 
   protected $mime;
