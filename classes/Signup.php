@@ -31,8 +31,8 @@ class Signup {
 
     /*
     main register function to sign up users, performs validations and database entry
-    @return 2-element array [success, [error codes]] where an error code is given when some validation error occurs
-    error codes are defined as 0 for internal failure, 1 for whitespaces in username, 2 for special characters in username, 3 for username starting with a digit, 4 for username beyond min/max length, 
+    @return 2-element array [success, [error codes]] where an error code is given when some validation error occurs or null otherwise
+    error codes are defined as -1 for internal failure, 1 for whitespaces in username, 2 for special characters in username, 3 for username starting with a digit, 4 for username beyond min/max length, 
     5 for whitespaces in password, 6 for password containing disallowed special characters, 7 for password beyond min/max length, 8 for repeated password not matching,
     9 for invalid email address, 10 for email address already used, 11 for email beyond min/max length, 12 for name beyong min/max length, 13 for name having non-English alphabets
     */
@@ -50,7 +50,7 @@ class Signup {
             
             } catch (Exception $ex) {
 
-                array_push($this->errorCodes, 0);
+                array_push($this->errorCodes, -1);
                 error_log("Database error occurred during user signup. Exception message: " . $ex->getMessage());
                 
             }
@@ -65,7 +65,7 @@ class Signup {
     */
     private function validate(): bool {
 
-        return ( $this->checkUsername() && $this->checkPassword() && $this->checkEmail() && $this->checkName() );
+        return ( $this->checkUsername() & $this->checkPassword() & $this->checkEmail() & $this->checkName() );
 
     }
 
@@ -125,7 +125,7 @@ class Signup {
         }
 
         //check for unallowed characters
-        $passwordCharacterPattern = "/[^-+?.!_$%&a-zA-Z0-9]/"; //allows some special characters, but not slashes and brackets
+        $passwordCharacterPattern = "/[^-+?.!_$%&a-zA-Z0-9\s]/"; //allows some special characters, but not slashes and brackets
         if ( preg_match($passwordCharacterPattern, $this->password) ) { 
             $success = false;
             array_push($this->errorCodes, 6);

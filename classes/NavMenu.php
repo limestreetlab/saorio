@@ -2,6 +2,7 @@
 
 /*
 class to create a Boostrap-based navmenu
+this class directly contains HTML codes 
 */
 class NavMenu {
 

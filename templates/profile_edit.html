@@ -43,16 +43,23 @@ Edit inline:
       
       <div class='card shadow pb-3'>
 
-        <div class='row justify-content-center'><!--inner row before card-header-->
+        <div class='row justify-content-center'><!--inner row before card-header for photo-->
           <div class='col-4 position-relative'>
             <!--profile picture-->
-            <img class='rounded-circle position-absolute top-0 start-50' id='profile-picture' src='{{picture}}'>
+            <img class='rounded-circle top-0 start-50' id='profile-picture' src='{{picture}}'>
             <!--profile picture edit button-->
-            <span class='btn btn-light btn-sm rounded-circle edit-img-btn position-absolute'><i class='bi bi-camera-fill'></i></span>
+            <span class='btn btn-light btn-sm rounded-circle' id='photo-upload-btn-container'><i class='bi bi-camera-fill' id='photo-upload-btn'></i></span>
           </div>
         </div><!--close inner row-->
 
-        <div class='card-header bg-secondary border-0 pt-5 pb-5'> 
+        <!--photo upload form-->
+        <form action="ajax/profile_edit_ajax.php" method="post" enctype="multipart/form-data" class="d-none" id="photo-upload-form">
+            <input type="file" name="file-upload" id="file-upload" accept="image/*"><!--go to $_FILES, not $_POST-->
+            <input type="submit" id="photo-upload-form-submit-btn">
+        </form>
+        <!--end of upload form-->
+
+        <div class='card-header bg-secondary border-0 pt-5 pb-5'> <!--a strip of secondary-color background behind photo-->
           <!--empty header-->
         </div>
 
@@ -347,15 +354,14 @@ Edit inline:
   
 
 <!--Bootstrap Toast component used for showing update failure-->
-<section class="position-fixed bottom-0 start-50 translate-middle-x p-4">
-  
-  <div class="toast hide" id="toast-failure">
+<section class="position-absolute top-0 end-0 p-4">
+  <div class="toast hide" id="toast-failure" data-bs-delay="10000">
     <div class="toast-header">
-      <strong class="me-auto">Update failed</strong>
-      <button type="button" class="btn-close" id="toast-close"></button>
+      <strong class="me-auto" id="toast-title"><!--Toast title display area, initized by js--></strong>
+      <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
     </div>
-    <div class="toast-body">
-      The update failed. Sorry for the inconvenience.
+    <div class="toast-body text-start" id="toast-message">
+      <!--Toast message display area, initialized by js-->
     </div>
   </div>
 </section>

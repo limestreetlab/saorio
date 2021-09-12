@@ -68,7 +68,138 @@
 </form>
 <!--end of signup form-->
 
-<!--message to display after signup form submitted, with backend providing variables containing [success, [errors]]-->
+<!--message to display after signup submitted, with backend providing [success, [errorCodes]]-->
+  <div class="row mt-3 justify-content-center">
+    <div class="col-6">
+      <!--display status using Bootstrap alert-->
+      
+      {{IF '{{success}}'}}
+      <div class="alert alert-success text-center">
+        <i class="bi bi-check-circle-fill h5"></i><!--icon-->
+        <span class="ms-2">Account has been successfully created.</span><!--message-->
+      </div>
+      {{ENDIF}}
+
+      {{FOREACH {{errorCodes}} AS code}}
+
+        {{IF '{{code}}' == -1}}
+        <div class="alert alert-warning text-center alert-dismissible">
+          <i class="bi bi-exclamation-triangle-fill h5"></i> <!--icon-->
+          <span class="ms-2"> Error occurred in our system. Sorry for inconvenience.</span> <!--message-->
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button> <!--close btn-->
+        </div>
+        {{ENDIF}}
+
+        {{IF '{{code}}' == 1}}
+        <div class="alert alert-warning text-center alert-dismissible">
+          <i class="bi bi-exclamation-triangle-fill h5"></i> <!--icon-->
+          <span class="ms-2">Username should not contain any whitespace. </span> <!--message-->
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button> <!--close btn-->
+        </div>
+        {{ENDIF}}
+
+
+        {{IF '{{code}}' == 2}}
+        <div class="alert alert-warning text-center alert-dismissible">
+          <i class="bi bi-exclamation-triangle-fill h5"></i> <!--icon-->
+          <span class="ms-2"> Username should not contain any special characters.</span> <!--message-->
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button> <!--close btn-->
+        </div>
+        {{ENDIF}}
+
+        {{IF '{{code}}' == 3}}
+        <div class="alert alert-warning text-center alert-dismissible">
+          <i class="bi bi-exclamation-triangle-fill h5"></i> <!--icon-->
+          <span class="ms-2"> Username should not being with a number.</span> <!--message-->
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button> <!--close btn-->
+        </div>
+        {{ENDIF}}
+
+        {{IF '{{code}}' == 4}}
+        <div class="alert alert-warning text-center alert-dismissible">
+          <i class="bi bi-exclamation-triangle-fill h5"></i> <!--icon-->
+          <span class="ms-2"> Username is either too short or long.</span> <!--message-->
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button> <!--close btn-->
+        </div>
+        {{ENDIF}}
+        
+        {{IF '{{code}}' == 5}}
+        <div class="alert alert-warning text-center alert-dismissible">
+          <i class="bi bi-exclamation-triangle-fill h5"></i> <!--icon-->
+          <span class="ms-2"> Password cannot contain whitespaces.</span> <!--message-->
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button> <!--close btn-->
+        </div>
+        {{ENDIF}}
+        
+        {{IF '{{code}}' == 6}}
+        <div class="alert alert-warning text-center alert-dismissible">
+          <i class="bi bi-exclamation-triangle-fill h5"></i> <!--icon-->
+          <span class="ms-2"> Password contains unallowed characters.</span> <!--message-->
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button> <!--close btn-->
+        </div>
+        {{ENDIF}}
+        
+        {{IF '{{code}}' == 7}}
+        <div class="alert alert-warning text-center alert-dismissible">
+          <i class="bi bi-exclamation-triangle-fill h5"></i> <!--icon-->
+          <span class="ms-2"> Password is either too short or long.</span> <!--message-->
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button> <!--close btn-->
+        </div>
+        {{ENDIF}}
+        
+        {{IF '{{code}}' == 8}}
+        <div class="alert alert-warning text-center alert-dismissible">
+          <i class="bi bi-exclamation-triangle-fill h5"></i> <!--icon-->
+          <span class="ms-2"> Passwords do not match.</span> <!--message-->
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button> <!--close btn-->
+        </div>
+        {{ENDIF}}
+        
+        {{IF '{{code}}' == 9}}
+        <div class="alert alert-warning text-center alert-dismissible">
+          <i class="bi bi-exclamation-triangle-fill h5"></i> <!--icon-->
+          <span class="ms-2"> Email address is invalid.</span> <!--message-->
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button> <!--close btn-->
+        </div>
+        {{ENDIF}}
+        
+        {{IF '{{code}}' == 10}}
+        <div class="alert alert-warning text-center alert-dismissible">
+          <i class="bi bi-exclamation-triangle-fill h5"></i> <!--icon-->
+          <span class="ms-2"> The email address is already registered.</span> <!--message-->
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button> <!--close btn-->
+        </div>
+        {{ENDIF}}
+        
+        {{IF '{{code}}' == 11}}
+        <div class="alert alert-warning text-center alert-dismissible">
+          <i class="bi bi-exclamation-triangle-fill h5"></i> <!--icon-->
+          <span class="ms-2"> Email address is either too short or long.</span> <!--message-->
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button> <!--close btn-->
+        </div>
+        {{ENDIF}}
+        
+        {{IF '{{code}}' == 12}}
+        <div class="alert alert-warning text-center alert-dismissible">
+          <i class="bi bi-exclamation-triangle-fill h5"></i> <!--icon-->
+          <span class="ms-2"> Username is either too short or long.</span> <!--message-->
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button> <!--close btn-->
+        </div>
+        {{ENDIF}}
+        
+        {{IF '{{code}}' == 13}}
+        <div class="alert alert-warning text-center alert-dismissible">
+          <i class="bi bi-exclamation-triangle-fill h5"></i> <!--icon-->
+          <span class="ms-2"> Name contains non-English letters.</span> <!--message-->
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button> <!--close btn-->
+        </div>
+        {{ENDIF}}
+
+      {{ENDFOREACH}}
+
+     
+    </div>
+  </div>
 
 
 </section>

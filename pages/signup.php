@@ -10,7 +10,7 @@ if ( isset($_REQUEST["user"], $_REQUEST["password"], $_REQUEST["email"], $_REQUE
   
   $signup = new Signup($_REQUEST["user"], $_REQUEST["password"], $_REQUEST["passwordRepeat"], $_REQUEST["email"], $_REQUEST["firstname"], $_REQUEST["lastname"]);
   $signupResult = $signup->register();
-  $success = $signupResult[0]; //[0] is success, [1] is errorCodes[]
+  $success = $signupResult[0]; //[0] is bool success, [1] is array errorCodes
   $errorCodes = $signupResult[1];  
 
 }

@@ -1,9 +1,13 @@
+/*place the profile photo in middle of container*/
 #profile-picture {
+  position: absolute;
   width: 180px;
   transform: translate(-50%, -30%);
 }
 
-.edit-img-btn {
+/*place the upload btn in container in position adjusted for profile photo position*/
+#photo-upload-btn-container {
+  position: absolute;
   left: calc(50% + 90px); /* 50% of img + half of img width */
   transform: translate(-50%, 50%);
 }

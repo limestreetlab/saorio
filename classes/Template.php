@@ -139,8 +139,8 @@ class Template {
 
       $loopExpressionPattern = '/(.*?)\s*AS\s*?(\w+)\s*/si'; //used to capture the varibles before AS, and variable name after AS
       preg_match_all($loopExpressionPattern, $iterativeExpression, $matches); //capturing variables and names into $matches
-      $variables = $matches[1]; //string arrays, each string comprises variables delimited by comma
-      $variables = array_map(function ($s) {return explode(",", $s);}, $variables); //go from string arrays to array arrays
+      $variablesAsStrings = $matches[1]; //string arrays, each string comprises variables delimited by comma
+      $variables = array_map(function (string $s): array {return explode(",", $s);}, $variablesAsStrings); //go from string arrays to array arrays
       $keys = $matches[2]; //array of variable names after AS
       $numberOfVariables = count($variables); //number of variable arrays for this for-loop
       $numberOfIteration = count($variables[0]); //number of variables inside the first variable array

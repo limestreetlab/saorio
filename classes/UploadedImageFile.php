@@ -7,36 +7,40 @@ abstract class UploadedImageFile {
   protected static $maxUploadSize = "1500000"; //max allowed size in bytes
   protected static $imageMIME = ["image/jpeg", "image/png", "image/gif", "image/svg+xml", "image/webp"]; //mime allowed
   //instance variables
-  protected $messages = [];
+  protected $errorCodes = []; //array to append issues to. -1 for system error, 1 for over max-size, 2 for non-mime format, 
   protected $mime;
   protected $fileExtension;
   protected $fileSize; //size in bytes
   protected $width; //width in px
   protected $height; //height in px
   protected $tempFilePath; //full path including basename and ext
-  protected $permFilePath = null; //full path including basename and ext, set using setter
+  protected $permFilePath = null; //full path including basename and ext, to be set using setter
 
-  //constructor
+  /*
+  constructor
+  @param the file to upload
+  */
   public function __construct($uploadedFile) {
 
-    $sizeInfo = getimagesize($uploadedFile);
-
-    if ( !is_file($uploadedFile) || !is_array($sizeInfo) || $sizeInfo[0] == 0 || $sizeInfo[1] ==0 ) {
-      throw new Exception("Uploaded file doesn't appear to be an image.");
-    }
-    
-    $this->mime = $sizeInfo["mime"]; //mime type info in getimagesize()
+    $this->tempFilePath = $uploadedFile["tmp_name"];
     $this->fileExtension = strtolower(pathinfo($uploadedFile["name"], PATHINFO_EXTENSION)); //file ext
     $this->fileSize = $uploadedFile["size"];
-    $this->tempFilePath = $uploadedFile["tmp_name"];
+
+    $sizeInfo = getimagesize($this->tempFilePath); //getimagesize($file) where $file is path
+    
+    $this->mime = $sizeInfo["mime"]; //mime type info in getimagesize()
     $this->width = $sizeInfo[0];
     $this->height = $sizeInfo[1];
+
+    if ( !is_file($this->tempFilePath) || !is_array($sizeInfo) || $this->width == 0 || $this->height == 0 ) {
+      throw new Exception("Uploaded file doesn't appear to be an image.");
+    }
 
   }
 
   /*
   function to set full path of the file
-  @param $dir absolute path to the directory
+  @param $dir absolute path to the directory storing the file
   @param $filename new name for the file, without extension
   */
   protected function setPermFilePath(string $dir, string $filename): bool {
@@ -54,31 +58,36 @@ abstract class UploadedImageFile {
 
   }
 
-  //abstract method to factory call other methods for file checking, moving, processing, saving
+  /*
+  abstract method to factory call other methods for file checking, moving, processing, saving
+  */
   abstract public function upload(): bool;
 
-  //function to check user file for size, type
+  /*
+  function to check user uploaded file for size, type
+  @return boolean if all criteria are passed
+  */
   protected function checkFile(): bool {
 
     //check file size
     $isSizeChecked = ($this->fileSize <= self::$maxUploadSize);
     if (!$isSizeChecked) {
-      $msg = "<div class='alert alert-warning'>The uploaded file exceeds " . self::$maxUploadSize/1000000 . " MB.</div>";
-      array_push($this->messages, $msg);
+      array_push($this->errorCodes, 1);
     }
 
     //check file type
     $isTypeChecked = in_array($this->mime, self::$imageMIME);
     if (!$isTypeChecked) {
-      $msg = "<div class='alert alert-warning'>The uploaded file isn't an allowed format.</div>";
-      array_push($this->messages, $msg);
+      array_push($this->errorCodes, 2);
     }
 
     return ($isSizeChecked && $isTypeChecked);
 
   }
 
-  //function to check upload directory is valid
+  /*
+  function to check upload directory is valid
+  */
   static protected function checkDirectory(string $dir): bool {
     
     return ( is_dir($dir) && is_writable($dir) );
@@ -93,21 +102,57 @@ abstract class UploadedImageFile {
 
   }
 
-  //function to move from temp to permanent destination
+  /*
+  function to move uploaded file from temporary to permanent destination
+  */
   protected function move(): bool {
     
-    return move_uploaded_file($this->tempFilePath, $this->permFilePath);
+    if ( move_uploaded_file($this->tempFilePath, $this->permFilePath) ) {
+
+      $success = true;
+
+    } else {
+
+      $success = false;
+      array_push($this->errorCodes, -1);
+
+    }
+
+    return $success;
 
   }
 
-  //database persistence function to be implemented
+  /*
+  database persistence function to be implemented
+  */
   abstract protected function persist(): bool;
 
 
-  //messages getter
-  public function getMessages(): array {
+  /*
+  errorCodes getter
+  */
+  public function getErrors(): array {
 
-    return $this->messages;
+    return array_unique($this->errorCodes);
+
+  }
+
+  /*
+  file meta getter
+  */
+  public function getFileMeta(): array {
+
+    $meta = ["size" => $this->fileSize, "extension" => $this->fileExtension, "mime" => $this->mime, "width" => $this->width, "height" => $this->height];
+    return $meta;
+
+  }
+
+  /*
+  permanent file path getter
+  */
+  public function getFilePath(): string {
+
+    return $this->permFilePath;
 
   }
 

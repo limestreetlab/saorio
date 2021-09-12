@@ -3,6 +3,7 @@ $("document").ready( function() {
     $("#user").on("blur", checkUsername);
     $("#passwordRepeat").on("blur", checkPasswordMatch);
     $("#email").on("blur", checkEmail);
+    
 });  
 
 

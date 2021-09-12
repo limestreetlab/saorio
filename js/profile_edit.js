@@ -9,7 +9,84 @@ $("document").ready( function() {
     child.onclick = showForm;
   }
 
+  //register click handler to photo upload btn
+  $("#photo-upload-btn").on("click", uploadPhoto);
+
 });
+
+/*
+function for profile photo upload
+*/
+function uploadPhoto() {
+
+  //imitate a click on file button to prompt for file selection
+  $("#file-upload").trigger("click"); 
+  //onchange (when a file is selected) handler, js-validate size and type, then submit to server
+  $('#file-upload').off("change").change( function(event) { 
+    //files property of the file input element gives access to the FileList array containing File obj
+    const file = event.target.files[0]; //get 1st element as no multiple files allowed
+    //read file meta
+    const type = file.type ? file.type : "NA"; //mime type
+    const size = file.size; //in bytes
+
+    //validate type
+    const mimeTypes = ["image/jpeg", "image/png", "image/gif", "image/svg+xml", "image/webp"]; //allowed mime
+    if (!mimeTypes.includes(type)) {
+      showToast("Unsupported file type", "The uploaded file type is not supported.");
+      return; //exit function
+    }
+
+    //validate size
+    const maxSize = 1500000; //set max size at 1.5mb
+    if (size > maxSize) {
+      showToast("File too large", "The uploaded file size is " + (size/1000000).toPrecision(3) + "MB, exceeding our limit of " + (maxSize/1000000).toPrecision(2) + "MB.");
+      return; //exit function
+    }
+    
+    let form = document.querySelector("#photo-upload-form");
+    let data = new FormData(form);    
+    data.set("photo", "");
+    
+    $.ajax({
+      url: "ajax/profile_edit_ajax.php",
+      method: "POST",
+      data: data,
+      processData: false,
+      contentType: false,
+      cache: false,
+      dataType: "json",
+      success: function(result){
+        
+        if(!result.success) { //upload failed
+
+          let err = result.error[0]; //read first element of the error array
+          let title = "";
+          let msg = "";
+          if (err == 1) {
+            title = "File too large";
+            msg = "The uploaded file size is " + (size/1000000).toPrecision(3) + "MB, exceeding our limit of " + (maxSize/1000000).toPrecision(2) + "MB.";
+          } else if (err == 2) {
+            title = "Unsupported file type";
+            msg = "The uploaded file type is not supported.";
+          } else {
+            title = "Update failure";
+            msg = "An error occurred during the update. Sorry about that.";
+          }
+          showToast(title, msg); 
+
+        } else { //upload succeeded
+
+          let newPhoto = result.newData[0]; //new rel path
+          $("#profile-picture").attr("src", newPhoto);
+
+        }
+
+      }//end ajax callback
+    }); //end ajax
+
+  }); //end onchange handler
+
+} //end uploadPhoto function
 
 /*
 function for data to be edited inline
@@ -29,13 +106,13 @@ function editData(event) {
     let newContents = $(editEl).val(); //present contents
     if (newContents != oldContents) { //when contents change
       
-      let data = {};
+      let data = new Object();
       data[btn.data("for")] = newContents; //object storing changed data field
       //ajax-send data to backend for persistence
       $.post("ajax/profile_edit_ajax.php", data, function(result) {
         if (!result.success) {
 
-          $(".toast").show(); //show the toast
+          showToast("Update failure", "An error occurred during the update. Sorry about that."); //show the toast
 
         } 
       }, "json");
@@ -44,10 +121,9 @@ function editData(event) {
 
   };
   
-  $(editEl).off("blur"); //unregister any old blur handlers
-  $(editEl).blur(save); //register save handler on blue
+  $(editEl).off("blur").on("blur", save); //register one on-blur handler
   
-} //end function
+} //end editData function
 
 /*
 function for data to be edited in a form
@@ -153,7 +229,7 @@ function showForm(event) {
 
     //create object to store changed data
     const inputs = $(editForm).find(".input"); //identify all .input within its target edit form and assign as jq objects
-    let data = new Object; //obj to store key value pairs
+    let data = new Object(); //obj to store key value pairs
     
     inputs.each(function() { //for each jq's object
 
@@ -231,7 +307,7 @@ function showForm(event) {
     //ajax-send data to backend for persistence 
     $.post("ajax/profile_edit_ajax.php", data, function(result) {
       if (!result.success) {
-        $("#toast-failure").show(); //show the toast
+        showToast("Update failure", "An error occurred during the update. Sorry about that."); //show the toast
       }
     }, "json");
 
@@ -246,12 +322,16 @@ function showForm(event) {
   
 } //end showForm function
 
-
 /*
-Codes for the Boostrap Toast element for error message
+function to assign messages and pop up a Boostrap toast alert
 */
-$("#toast-close").click(function(){
-  $("#toast-failure").hide()
-});
+function showToast(title = "Error", message = "An error occurred. Sorry for the inconvenience.") {
+
+  $("#toast-title").text(title); //assign title
+  $("#toast-message").text(message); //assign message 
+  $("#toast-failure").toast('show'); //show the hidden toast
+
+}
+
 
 

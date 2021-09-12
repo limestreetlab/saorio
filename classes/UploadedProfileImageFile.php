@@ -11,17 +11,25 @@ class UploadedProfileImageFile extends UploadedImageFile {
     protected $filename; //filename to save to, without ext
     protected $mysql; //object for mysql database access
 
-    //@Override
+    /*
+    @Override
+    constructor, inherited from super
+    instantiate this class instance variables
+    */
     public function __construct($uploadedFile) {
 
-        parent::__construct($uploadedFile); //super constructor
-        $this->filename = $_SESSION["user"] . "-profile"; //<username>-profile as filename
+        parent::__construct($uploadedFile); //super constructor 
+        $this->filename = $_SESSION["user"] . "-" . filemtime($this->tempFilePath); //<username>-<timestamp> as filename, where timestamp is unix upload time
         $this->mysql = MySQL::getinstance();
 
     }
 
-    //@Override
-    public function upload(): bool {
+    /*
+    @Override
+    function to perform necessary operations to upload the file
+    @param $removeExisting true to remove old file
+    */
+    public function upload(bool $deleteExisting = false): bool {
 
         $success = false;
 
@@ -31,11 +39,22 @@ class UploadedProfileImageFile extends UploadedImageFile {
 
                 if ( $this->move() ) { //if file is moved from temp to perm
 
-                    if ($this->process() ){ //if file is successfully processed
+                    if ($this->process() ) { //if file is successfully processed
 
-                        if( $this->persist() ){ //if file is successfully persisted
+                        if ($deleteExisting) { //if existing file should be removed
+                            
+                            $oldFilePath = $this->mysql->request($this->mysql->readBasicProfileQuery, [":user" => $_SESSION["user"]])[0]["profilePictureURL"];
+                            
+                            if( $this->persist() ) { //if file is successfully persisted
 
-                            $success = true; //checked, moved, processed, persisted
+                                $success = true;
+                                unlink($oldFilePath); 
+                            
+                            } 
+                            
+                        } else { //if no need to remove existing file
+
+                            $success = $this->persist(); 
 
                         }
 
@@ -51,7 +70,10 @@ class UploadedProfileImageFile extends UploadedImageFile {
 
     }
 
-    //@Override
+    /*
+    @Override
+    function to persist profile picture data to database
+    */
     protected function persist(): bool {
 
         $params = [":url" => "$this->permFilePath", ":mime" => "$this->mime", ":user" => $_SESSION["user"] ];
@@ -62,8 +84,11 @@ class UploadedProfileImageFile extends UploadedImageFile {
             $success = true;
 
         } catch (Exception $ex) {
+
             $success = false;
+            array_push($this->errorCodes, -1);
             error_log("Cannot persist a profile picture upload: " . $ex->getMessage());
+            
         }
 
         return $success;
@@ -81,5 +106,14 @@ class UploadedProfileImageFile extends UploadedImageFile {
         return true;
     }
 
+    /*
+    function to delete the current profile picture file of this user on server
+    */
+    public function deleteExisting(): bool {
+
+        $existingFilePath = $this->mysql->request($this->mysql->readBasicProfileQuery, [":user" => $_SESSION["user"]])[0]["profilePictureURL"];
+        return unlink($existingFilePath);
+
+    }
 }
 ?>
