@@ -193,7 +193,7 @@ foreach($_POST as $field => $value) {
 }//end foreach
 
 //return json [success: bool, error: array of error codes, newData: mixed of updated data of this request]
-echo json_encode( [ "success" => !in_array(false, $success), "error" => $error, "newData" => $newData ] ); 
+echo json_encode( [ "success" => !in_array(false, $success), "errors" => $errors, "newData" => $newData ] ); 
 exit();
 
 ?>

@@ -59,7 +59,7 @@ function uploadPhoto() {
         
         if(!result.success) { //upload failed
 
-          let err = result.error[0]; //read first element of the error array
+          let err = result.errors[0]; //read first element of the error array
           let title = "";
           let msg = "";
           if (err == 1) {
@@ -68,6 +68,9 @@ function uploadPhoto() {
           } else if (err == 2) {
             title = "Unsupported file type";
             msg = "The uploaded file type is not supported.";
+          } else if (err == 3) {
+            title = "Unknown orientation";
+            msg = "The uploaded file has an unknown or unsupported orientation.";
           } else {
             title = "Update failure";
             msg = "An error occurred during the update. Sorry about that.";
@@ -75,7 +78,7 @@ function uploadPhoto() {
           showToast(title, msg); 
 
         } else { //upload succeeded
-
+          
           let newPhoto = result.newData[0]; //new rel path
           $("#profile-picture").attr("src", newPhoto);
 

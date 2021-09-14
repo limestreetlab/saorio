@@ -32,36 +32,32 @@ class UploadedProfileImageFile extends UploadedImageFile {
     */
     public function upload(bool $deleteExisting = false): bool {
 
-        $success = false;
+        try {
 
-        if ( $this->setPermFilePath(self::$uploadedDir, $this->filename) && $this->checkFile() ) { //call setter to set $permFilePath, check file properties
-
-            if ( $this->move() ) { //if file is moved from temp to perm
-
-                if ($this->process() ) { //if file is successfully processed
-
-                    if ($deleteExisting) { //if existing file should be removed, get the existing path, delete it after successful persistance
+            $this->setPermFilePath(self::$uploadedDir, $this->filename)->checkFile()->move();
+            $this->square()->useExifOrientation(); //must square first using non-exif width and height before rotating
+            
+            if ($deleteExisting) { //if existing file should be removed, get the existing path, delete it after successful persistance
                         
-                        $oldFilePath = $this->mysql->request($this->mysql->readBasicProfileQuery, [":user" => $_SESSION["user"]])[0]["profilePictureURL"];
-                        
-                        if( $this->persist() ) { //if file is successfully persisted
+                $oldFilePath = $this->mysql->request($this->mysql->readBasicProfileQuery, [":user" => $_SESSION["user"]])[0]["profilePictureURL"];
+                
+                $this->persist();
 
-                            $success = true;
-                            if (!unlink($oldFilePath)) {
-                                error_log("Failed to delete a profile photo: " . $oldFilePath);
-                            }
-                        
-                        } 
-                        
-                    } else { //if no need to remove existing file
-
-                        $success = $this->persist(); 
-
-                    }
-
+                if (!unlink($oldFilePath)) {
+                    error_log("Failed to delete a profile photo: " . $oldFilePath);
                 }
 
+            } else {
+
+                $this->persist();
+
             }
+
+            $success = true;
+
+        } catch (Exception $ex) {
+
+            $success = false;
 
         }
 
@@ -73,34 +69,33 @@ class UploadedProfileImageFile extends UploadedImageFile {
     @Override
     function to persist profile picture data to database
     */
-    protected function persist(): bool {
+    protected function persist(): self {
 
         $params = [":url" => "$this->permFilePath", ":mime" => "$this->mime", ":user" => $_SESSION["user"] ];
 
         try {
 
             $this->mysql->request($this->mysql->updateProfilePictureQuery, $params);
-            $success = true;
+            return $this;
 
         } catch (Exception $ex) {
 
-            $success = false;
             array_push($this->errorCodes, -1);
             error_log("Cannot persist a profile picture upload: " . $ex->getMessage());
+            throw $ex;
             
         }
-
-        return $success;
         
     }
-
+    
     /*
     function to resize the oversized image to a square of MAX_WIDTH/MAX_HEIGHT, using PHP GD functions
     it first resizes the image's smaller dimension to MAX, maintaining aspect ratio
     it then fits the larger dimension to MAX using its centre, cropping away its two sides
     it overwrites the original image to file and then destroys all image resources in memory
+    IN THE FUTURE, ADD JS FUCNTIONALITY TO CHOOSE CROPPING and CONFIRM like FB
     */
-    protected function process(): bool {
+    protected function square(): self {
 
         //use the MIME-based functions to create an image resource handle of this file
         switch ($this->mime) {
@@ -119,7 +114,7 @@ class UploadedProfileImageFile extends UploadedImageFile {
                 break;
             default:
                 array_push($this->errorCodes, 2);
-                return false;
+                throw new Exception("file type is not a supported image type.");
 
         }        
 
@@ -130,7 +125,6 @@ class UploadedProfileImageFile extends UploadedImageFile {
             $photo_scaled = imagescale($photo_src, self::MAX_WIDTH, $scaledHeight, IMG_BICUBIC);
             $this->width = self::MAX_WIDTH;
             $this->height = $scaledHeight;
-            imagedestroy($photo_src); 
 
         } else { //landscape photo, or already square
 
@@ -138,81 +132,61 @@ class UploadedProfileImageFile extends UploadedImageFile {
             $photo_scaled = imagescale($photo_src, $scaledWidth, self::MAX_HEIGHT, IMG_BICUBIC);
             $this->width = $scaledWidth;
             $this->height = self::MAX_HEIGHT;
-            imagedestroy($photo_src); 
 
         }
+
+        imagedestroy($photo_src); //release used img handle
+
         //check scaling success
         if (!$photo_scaled) { //if scaling fails, it returns false
             array_push($this->errorCodes, -1);
             error_log("Error occurred in scaling a profile photo.");
-            return false;
+            throw new Exception("image scaling failed.");
         }
+
 
         //crop the over-sized dimension to MAX (square needs no cropping)
         if ($this->height > $this->width) { //portrait, so crop height
 
             //calc crop dimension
-            $fat = ( $this->height - self::MAX_HEIGHT ) / 2;
-            $trimStart = 0 + $fat;
+            $fat = ( $this->height - self::MAX_HEIGHT ) / 2; //excess dimension to cut off a side
+            $trimStart = 0 + $fat; //y-dimension start from top
             
             //crop
             $dimen = ["x" => 0, "y" => $trimStart, "width" => $this->width, "height" => self::MAX_HEIGHT] ;
             $photo_cropped = imagecrop($photo_scaled, $dimen);
 
-            imagedestroy($photo_scaled);
-
         } elseif ($this->height < $this->width) { //landscape, so crop width
 
             //calc crop dimension
             $fat = ( $this->width - self::MAX_WIDTH ) / 2;
-            $trimStart = 0 + $fat;
+            $trimStart = 0 + $fat; //x-dimension start from left
 
             //crop
             $dimen = ["x" => $trimStart, "y" => 0, "width" => self::MAX_WIDTH, "height" => $this->height];
             $photo_cropped = imagecrop($photo_scaled, $dimen);
 
-            imagedestroy($photo_scaled);
-
         }
+
+        imagedestroy($photo_scaled);
+
         //check cropping success
         if (!$photo_cropped) { //if cropping fails, it returns false
             array_push($this->errorCodes, -1);
             error_log("Error occurred in cropping a profile photo.");
-            return false;
+            throw new Exception("image cropping failed.");
         }
 
-        //saving file
-        //use the MIME-based functions to save the image resource to file
-        switch ($this->mime) {
-
-            case "image/jpeg":
-                $success = imagejpeg($photo_cropped, $this->permFilePath, 100);
-                imagedestroy($photo_cropped);
-                break;
-            case "image/png":
-                $success = imagepng($photo_cropped, $this->permFilePath, 9);
-                imagedestroy($photo_cropped);
-                break;
-            case "image/gif":
-                $success = imagegif($photo_cropped, $this->permFilePath);
-                imagedestroy($photo_cropped);
-                break;
-            case "image/webp":
-                $success = imagewebp($photo_cropped, $this->permFilePath, 100);
-                imagedestroy($photo_cropped);
-                break;
-            default:
-                array_push($this->errorCodes, 2);
-                return false;
-
-        }
-        //check save success
-        if (!$success) {
+        //saving file, to JPEG format regardless of what format it was
+        if (!imagejpeg($photo_cropped, $this->permFilePath, 100)) {
             array_push($this->errorCodes, -1);
             error_log("Error occurred in saving a processed photo to file.");
+            throw new Exception("image file saving failed.");
         }
 
-        return $success;
+        imagedestroy($photo_cropped);
+    
+        return $this;
 
     } //end function
 
