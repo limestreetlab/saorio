@@ -24,6 +24,10 @@ class Friendship {
         $this->thisuser = $thisuser;
         $this->thatuser = $thatuser;
         $this->mysql = MySQL::getinstance();
+
+        if ( !$this->mysql->request($this->mysql->readMembersTableQuery, [":user" => $this->thisuser]) || !$this->mysql->request($this->mysql->readMembersTableQuery, [":user" => $this->thatuser]) ) {
+            throw new Exception("Nonexistent username provided.");
+        }
         
     }
 
@@ -83,7 +87,7 @@ class Friendship {
 
             //database call
             $params = [":requestSender" => "$this->thatuser", ":requestRecipient" => "$this->thisuser"];
-            $this->mysql->request($this->sql->updateFriendRequestQuery, $params);
+            $this->mysql->request($this->mysql->updateFriendRequestQuery, $params);
 
             $this->status = 1;
             return true;

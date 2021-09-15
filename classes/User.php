@@ -15,10 +15,15 @@ class User {
   @param $user username
   */
   public function __construct(string $username) {
-
-    $this->user = $username; 
-    $this->profile = new FullProfile($this->user); //instantiate a Profile obj  
+    
     $this->mysql = MySQL::getinstance(); 
+    $this->user = $username; 
+
+    if (!$this->mysql->request($this->mysql->readMembersTableQuery, [":user" => $this->user])) {
+      throw new Exception("Nonexistent username provided.");
+    }
+    
+    $this->profile = new FullProfile($this->user); //instantiate a Profile obj  
 
   }
 

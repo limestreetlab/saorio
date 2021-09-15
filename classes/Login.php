@@ -6,6 +6,7 @@ class Login {
     private $user;
     private $password; //raw password entered
     private $passwordHash; //hashed password in database
+    private $error; //1 for invalid username, 2 for invalid password
     protected $mysql; //object for mysql database access
 
     /*
@@ -24,24 +25,47 @@ class Login {
     /*
     function to verify entered password against database
     */
-    public function verifyPassword(): bool {
+    public function verifyPassword(): self {
 
         $this->passwordHash = $this->mysql->request($this->mysql->readPasswordQuery, [":user" => $this->user])[0][0]; //retrieve hashed password from database for this username
-        return password_verify( $this->password, $this->passwordHash ); //compare entered pass with hashed pass 
+        
+        if ( password_verify( $this->password, $this->passwordHash ) ) { //compare entered pass with hashed pass 
+            
+            return $this;
+
+        } else {
+
+            $this->error = 2;
+            throw new Exception("invalid password.");
+
+        }
 
     }
 
     /*
     function to check if entered username exists in db
     */
-    public function checkUsername(): bool {
+    public function checkUsername(): self {
 
         $usernameExists = $this->mysql->request($this->mysql->readMembersTableQuery, [":user" => $this->user]);
 
-        return $usernameExists ? true : false;
+        if (!$usernameExists) {
+            $this->error = 1;
+            throw new Exception("username does not exist.");
+        }
+
+        return $this;
 
     }
 
+    /*
+    error variable getter
+    */
+    public function getError(): int {
+
+        return $this->error;
+
+    }
     
 
 }

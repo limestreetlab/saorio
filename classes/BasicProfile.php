@@ -13,6 +13,11 @@ class BasicProfile {
     
     $this->user = $user;
     $this->mysql = MySQL::getinstance();
+
+    if (!$this->mysql->request($this->mysql->readMembersTableQuery, [":user" => $this->user])) {
+      throw new Exception("Nonexistent username provided.");
+    }
+    
     $profileData = $this->mysql->request($this->mysql->readBasicProfileQuery, [":user" => "$this->user"])[0]; //grab fname, lname, picture of this user
     $this->firstname = $profileData["firstname"];
     $this->lastname = $profileData["lastname"];

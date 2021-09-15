@@ -35,7 +35,7 @@ class UploadedProfileImageFile extends UploadedImageFile {
         try {
 
             $this->setPermFilePath(self::$uploadedDir, $this->filename)->checkFile()->move();
-            $this->square()->useExifOrientation(); //must square first using non-exif width and height before rotating
+            $this->square()->useExifOrientation(); //must square first using non-exif width and height before rotating, because even after rotating width and height are based on non-exif
             
             if ($deleteExisting) { //if existing file should be removed, get the existing path, delete it after successful persistance
                         
@@ -53,15 +53,13 @@ class UploadedProfileImageFile extends UploadedImageFile {
 
             }
 
-            $success = true;
+            return true;
 
         } catch (Exception $ex) {
 
-            $success = false;
+            return false;
 
         }
-
-        return $success;
 
     }
 

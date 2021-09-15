@@ -12,35 +12,30 @@ if ( isset($_REQUEST["user"], $_REQUEST["password"]) ) {
   $login = new Login($user, $password); //Login object to encapsulate
   $message = null; //message for the calling frontend view to display
   
-  if (!$login->checkUsername()) { //the entered username is invalid
 
-    $message = "invalidUser"; 
+  try {
 
-  } else { //valid username
+    $login->checkUsername()->verifyPassword();
 
-    if (!$login->verifyPassword()) { //valid username but invalid password
+    $msg = 0;
 
-      $message = "invalidPassword";
+    $basicProfile = new BasicProfile($user);
+    $firstname = $basicProfile->getData()["firstname"];
     
-    } else { //valid credentials
-  
-      $message = "valid";
-  
-      $basicProfile = new BasicProfile($user);
-      $firstname = $basicProfile->getData()["firstname"];
-      
-      //set session variables to indicate valid login
-      $_SESSION["user"] = $user; 
-      $_SESSION["firstname"] = $firstname; 
-      
-    } 
+    //set session variables to indicate valid login
+    $_SESSION["user"] = $user; 
+    $_SESSION["firstname"] = $firstname; 
+
+  } catch (Exception $ex) {
+
+    $msg = $login->getError();
 
   }
 
 }
 
 
-$viewLoader->load("login_form.html")->bind(["message" => $message])->render();
+$viewLoader->load("login_form.html")->bind(["message" => $msg])->render();
 
 
 ?>
