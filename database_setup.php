@@ -64,13 +64,23 @@ $tables["$tablename"] = $columns;
 //the friends table
 $tablename = "friends";
 $columns = " id INT(10) UNSIGNED AUTO_INCREMENT,
-user1 VARCHAR(20) COMMENT 'requests are always from user1',
-user2 VARCHAR(20) COMMENT 'user2 always receives requests',
-status TINYINT(1) COMMENT '1 for confirmed, 2 for pending confirmation', 
+user1 VARCHAR(20) NOT NULL COMMENT 'requests are always from user1',
+user2 VARCHAR(20) NOT NULL COMMENT 'user2 always receives requests',
+status TINYINT(1) NOT NULL COMMENT '1 for confirmed, 2 for pending confirmation', 
+timestamp INT UNSIGNED NOT NULL DEFAULT NOW() ON UPDATE NOW() COMMENT 'epoch timestamp to current time whenever a row is added or modified', 
 PRIMARY KEY (id),
 INDEX(user1(5)),
 INDEX(user2(5))";
 $tables["$tablename"] = $columns;
+
+//friends_data, friends table is mutual (two-way), whilst friends data are one-way, how A stores data about B <> how B stores about A
+$tablename = "friends_data";
+$columns = " id INT(10) UNSIGNED AUTO_INCREMENT,
+user1 VARCHAR(20) NOT NULL COMMENT 'data creator',
+user2 VARCHAR(20) NOT NULL COMMENT 'data about this user',
+following TINYINT(1) NOT NULL DEFAULT 1 COMMENT 'whether user1 follows user2',
+notes VARCHAR(1000) COMMENT 'notes by user1 about user2',
+PRIMARY KEY (id)";
 
 //create table for every member of $tables
 $mysql = MySQL::getInstance();

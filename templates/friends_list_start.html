@@ -1,3 +1,10 @@
-<main class='container'>
-<br><div class='h4 text-primary'>{{firstname}}, you have {{numberOfFriends}} friends.</div><br>
-<section class='row row-cols-4'><!--row-cols-* assigns number of items per row-->
+<!--Accompanying CSS-->
+<link rel='stylesheet' href='css/friends.css'>
+<script src="js/friends.js"></script>
+
+
+<main class='container-fluid'>
+<br><div class='h4 text-primary'>{{firstname}}, you have <span id='numberOfFriends'> {{numberOfFriends}} </span> friends.</div><br>
+
+<main class="row justify-content-center">
+  <div class="col-10">

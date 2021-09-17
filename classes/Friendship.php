@@ -39,6 +39,10 @@ class Friendship {
 
         try {
 
+            if ( $this->getFriendship() != 0 ) {
+                throw new Exception("Can only add a stranger.");
+            }
+
             //database call
             $params = [":requestSender" => "$this->thisuser", ":requestRecipient" => "$this->thatuser"];
             $this->mysql->request($this->mysql->createFriendRequestQuery, $params);
@@ -65,6 +69,10 @@ class Friendship {
 
         try {
 
+            if ( $this->getFriendship() == 0 ) {
+                throw new Exception("Cannot unfriend a stranger.");
+            }
+
             //database call
             $params = [":a" => "$this->thisuser", ":b" => "$this->thatuser"];    
             $this->mysql->request($this->mysql->deleteFriendshipQuery, $params);
@@ -85,6 +93,10 @@ class Friendship {
 
         try {
 
+            if ( $this->getFriendship() != 3 ) {
+                throw new Exception("Can only respond to a friend request received.");
+            }
+
             //database call
             $params = [":requestSender" => "$this->thatuser", ":requestRecipient" => "$this->thisuser"];
             $this->mysql->request($this->mysql->updateFriendRequestQuery, $params);
@@ -104,6 +116,10 @@ class Friendship {
     public function rejectRequest(): bool {
 
         try {
+
+            if ( $this->getFriendship() != 3 ) {
+                throw new Exception("Can only respond to a friend request received.");
+            }
 
             $params = [":requestSender" => "$this->thatuser", ":requestRecipient" => "$this->thisuser"];
             $this->mysql->request($this->mysql->deleteFriendRequestQuery, $params);
@@ -161,6 +177,22 @@ class Friendship {
 
         }
         
+    }
+
+    /*
+    getter of timestamp for the relationship
+    @return unix timestamp
+    */
+    public function getTimestamp(): int {
+
+        if ($this->getFriendship() == 0) {
+            
+            throw new Exception("Cannot get friendship timestamp for two strangers.");
+            
+        }
+
+        return intval( $this->mysql->request($this->mysql->readFriendshipQuery, [":a" => "$this->thisuser", ":b" => "$this->thatuser"])["timestamp"] );
+
     }
 
 

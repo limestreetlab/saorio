@@ -328,7 +328,7 @@ function showForm(event) {
 /*
 function to assign messages and pop up a Boostrap toast alert
 */
-function showToast(title = "Error", message = "An error occurred. Sorry for the inconvenience.") {
+function showToast(title = "Oops!", message = "Sorry, something went wrong on our side. Please try again later.") {
 
   $("#toast-title").text(title); //assign title
   $("#toast-message").text(message); //assign message 

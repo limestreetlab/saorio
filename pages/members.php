@@ -29,8 +29,8 @@
     $profileData = $memberObj->getProfile(true)->getData(); 
     
     //apply this member's data in a view
-    $data = ["hisPicture" => $profileData["profilePictureURL"], "hisFullname" => $profileData["firstname"] . ' ' . $profileData["lastname"], "hisUsername" => $hisUsername, "relationship" => $relationship];
-    $viewLoader->load("members_card.html")->bind($data)->render(); //include each member's card view
+    $viewData = ["hisPicture" => $profileData["profilePictureURL"], "hisFullname" => $profileData["firstname"] . ' ' . $profileData["lastname"], "hisUsername" => $hisUsername, "relationship" => $relationship];
+    $viewLoader->load("members_card.html")->bind($viewData)->render(); //include each member's card view
     
   } //end for-loop
 
