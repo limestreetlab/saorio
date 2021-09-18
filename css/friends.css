@@ -1,3 +1,13 @@
 .profile-picture img {
   width: 150px; 
 }
+
+.notes-edit-form {
+  left: 60%;
+  width: 35%;
+}
+
+.notes {
+  resize: none;
+  font-size: 0.8em;
+}

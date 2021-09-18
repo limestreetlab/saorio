@@ -16,7 +16,7 @@ class User {
   */
   public function __construct(string $username) {
     
-    $this->mysql = MySQL::getinstance(); 
+    $this->mysql = MySQL::getInstance(); 
     $this->user = $username; 
 
     if (!$this->mysql->request($this->mysql->readMembersTableQuery, [":user" => $this->user])) {

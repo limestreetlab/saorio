@@ -13,6 +13,7 @@ class Friendship {
     protected $thatuser; //username of the other user
     protected $status; //defined relationship code, 0:stranger, 1:friend, 2:request sent (to thatuser), 3:request received (from thatuser)
     protected $isFollowing; //given friends, flag if thisuser is following thatuser
+    protected $notesAbout; //given friends, notes thisuser has written about thatuser
     protected $mysql; //object for mysql database access
 
     /*
@@ -23,7 +24,11 @@ class Friendship {
 
         $this->thisuser = $thisuser;
         $this->thatuser = $thatuser;
-        $this->mysql = MySQL::getinstance();
+        $this->mysql = MySQL::getInstance();
+        
+        $data = $this->mysql->request($this->mysql->readFriendsDataQuery, [":user1" => $this->thisuser, ":user2" => $this->thatuser])[0];
+        $this->isFollowing = $data["following"];
+        $this->notesAbout = $data["notes"];
 
         if ( !$this->mysql->request($this->mysql->readMembersTableQuery, [":user" => $this->thisuser]) || !$this->mysql->request($this->mysql->readMembersTableQuery, [":user" => $this->thatuser]) ) {
             throw new Exception("Nonexistent username provided.");
@@ -48,7 +53,7 @@ class Friendship {
             $this->mysql->request($this->mysql->createFriendRequestQuery, $params);
 
             //send a message to the other user
-            $contents = "Hello '$this->thatuser', I would like to add you as a friend and sent you a request. ";
+            $contents = "Hello, I would like to add you as a friend and sent you a request. ";
             $friendRequestMessage = new Message($this->thisuser, $this->thatuser, time(), $contents);
             $friendRequestMessage->send();
 
@@ -77,6 +82,8 @@ class Friendship {
             $params = [":a" => "$this->thisuser", ":b" => "$this->thatuser"];    
             $this->mysql->request($this->mysql->deleteFriendshipQuery, $params);
 
+            $this->mysql->request($this->mysql->deleteFriendsDataQuery, $params);
+
             $this->status = 0;
             return true;
 
@@ -101,12 +108,16 @@ class Friendship {
             $params = [":requestSender" => "$this->thatuser", ":requestRecipient" => "$this->thisuser"];
             $this->mysql->request($this->mysql->updateFriendRequestQuery, $params);
 
+            $this->mysql->request($this->mysql->createFriendsDataQuery, [":user1" => $this->thisuser, ":user2" => $this->thatuser]);
+            $this->mysql->request($this->mysql->createFriendsDataQuery, [":user1" => $this->thatuser, ":user2" => $this->thisuser]);
+
             $this->status = 1;
             return true;
 
         } catch (Exception $ex) {
             return false;
         }
+
     }
 
     /*
@@ -130,24 +141,79 @@ class Friendship {
         } catch (Exception $ex) {
             return false;
         }
-    }
 
+    }
 
     /*
-    public function follow(): bool {
-
-        $this->isFollowing = true;
-        return true;
-
-    }
-
-    public function unfollow(): bool {
-
-        $this->isFollowing = false;
-        return true;
-
-    }
+    Directional
+    for a user (current user, thisuser) to add notes about his friend (thatuser)
     */
+    public function addNotes(string $notes): bool {
+
+        try {
+
+            if ($this->getFriendship() != 1) {
+                throw new Exception("Can only add notes to an existing friend.");
+            }
+
+            $params = [":user1" => "$this->thisuser", ":user2" => "$this->thatuser", ":notes" => $notes];
+            $this->mysql->request($this->mysql->updateFriendNotesQuery, $params);
+
+            $this->notesAbout = $notes;
+
+            return true;
+
+        } catch (Exception $ex) {
+            return false;
+        }
+
+    }
+
+    /*
+    Directional
+    Getter for notes by thisuser about thatuser
+    */
+    public function getNotes(): ?string {
+
+        return $this->notesAbout;
+
+    }
+
+    /*
+    Directional
+    toggle the following status
+    */
+    public function toggleFollowing(): bool {
+
+        try {
+
+            if ($this->getFriendship() != 1) {
+                throw new Exception("Can only follow an existing friend.");
+            }
+
+            $params = [":user1" => "$this->thisuser", ":user2" => "$this->thatuser"];
+            $this->mysql->request($this->mysql->updateFollowingQuery, $params);
+
+            $this->isFollowing = $this->isFollowing ? 0 : 1;
+
+            return true;
+
+        } catch (Exception $ex) {
+            return false;
+        }
+
+    }
+
+    /*
+    Directional
+    getter for isFollowing, flag if thisuser is following that user
+    */
+    public function getIsFollowing(): bool {
+
+        return $this->isFollowing;
+
+    }
+   
 
     /*
     Directional
@@ -191,7 +257,7 @@ class Friendship {
             
         }
 
-        return intval( $this->mysql->request($this->mysql->readFriendshipQuery, [":a" => "$this->thisuser", ":b" => "$this->thatuser"])["timestamp"] );
+        return intval( $this->mysql->request($this->mysql->readFriendshipQuery, [":a" => "$this->thisuser", ":b" => "$this->thatuser"])[0]["timestamp"] );
 
     }
 

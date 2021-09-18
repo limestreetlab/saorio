@@ -12,7 +12,7 @@ class BasicProfile {
   public function __construct(string $user) {
     
     $this->user = $user;
-    $this->mysql = MySQL::getinstance();
+    $this->mysql = MySQL::getInstance();
 
     if (!$this->mysql->request($this->mysql->readMembersTableQuery, [":user" => $this->user])) {
       throw new Exception("Nonexistent username provided.");

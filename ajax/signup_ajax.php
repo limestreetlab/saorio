@@ -4,7 +4,7 @@ header("Content-Type: application/json"); //return json output
 
 require_once "./../includes/ini.php"; //rel path to ini.php
 
-$mysql = MySQL::getinstance(); //object for mysql database access
+$mysql = MySQL::getInstance(); //object for mysql database access
 
 if (isset($_REQUEST["username"])) {
   

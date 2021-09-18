@@ -6,7 +6,7 @@
   }
   
   //data retrieval
-  $mysql = MySQL::getinstance(); //object for mysql database access
+  $mysql = MySQL::getInstance(); //object for mysql database access
   $members = $mysql->request($mysql->readAllUsersQuery); //get the entire set of usernames from database 
   $numberOfMembers = count($members); 
 
@@ -30,6 +30,7 @@
     
     //apply this member's data in a view
     $viewData = ["hisPicture" => $profileData["profilePictureURL"], "hisFullname" => $profileData["firstname"] . ' ' . $profileData["lastname"], "hisUsername" => $hisUsername, "relationship" => $relationship];
+    
     $viewLoader->load("members_card.html")->bind($viewData)->render(); //include each member's card view
     
   } //end for-loop

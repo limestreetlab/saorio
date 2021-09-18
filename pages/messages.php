@@ -14,7 +14,6 @@ if (isset($_REQUEST["select"])) {
 
 $viewLoader->load("messages_list_start.html")->bind(["highlight" => $highlight])->render(); //start of view
 
-$userObj = new User($user);
 $chatters = $userObj->getChatWith(); //retrieve list of conversations has had with
 
 foreach ($chatters as $chatter) { //for each User obj in the list
@@ -28,7 +27,7 @@ foreach ($chatters as $chatter) { //for each User obj in the list
   $conversation = $userObj->getConversationWith($username);
   $newestMessage = $conversation->getNewestMessage();
   $messageData = $newestMessage->read();
-  $lastMessageSummary = substr($messageData["message"], 0, 100) . "...";
+  $lastMessageSummary = substr($messageData["message"], 0, 50) . "...";
   $lastMessageTime = $messageData["timeElapsed"];
 
   //data array to bind

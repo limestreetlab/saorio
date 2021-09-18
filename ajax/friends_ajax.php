@@ -17,4 +17,33 @@ if ( isset($_REQUEST["unfriend"]) ) {
 
 }
 
+
+if ( isset($_REQUEST["notesAbout"], $_REQUEST["notes"]) ) {
+
+  $friend = $_REQUEST["notesAbout"];
+  $notes = $_REQUEST["notes"];
+
+  $friendship = new Friendship($user, $friend);
+
+  $success = $friendship->addNotes($notes);
+
+  echo json_encode(["success" => $success]);   
+  exit();
+
+}
+
+
+if ( isset($_REQUEST["follow"]) ) {
+
+  $friend = $_REQUEST["follow"];
+
+  $friendship = new Friendship($user, $friend);
+
+  $success = $friendship->toggleFollowing();
+
+  echo json_encode(["success" => $success]);   
+  exit();
+  
+}
+
 ?>

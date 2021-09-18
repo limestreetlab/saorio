@@ -4,7 +4,7 @@ there are two sections on page: 1. list of conversations on left, 2. display of 
 script contains mutiple functions from attaching Send function to send button and enter-key to loading conversations and updating real-time chats
 */
 
-$(document).ready(function() {
+$("document").ready(function() {
  
   initialClick(); //click to load one of the conversations
 
@@ -16,15 +16,16 @@ it either clicks on the user at top of list or a specified user if backend (mess
 */
 function initialClick() {
 
-  let firstPerson = $(".conversationRow").first().data("chatWith").trim(); //the data-chatWith value of first .conversationRow element
-  let specificPerson = $("#conversations").data("highlight").trim(); //the person to highlight specified by backend, if any
+  let firstPerson = $(".conversationRow").first().data("chat-with"); //the data-chat-with value of first .conversationRow element
+  let specificPerson = $("#conversations").data("highlight"); //the person to highlight specified by backend, if any
   let highlight = firstPerson; //default value
-
+  
   if (specificPerson) { //someone is specified
     highlight = specificPerson; 
   } 
 
   let conversationRowToHighlight = ".conversationRow[data-chatWith='" + highlight + "']"; //make the query selector string
+  
   $(conversationRowToHighlight).trigger("click"); //triggering a click event on that target element
 
 } //close function

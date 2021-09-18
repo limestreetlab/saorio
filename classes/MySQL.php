@@ -129,11 +129,16 @@ final class MySQL {
 
   //for friends
   public $readAllFriendsQuery = "SELECT f.user FROM (SELECT user2 AS user FROM friends WHERE user1 = :user AND status = 1 UNION SELECT user1 AS user FROM friends WHERE user2 = :user AND status = 1) AS f";
-  public $readFriendshipQuery = "SELECT user1, user2, unix_timestamp(timestamp) AS timestamp FROM friends WHERE user1 = :a AND user2 = :b AND status = 1 UNION select * FROM friends WHERE user1 = :b AND user2 = :a AND status = 1"; //null if a and b are not confirmed friends
+  public $readFriendshipQuery = "SELECT user1, user2, unix_timestamp(timestamp) AS timestamp FROM friends WHERE user1 = :a AND user2 = :b AND status = 1 UNION SELECT user1, user2, unix_timestamp(timestamp) AS timestamp FROM friends WHERE user1 = :b AND user2 = :a AND status = 1"; //null if a and b are not confirmed friends
   public $updateFriendRequestQuery = "UPDATE friends SET status = 1 WHERE user1 = :requestSender AND user2 = :requestRecipient";
   public $deleteFriendRequestQuery = "DELETE FROM friends WHERE user1 = :requestSender AND user2 = :requestRecipient";
   public $createFriendRequestQuery = "INSERT INTO friends (user1, user2, status) VALUES (:requestSender, :requestRecipient, 2)";
   public $deleteFriendshipQuery = "DELETE FROM friends WHERE (user1 = :a AND user2 = :b) OR (user1 = :b AND user2 = :a)";
+  public $createFriendsDataQuery = "INSERT INTO friends_data (user1, user2) VALUES (:user1, :user2)";
+  public $deleteFriendsDataQuery = "DELETE FROM friends_data WHERE (user1 = :a AND user2 = :b) OR (user1 = :b AND user2 = :a)";
+  public $updateFriendNotesQuery = "UPDATE friends_data SET notes = :notes WHERE user1 = :user1 AND user2 = :user2";
+  public $updateFollowingQuery = "UPDATE friends_data SET following = IF(following = 1, 0, 1) WHERE user1 = :user1 AND user2 = :user2"; //toggle following, if initially 0 update to 1, if initially 1 update to 0
+  public $readFriendsDataQuery = "SELECT * from friends_data WHERE user1 = :user1 AND user2 = :user2";
 
   //for messages
   public $readConversationWithQuery = "SELECT timestamp, sender, recipient, message FROM (SELECT * FROM messages WHERE sender = :me AND recipient = :chatWith UNION SELECT * FROM messages WHERE sender = :chatWith AND recipient = :me) AS conversation ORDER BY timestamp ASC";

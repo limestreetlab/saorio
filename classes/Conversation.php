@@ -13,11 +13,11 @@ class Conversation {
   */
   public function __construct(string $user, string $chatWith) {
 
+    $this->mysql = MySQL::getInstance();
     $this->user = $user;
     $this->chatWith = $chatWith;
     $this->messages = $this->retrieveMessages();
     $this->numberOfMessages = count( $this->messages );
-    $this->mysql = MySQL::getinstance();
 
   }
 
@@ -84,8 +84,8 @@ class Conversation {
   public function getNewestMessage(): Message {
 
     $messages = $this->messages; //copy this Conversation's Messages to a local var
-    usort($messages, array($this, "messageComparator")); //sort 
-    return array_pop($messages);
+    usort($messages, array($this, "messageComparator")); //sort to asceding order
+    return array_pop($messages); //get the last element
 
   }
 
@@ -96,8 +96,8 @@ class Conversation {
   public function getOldestMessage(): Message {
 
     $messages = $this->messages;
-    usort($messages, array($this, "messageComparator"));
-    return array_shift($messages);
+    usort($messages, array($this, "messageComparator")); //sort to asscending order
+    return array_shift($messages); //get the first element
 
   }
 

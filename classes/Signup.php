@@ -44,8 +44,8 @@ class Signup {
 
             try {
 
-                $this->initializeProfile();
                 $this->persist();
+                $this->initializeProfile();
                 $success = true; 
             
             } catch (Exception $ex) {
@@ -222,7 +222,7 @@ class Signup {
 
         try {
             $passwordHash = password_hash($this->password, PASSWORD_DEFAULT); //hashed password
-            $params = [":user" => $this->user, ":password" => $passwordHash, ":email" => $this->email];
+            $params = [":user" => "$this->user", ":password" => $passwordHash, ":email" => "$this->email"];
             $this->mysql->request($this->mysql->createMemberQuery, $params);
             $success = true;
         } catch (Exception $ex) {
@@ -240,7 +240,7 @@ class Signup {
     private function initializeProfile(): bool {
 
         try {
-            $params = [":user" => $this->user, ":firstname" => $this->firstname, ":lastname" => $this->lastname];
+            $params = [":user" => "$this->user", ":firstname" => "$this->firstname", ":lastname" => "$this->lastname"];
             $this->mysql->request($this->mysql->createBasicProfileQuery, $params);
             $success = true;
           } catch (Exception $ex) {

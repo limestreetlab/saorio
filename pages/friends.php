@@ -13,14 +13,19 @@ $viewLoader->load("friends_list_start.html")->bind(["firstname" => $firstname, "
 //loop block for each user
 foreach ($friends as $friend) { 
 
-  //info about this friend
+  //data about this friend
   $hisProfileData = $friend->getProfile(true)->getData();
   $hisUsername = $hisProfileData["user"];
-  $hisName = $hisProfileData["firstname"] . " " . $hisProfileData["lastname"];
+  $hisFirstname = $hisProfileData["firstname"];
+  $hisLastname = $hisProfileData["lastname"];
   $hisProfilePicture = $hisProfileData["profilePictureURL"];
-  $friendSinceTS = (new Friendship($user, $hisUsername))->getTimestamp();
+  $friendship = new Friendship($user, $hisUsername);
+  $friendSinceTS = $friendship->getTimestamp();
   $friendSince = (new DateTime("@$friendSinceTS"))->format("M Y");
-  $viewData = ["picture" => $hisProfilePicture, "username" => $hisUsername, "fullname" => $hisName, "friendSince" => $friendSincem, "notes" => null];
+  $notes = $friendship->getNotes();
+  $following = $friendship->getIsFollowing();
+
+  $viewData = ["picture" => $hisProfilePicture, "username" => $hisUsername, "firstname" => $hisFirstname, "lastname" => $hisLastname, "friendSince" => $friendSince, "notes" => $notes, "following" => $following];
 
   $viewLoader->load("friends_card.html")->bind($viewData)->render();
 
@@ -32,3 +37,4 @@ $viewLoader->load("friends_toast.html")->render();
 
 ?>
 
+<script src="js/friends.js"></script>
