@@ -12,7 +12,7 @@ $viewLoader->load("navbar_open.html")->render(); //navbar open html
 //php code block for loading requested page
 $reqPage = isset($_REQUEST["reqPage"]) ? $_REQUEST["reqPage"] : null; //set $reqPage to page requested
 
-$nav = new NavMenu(); //NavMenu obj, must be after $reqPage is set as it is used in navmenu
+$nav = new NavMenu(); //NavMenu obj, must be after $reqPage is set as it is used in navmenu to set active page
 echo $nav->getNavMenu($isLoggedIn);
 
 $viewLoader->load("navbar_close.html")->render(); //navbar end html

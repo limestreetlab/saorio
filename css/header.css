@@ -1,0 +1,9 @@
+/*the entire body set as a flexbox taking 100vh, 
+navbar and footer take space at top and bottom (flex 0 1 auto),
+and remaining space is used by main body (flex 1 1 auto)*/
+body {
+  display: flex;
+  flex-flow: column;
+  height: 100vh;
+  width: 100vw;
+}

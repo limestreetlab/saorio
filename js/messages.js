@@ -24,7 +24,7 @@ function initialClick() {
     highlight = specificPerson; 
   } 
 
-  let conversationRowToHighlight = ".conversationRow[data-chatWith='" + highlight + "']"; //make the query selector string
+  let conversationRowToHighlight = ".conversationRow[data-chat-with='" + highlight + "']"; //make the query selector string
   
   $(conversationRowToHighlight).trigger("click"); //triggering a click event on that target element
 
@@ -37,7 +37,12 @@ $(".conversationRow").click( function(){
   
   $("#chatPanel").empty(); //empty out the chat panel (display area) first
 
-  let chatWith = $(this).data("chatWith"); //the clickable element should embed a data-element containing the username of whom the chat is with
+  let picture = $(this).find(".chatWithPicture").attr("src");
+  let name = $(this).find(".name").text();
+  $("#chatWithPicture").attr("src", picture);
+  $("#chatWithName").text(name);
+
+  let chatWith = $(this).data("chat-with"); //the clickable element should embed a data-element containing the username of whom the chat is with
   $("#conversationDisplay").data("user", chatWith); //add a data-* to #conversationDisplay
   let dataSend = {chatRetrieve: true, chatWith: chatWith}; //the data to send over to php using ajax
   
@@ -103,7 +108,7 @@ function updateChat() {
     
   , "json"); //close request
 
-  setTimeout(updateChat, 4000); //call self at timeout
+  setTimeout(updateChat, 3000); //call self at timeout
   
 } //close function
 
@@ -112,7 +117,7 @@ helper function to create chat bubbles
 */
 function makeChatBubble(myself, sender, message, timeElapsed) {
 
-  let startOrEnd; //string of either 'start' or 'end', for bootstrap's justify-content-start/justify-content-end, text-start/text-end
+  let startOrEnd; //string of either 'start' or 'end', for bootstrap's justify-content-start/justify-content-end
   let chatBubble;
   
   if (myself == sender) {
@@ -121,8 +126,9 @@ function makeChatBubble(myself, sender, message, timeElapsed) {
     startOrEnd = "start";
   }
 
-  chatBubble = "<div class='row card-text justify-content-" + startOrEnd + "'><div class='col-6 text-" + startOrEnd + "'>" +
-                message + "<div class='small text-muted'>" + timeElapsed + "</div></div></div>";
+  //unfortunately, Bootstrap style is mixed here
+  chatBubble = "<div class='row ms-1 me-1 mb-2 card-text justify-content-" + startOrEnd + "'><div class='col-5'><div class='p-3 text-start'>" +
+                message + "</div><div class='message-time mt-0 me-3 text-muted w-100 text-end'>" + timeElapsed + "</div></div></div>";
   
   return chatBubble;
 

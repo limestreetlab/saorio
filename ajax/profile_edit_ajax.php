@@ -67,15 +67,30 @@ foreach($_POST as $field => $value) {
       }
       break;
        
-    case "dob": //if date of birth, $value is an array [yyyy, mm, dd]
+    case "dob": //if date of birth, $value is an array [yyyy, mm, dd] or null
 
-      if ($profile->updateDob($value[0], $value[1], $value[2])) {
-        array_push($success, true);
-        array_push($newData, $value);
-      } else { 
-        array_push($success, false);
-        array_push($errors, -1);
-      } 
+      if (is_array($value)) { //not a null input, [yyyy, mm, dd] format
+
+        if ($profile->updateDob($value[0], $value[1], $value[2])) {
+          array_push($success, true);
+          array_push($newData, $value);
+        } else { 
+          array_push($success, false);
+          array_push($errors, -1);
+        } 
+        
+      } else { //null input
+
+        if ($profile->updateDob(0, 0, 0)) {
+          array_push($success, true);
+          array_push($newData, $value);
+        } else { 
+          array_push($success, false);
+          array_push($errors, -1);
+        } 
+
+      }
+      
       break;
 
     case "job": 

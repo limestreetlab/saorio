@@ -129,12 +129,21 @@ class FullProfile extends BasicProfile {
   public function updateDob(int $year, int $month, int $day): bool {
     
     try {
-      if ( !self::checkDob($year, $month, $day) ) {
-        throw new Exception("Invalid date of birth");
-      }
-      $newDob = (new DateTime())->setDate($year, $month, $day); //DateTime obj for inputted dob
-      $newDob = $newDob->getTimestamp(); //convert to epoch for inputted dob
 
+      if ($year && $month && $day) { 
+
+        if ( !self::checkDob($year, $month, $day) ) {
+          throw new Exception("Invalid date of birth");
+        }
+        $newDob = (new DateTime())->setDate($year, $month, $day); //DateTime obj for inputted dob
+        $newDob = $newDob->getTimestamp(); //convert to epoch for inputted dob
+
+      } else {
+
+        $newDob = null;
+
+      }
+      
       if ($this->dob != $newDob) {
         $this->mysql->request($this->mysql->updateProfileDobQuery, [":dob" => $newDob, ":user" => $this->user]);
       }

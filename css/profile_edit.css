@@ -22,11 +22,6 @@
   top: -40%;
 }
 
-.w-10 {
-  width: 10% !important;
-  min-width: 40px;
-}
-
 /*remove scrollbar in textarea but allow scrolling*/
 textarea {
   overflow-y: scroll;

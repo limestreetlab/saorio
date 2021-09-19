@@ -1,0 +1,14 @@
+/*
+body is a column flexbox taking 100vh.
+the main body contents takes up all space between navbar and footer
+*/
+
+.navbar {
+  width: 100%;
+  flex: 0 1 auto; 
+}
+
+/*set to take up all space in middle*/
+#main-body {
+  flex: 1 1 auto;
+}

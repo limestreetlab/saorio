@@ -1,0 +1,54 @@
+.chatWithPicture {
+  width: 80px;
+  height: 80px;
+}
+
+.conversationRow {
+  cursor: pointer;
+  padding: 10px;
+  border-bottom: 1px solid #f7f7f7;
+}
+
+.conversationRow:hover {
+  background-color: #f2f2f2;
+}
+
+#message-type-area i {
+  color: #93918f;
+  cursor: pointer;
+  font-size: 22px;
+}
+
+.message {
+  text-overflow: ellipsis;
+}
+
+.message-time {
+  font-size: 0.7em;
+}
+
+.card {
+  border-radius: 0;
+}
+
+.row.justify-content-start .text-start {
+  background-color: honeydew;
+  border-radius: 15px 15px 15px 0;
+}
+
+.row.justify-content-end .text-start{
+  background-color: azure;
+  border-radius: 15px 15px 0 15px;
+}
+
+/*remove the blue glow in-focus*/
+#chatMessage:focus {
+  outline: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+#chatWithPicture {
+  width: 50px;
+  height: 50px;
+}

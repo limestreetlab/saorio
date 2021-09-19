@@ -1,21 +1,19 @@
 <!--template for conversation display area; conversation/messages are loaded by front-end ajax-->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<section class='col-8 m-0 p-0' id='conversationDisplay'>
+  <div class='card h-100 border-bottom-0'>
 
-<section class='col-8 h-100' id='conversationDisplay'>
-  <div class='card h-100'>
-
-    <div class='card-header'>Chats <i class='bi bi-chat-dots float-end'></i></div>
+    <div class='card-header'><img src='' class='rounded-circle ms-2' id="chatWithPicture"><span class='h6 ms-3' id='chatWithName'></span></div>
     <div class='card-body' id='chatPanel'></div><!--area to display chat messages-->
     <div class='card-footer'>
-      <div class='row'>
-        <div class="col-1">
-          <i class="fa fa-smile-o fa-2x"></i>
+      <div class='row d-flex justify-content-center align-items-center' id="message-type-area">
+        <div class="col-1 text-center">
+          <i class="far fa-smile"></i>
         </div>
-        <div class="col-9">
-          <input type='text' class='form-control rounded mx-2' id='chatMessage'><!--message input area-->
+        <div class="col-10">
+          <input type='text' class='form-control rounded' id='chatMessage'><!--message input area-->
         </div>
-        <div class="col-2 text-end">
-        <i class="fa fa-send fa-2x me-3" id='chatMessageBtn'></i>
+        <div class="col-1 text-center">
+        <i class="fas fa-paper-plane ms-0 me-4" id='chatMessageBtn'></i>
         </div>
       </div>
     </div>

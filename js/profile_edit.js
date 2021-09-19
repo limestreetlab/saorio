@@ -209,13 +209,13 @@ function showForm(event) {
 
   //helper to check if all values are empty
   let isEmpty = function(data) {
-    let nonemptyValues = Object.values(data).filter( function(v) { return v.length > 0 ;} ); //filter out empty elements in the values of input param
+    let nonemptyValues = Object.values(data).filter( function(v) { return v && v.length > 0 ;} ); //filter out empty elements in the values of input param
     return (nonemptyValues.length == 0 ? true : false); 
   };
 
   //helper to check if all values are nonempty
   let isFull = function(data) {
-    let nonemptyValues = Object.values(data).filter( function(v) { return v.length > 0 ;} ); //filter out empty elements in the values of input param
+    let nonemptyValues = Object.values(data).filter( function(v) { return v && v.length > 0 ;} ); //filter out empty elements in the values of input param
     return (Object.keys(data).length == nonemptyValues.length ? true : false);
   };
   
@@ -243,7 +243,7 @@ function showForm(event) {
 
         let dateString = $(this).val().trim(); //mm/dd/yyyy string
         let dateObj = new Date(dateString); //JS Date obj
-        let dob = [dateObj.getFullYear(), dateObj.getMonth() + 1, dateObj.getDate()]; //[year, month, day] , JS month index from 0
+        let dob = dateString ? [dateObj.getFullYear(), dateObj.getMonth() + 1, dateObj.getDate()] : null; //[year, month, day] , JS month index from 0
         data[field] = dob;
 
       } else {
@@ -262,6 +262,7 @@ function showForm(event) {
       
       //display updated data, depending on field
       if (field == "gender") {//gender field, display icon based on input string value
+        
         let genderIcon = "";
         switch(value) {
           //icons directly mirroring those in view
@@ -281,19 +282,25 @@ function showForm(event) {
 
       } else if (field == "dob") { //date of birth, calc and display age from input value
         
-        let dob = new Date(value[0], value[1] - 1 , value[2]); //JS date obj month indexes from 0
-        let today = new Date();
-        let differenceInMilliSec = today.getTime() - dob.getTime(); //difference between two dates in milliseconds
-        let age = Math.floor( differenceInMilliSec / (1000*60*60*24*365) ); //calc age from milliseconds
+        let age;
+        if (value) {
+          let dob = new Date(value[0], value[1] - 1 , value[2]); //JS date obj month indexes from 0
+          let today = new Date();
+          let differenceInMilliSec = today.getTime() - dob.getTime(); //difference between two dates in milliseconds
+          age = Math.floor( differenceInMilliSec / (1000*60*60*24*365) ); //calc age from milliseconds
+        } else {
+          age = null;
+        }
         $("#age").text(age); //display age
 
       } else { //display values = input values
-
+        
         $(id).text(value); //display input value in the field
-        $(id).siblings(".empty").text(""); //empty out any conditional .empty texts in the section
-        $(id).siblings(".full").text(""); //empty out any conditional .full texts in the section
 
       }
+
+      $(id).siblings(".empty").text(""); //empty out any conditional .empty texts in the section
+      $(id).siblings(".full").text(""); //empty out any conditional .full texts in the section
 
     } //end data for-loop
     
@@ -306,7 +313,7 @@ function showForm(event) {
     if (isFull(data)) {
       addTextWhenFull();
     }
-
+    
     //ajax-send data to backend for persistence 
     $.post("ajax/profile_edit_ajax.php", data, function(result) {
       if (!result.success) {

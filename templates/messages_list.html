@@ -1,14 +1,14 @@
 <!--start row, embeds data for who the chat is with-->
-<div class='row my-2 py-2 conversationRow' data-chat-with='{{chatWith}}'> 
+<div class='row m-0 conversationRow' data-chat-with='{{chatWith}}'> 
      
-  <div class='col-5'><!--photo-->
-    <img src='{{picture}}' class='rounded-circle me-2' width='110px' height='110px'>
+  <div class='col-4'><!--photo-->
+    <img src='{{picture}}' class='rounded-circle me-2 chatWithPicture'>
   </div>
 
-  <div class='col-7 d-flex flex-column justify-content-start align-items-start'><!--name, msg, last-->
-    <div class='h5'>{{name}}</div>
-    <div class='small'>{{message}}</div>
-    <div class='small text-muted align-self-end mt-auto'>{{ago}}</div>
+  <div class='col-8 d-flex flex-column justify-content-start align-items-start'><!--name, msg, last-->
+    <div class='name h5'>{{name}}</div>
+    <div class='message small'>{{message}}</div>
+    <div class='message-time text-muted align-self-end mt-auto'>{{ago}}</div>
   </div>
 
 </div> <!--close row-->

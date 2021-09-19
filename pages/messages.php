@@ -27,7 +27,7 @@ foreach ($chatters as $chatter) { //for each User obj in the list
   $conversation = $userObj->getConversationWith($username);
   $newestMessage = $conversation->getNewestMessage();
   $messageData = $newestMessage->read();
-  $lastMessageSummary = substr($messageData["message"], 0, 50) . "...";
+  $lastMessageSummary = strlen($messageData["message"]) > 30 ? substr($messageData["message"], 0, 30) . "..." : $messageData["message"];
   $lastMessageTime = $messageData["timeElapsed"];
 
   //data array to bind

@@ -101,9 +101,9 @@ function updateRelationshipBtn(hisUsername, relationshipCode) {
   //same codes as ones used inside members.php
   
   //direct mirrors of button definitions in the view
-  let stranger = "<button type='button' class='col-8 mt-3 btn btn-primary btn-sm friendRequestBtn' data-send-request-to='" + hisUsername + "'>Add Friend</button> " ; 
-  let friend = "<button type='button' class='col-8 mt-3 btn btn-outline-primary btn-sm' disabled>Your Friend</button>";
-  let requestSent = "<button type='button' class='col-8 mt-3 btn btn-primary btn-sm friendRequestSentBtn'>Request Sent</button><button type='button' class='col-8 mt-3 btn btn-primary btn-sm d-none friendRequestCancelBtn' data-cancel-request-to='" + hisUsername + "'>Cancel Request</button>";
+  let stranger = "<button type='button' class='col-10 mt-3 btn btn-primary btn-sm friendRequestBtn' data-send-request-to='" + hisUsername + "'>Add Friend</button> " ; 
+  let friend = "<button type='button' class='col-10 mt-3 btn btn-outline-primary btn-sm' disabled>Your Friend</button>";
+  let requestSent = "<button type='button' class='col-10 mt-3 btn btn-primary btn-sm friendRequestSentBtn'>Request Sent</button><button type='button' class='col-8 mt-3 btn btn-primary btn-sm d-none friendRequestCancelBtn' data-cancel-request-to='" + hisUsername + "'>Cancel Request</button>";
   
   let relationshipWith = "#relationshipWith" + hisUsername; //the ID selector of this relationship
   

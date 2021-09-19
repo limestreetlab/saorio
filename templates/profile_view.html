@@ -1,3 +1,7 @@
+<!--Accompanying CSS-->
+<link rel='stylesheet' href='css/profile_view.css'>
+
+
 
 <!--html for displaying a user's profile, using BS's Card-->
 <br><br><!--push the container down-->
@@ -9,11 +13,11 @@
 
         <div class='row justify-content-center'><!--inner row before card-header-->
           <div class='col-4 position-relative'>
-            <img class='rounded-circle profile-picture position-absolute top-0 start-50' src='{{picture}}'>
+            <img class='rounded-circle position-absolute top-0 start-50' id="profile-picture" src='{{picture}}'>
           </div>
         </div> <!--close inner row-->
 
-        <div class='card-header bg-secondary border-0 pt-5 pb-5'>
+        <div class='card-header bg-secondary border-0 pt-5 pb-5'><!--a strip of secondary-color background behind photo-->
           <!--empty header-->
         </div>
 
@@ -48,19 +52,20 @@
               {{country}}
             </div>
             
-            <div class='h6 my-4' id='particulars'>
-              {{IF '{{gender}}' == 'male'}}<i class='bi bi-gender-male'></i>{{ENDIF}} 
-              {{IF '{{gender}}' == 'female'}}<i class='bi bi-gender-female'></i>{{ENDIF}} 
-              <span class='px-2' id='age'>{{age}}</span>
+            <div class='h5 my-4' id='particulars'>
+              {{IF '{{gender}}' == 'male'}}<i class='bi bi-gender-male'></i>{{ENDIF}}
+              {{IF '{{gender}}' == 'female'}}<i class='bi bi-gender-female'></i>{{ENDIF}}
+              {{IF '{{gender}}' == 'intersex'}}<i class='bi bi-gender-ambiguous'></i>{{ENDIF}}  
+              <span id='age'>{{age}}</span>
             </div>
             
-            <div class='h6'  id='work'>
+            <div class='h6 my-4'  id='work'>
               {{job}} 
               {{IF !empty('{{job}}') && !empty('{{company}}') }} at {{ENDIF}} 
               {{company}}
             </div>
             
-            <div class='h6' id='study'>
+            <div class='h6 my-4' id='study'>
               {{major}} 
               {{IF !empty('{{major}}') && !empty('{{school}}') }} at {{ENDIF}} 
               {{school}}
@@ -110,10 +115,6 @@
             </div>
 
           </section><!--end additional info-->
-
-          <div class='text-center'>
-            <a href="index.php?reqPage=profile&editProfile=true"><button type='button' class='col-4 btn btn-primary mt-5 mb-3 rounded-pill'>Update Profile</button></a>
-          </div>
 
 
         </main><!--close card-body-->

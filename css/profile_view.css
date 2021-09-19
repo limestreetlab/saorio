@@ -1,0 +1,9 @@
+#profile-picture {
+  position: absolute;
+  width: 180px;
+  transform: translate(-50%, -30%);
+}
+
+#age {
+  margin-left: 10px;
+}

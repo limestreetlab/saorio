@@ -1,7 +1,7 @@
 <!--BS card view to display quick info of each user-->
 <div class='col'> <!--how many cols to show per row is declared in row-cols-* in the container-->
   
-  <div class='card h-100'>
+  <div class='card h-100 shadow'>
 
     <img src='{{hisPicture}}' class='card-img-top img-fluid img-thumbnail'>
 
@@ -10,20 +10,20 @@
       <div class='relationshipBtn row justify-content-center' id='relationshipWith{{hisUsername}}'> 
 
         {{IF {{relationship}} == 0}}
-          <button type='button' class='col-8 mt-3 btn btn-primary btn-sm friendRequestBtn' data-send-request-to='{{hisUsername}}'>Add Friend</button> 
+          <button type='button' class='col-10 mt-3 btn btn-primary btn-sm friendRequestBtn' data-send-request-to='{{hisUsername}}'>Add Friend</button> 
         {{ENDIF}}
 
         {{IF {{relationship}} == 1}}
-          <button type='button' class='col-8 mt-3 btn btn-outline-primary btn-sm' disabled>Your Friend</button>
+          <button type='button' class='col-10 mt-3 btn btn-outline-primary btn-sm' disabled>Your Friend</button>
         {{ENDIF}}
 
         {{IF {{relationship}} == 2}}
-          <button type='button' class='col-8 mt-3 btn btn-primary btn-sm friendRequestSentBtn'>Request Sent</button>
-          <button type='button' class='col-8 mt-3 btn btn-primary btn-sm d-none friendRequestCancelBtn' data-cancel-request-to='{{hisUsername}}'>Cancel Request</button>
+          <button type='button' class='col-10 mt-3 btn btn-primary btn-sm friendRequestSentBtn'>Request Sent</button>
+          <button type='button' class='col-10 mt-3 btn btn-primary btn-sm d-none friendRequestCancelBtn' data-cancel-request-to='{{hisUsername}}'>Cancel Request</button>
         {{ENDIF}}
 
         {{IF {{relationship}} == 3}}
-          <button type='button' class='col-8 mt-3 btn btn-primary btn-sm friendRequestConfirmationBtn' data-bs-toggle='modal' data-bs-target='#friendRequestConfirmationModal' data-request-from='{{hisUsername}}' data-request-from-fullname='{{hisFullname}}'>Request Received</button>
+          <button type='button' class='col-10 mt-3 btn btn-primary btn-sm friendRequestConfirmationBtn' data-bs-toggle='modal' data-bs-target='#friendRequestConfirmationModal' data-request-from='{{hisUsername}}' data-request-from-fullname='{{hisFullname}}'>Request Received</button>
         {{ENDIF}}
 
       </div>

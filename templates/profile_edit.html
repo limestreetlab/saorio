@@ -28,8 +28,6 @@ Edit inline:
 <script src='js/profile_datepicker.js'></script>
 <!--datetimepicker Tempus Dominus CSS-->
 <link rel='stylesheet' href='https://cdn.jsdelivr.net/gh/Eonasdan/tempus-dominus@v6-alpha1/dist/css/tempus-dominus.css'>
-<!--font awesome css, for datetimepicker's arrow icons-->
-<link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css'>
 <!--Popperjs -->
 <script src='https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js' crossorigin='anonymous'></script>
 <!--Tempus Dominus JavaScript -->
@@ -106,11 +104,11 @@ Edit inline:
               <div class='h5 text-primary mb-0'>Location info</div>
               <div class='col-6 form-floating'>
                 <input type='text' class='form-control ps-3 input' id='city-input' placeholder='Add a city' value='{{city}}'>
-                <label for='city' class='form-label mx-2 ps-3'>City</label>
+                <label for='city' class='form-label ps-3'>City</label>
               </div>
               <div class='col-6 form-floating'>
                 <input type='text' class='form-control ps-3 input' id='country-input' placeholder='Add a country' value='{{country}}'>
-                <label for='country' class='form-label mx-2 ps-3'>Country</label>
+                <label for='country' class='form-label ms-1 ps-3'>Country</label>
               </div>
               <div class='text-center'>
                 <button type='button' class='col-3 my-2 btn btn-primary rounded-pill mx-2' id='location-edit-form-cancel'>Cancel</button>
@@ -134,7 +132,7 @@ Edit inline:
                 {{IF '{{gender}}' == 'intersex'}}<i class='bi bi-gender-ambiguous'></i>{{ENDIF}}  
                 </span>
                 <!--age-->
-                <span id="age" class="px-2 py-0">{{age}}</span>
+                <span id="age" class="ps-2 py-0">{{age}}</span>
                 <span class="empty h6">{{IF empty('{{gender}}') && empty('{{age}}')}}Add gender and birth date{{ENDIF}}</span>
               </div>
 

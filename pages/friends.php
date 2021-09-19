@@ -20,8 +20,8 @@ foreach ($friends as $friend) {
   $hisLastname = $hisProfileData["lastname"];
   $hisProfilePicture = $hisProfileData["profilePictureURL"];
   $friendship = new Friendship($user, $hisUsername);
-  $friendSinceTS = $friendship->getTimestamp();
-  $friendSince = (new DateTime("@$friendSinceTS"))->format("M Y");
+  $friendSinceEpoch = $friendship->getTimestamp();
+  $friendSince = (new DateTime("@$friendSinceEpoch"))->format("M Y");
   $notes = $friendship->getNotes();
   $following = $friendship->getIsFollowing();
 
