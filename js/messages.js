@@ -4,6 +4,10 @@ there are two sections on page: 1. list of conversations on left, 2. display of 
 script contains mutiple functions from attaching Send function to send button and enter-key to loading conversations and updating real-time chats
 */
 
+//file-wide variables
+var loadMoreBtn = "<button type='button' class='btn btn-outline-secondary rounded-pill mb-5 border-0' id='loadMoreBtn' data-last-message-id=''><i class='bi bi-arrow-up-square'></i> Previous messages</button>";
+
+
 $("document").ready(function() {
  
   initialClick(); //click to load one of the conversations
@@ -69,6 +73,8 @@ $(".conversationRow").click( function(){
         $("#chatPanel").append(chatBubble); //add the chat to the chat panel for display
 
       }); //close $.each
+
+      $("#chatPanel").prepend(loadMoreBtn);
       
     } //close callback 
     , "json"); //close $.post 
@@ -103,7 +109,7 @@ function updateChat() {
 
           $("#chatPanel").append(chatBubble); //add the chat to the chat panel for display
         }); //close $.each
-      } //if close 
+      } //close if 
     } //close callback
     
   , "json"); //close request

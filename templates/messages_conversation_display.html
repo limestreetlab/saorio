@@ -1,24 +1,34 @@
 <!--template for conversation display area; conversation/messages are loaded by front-end ajax-->
 <section class='col-8 m-0 p-0' id='conversationDisplay'>
-  <div class='card h-100 border-bottom-0'>
+  <section class="row h-100"><div class="col-12"><!--row to give this col its own height-->
 
-    <div class='card-header'><img src='' class='rounded-circle ms-2' id="chatWithPicture"><span class='h6 ms-3' id='chatWithName'></span></div>
-    <div class='card-body' id='chatPanel'></div><!--area to display chat messages-->
-    <div class='card-footer'>
+  <section class='h-100 border-start' id="chatContainer">
+
+    <div class='m-0 p-2 bg-light' id='chatHeader'><img src='' class='rounded-circle ms-2' id="chatWithPicture"><span class='h6 ms-3' id='chatWithName'></span></div>
+    
+    <div class='mt-4 ms-2 me-3 text-center' id='chatPanel'></div><!--area to display chat messages-->
+    
+    <div class='m-0 p-3 bg-light border-top border-end' id='chatFooter'>
       <div class='row d-flex justify-content-center align-items-center' id="message-type-area">
+
         <div class="col-1 text-center">
           <i class="far fa-smile"></i>
         </div>
+
         <div class="col-10">
           <input type='text' class='form-control rounded' id='chatMessage'><!--message input area-->
         </div>
-        <div class="col-1 text-center">
-        <i class="fas fa-paper-plane ms-0 me-4" id='chatMessageBtn'></i>
+
+        <div class="col-1 text-start">
+        <i class="fas fa-paper-plane" id='chatMessageBtn'></i>
         </div>
+
       </div>
     </div>
-    
-  </div>
+      
+  </section>
+
+  </div></section>
 </section>
 <!--end of conversation display area-->
 

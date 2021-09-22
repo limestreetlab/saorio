@@ -1,8 +1,15 @@
+/*disable scrollbar*/
+body::-webkit-scrollbar {
+  display: none;
+}
+
+/*top picture size*/
 .chatWithPicture {
   width: 80px;
   height: 80px;
 }
 
+/*left side menu*/
 .conversationRow {
   cursor: pointer;
   padding: 10px;
@@ -27,10 +34,6 @@
   font-size: 0.7em;
 }
 
-.card {
-  border-radius: 0;
-}
-
 .row.justify-content-start .text-start {
   background-color: honeydew;
   border-radius: 15px 15px 15px 0;
@@ -39,6 +42,28 @@
 .row.justify-content-end .text-start{
   background-color: azure;
   border-radius: 15px 15px 0 15px;
+}
+
+#chatContainer {
+  display: flex;
+  flex-direction: column;
+}
+
+#chatHeader {
+  flex: 0 0 auto;
+  position: sticky;
+  top: 60px; /*not a magic number but header's fixed height*/
+}
+
+#chatPanel {
+  flex: 1 1 auto;
+  overflow-y: visible;
+}
+
+#chatFooter {
+  flex: 0 0 auto;
+  position: sticky;
+  bottom: 35px; /*not a magic number but footer's fixed height*/
 }
 
 /*remove the blue glow in-focus*/

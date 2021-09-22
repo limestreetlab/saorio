@@ -52,7 +52,7 @@ $tables["$tablename"] = $columns;
 
 //the messages table
 $tablename = "messages";
-$columns = "id INT UNSIGNED AUTO_INCREMENT,
+$columns = "id INT UNSIGNED AUTO_INCREMENT COMMENT 'timestamps can overlap so id more reliable',
 timestamp INT UNSIGNED NOT NULL COMMENT 'unix epoch UTC timestamp',
 sender VARCHAR(20) NOT NULL,
 recipient VARCHAR(20) NOT NULL,

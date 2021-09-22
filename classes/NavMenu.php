@@ -6,9 +6,9 @@ this class directly contains HTML codes
 */
 class NavMenu {
 
-  private $loggedInMenu = ["Home" => "home", "Profile" => "profile", "Posts" => "posts", "Messages" => "messages", "Friends" => "friends", "Members" => "members", "Log Out" => "logout"];
+  private $loggedInMenu = ["Home" => "home", "Posts" => "posts", "Profile" => "profile", "Messages" => "messages", "Friends" => "friends", "Members" => "members", "Log Out" => "logout"];
   private $unLoggedInMenu = ["Home" => null, "Log In" => "login", "Sign Up" => "signup"]; 
-  private $icons = [null => "bi bi-house", "login" => "bi bi-box-arrow-in-right", "signup" => "bi bi-door-open", "home" => "bi bi-house-door", "posts" => "bi bi-chat-text", "members" => "bi bi-list-task", "friends" => "bi bi-people", "messages" => "bi-chat-dots", "profile" => "bi bi-person", "logout" => "bi bi-box-arrow-right"];
+  private $icons = [null => "bi bi-house", "login" => "bi bi-box-arrow-in-right", "signup" => "bi bi-door-open", "home" => "bi bi-house-door", "posts" => "bi bi-chat-text", "members" => "bi bi-list-task", "friends" => "bi bi-people", "messages" => "bi-envelope-open", "profile" => "bi bi-person", "logout" => "bi bi-box-arrow-right"];
   private $html;
 
   

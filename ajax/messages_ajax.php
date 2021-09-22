@@ -13,9 +13,10 @@ if ( isset($_REQUEST["chatRetrieve"], $_REQUEST["chatWith"]) ) {
 
   unset($_SESSION["lastChatUpdateTime"]); //unset session variable lastChatUpdateTime which is used in updating each conversation after one is loaded
   $chatWith = $_REQUEST["chatWith"]; //the user this conversation is with
-  
+  $numberOfMessagesToGet = 12; //how many messages to retrieve
+
   $conversation = new Conversation($user, $chatWith);
-  $messages = $conversation->getMessages(); //array of Message objects
+  $messages = $conversation->getMessages($numberOfMessagesToGet); //array of Message objects
   
   $result = ["user" => $user, "conversation" => $messages]; //array of arrays ["user", ["conversation"]] 
   echo json_encode($result); //return json

@@ -1,4 +1,8 @@
 footer {
-  flex: 0 1 auto;
-  width: 100%;
+  flex: 0 0 auto;
+  width: 100vw;
+  position: sticky;
+  bottom: 0;
+  height: 35px;
+  z-index: 9;
 }

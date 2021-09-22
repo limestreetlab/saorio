@@ -4,11 +4,16 @@ the main body contents takes up all space between navbar and footer
 */
 
 .navbar {
-  width: 100%;
-  flex: 0 1 auto; 
+  width: 100vw;
+  flex: 0 0 auto; 
+  position: sticky;
+  top: 0;
+  height: 60px;
+  z-index: 9;
 }
 
 /*set to take up all space in middle*/
 #main-body {
   flex: 1 1 auto;
+  position: relative;
 }

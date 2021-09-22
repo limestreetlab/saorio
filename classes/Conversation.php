@@ -23,11 +23,20 @@ class Conversation {
 
   /*
   getter for messages
+  @param $number, the number of messages (latest) to get
   @return array of Message objects
   */
-  public function getMessages(): array {
+  public function getMessages(int $number=null): array {
 
-    return $this->messages; 
+    if (is_null($number)) {
+
+      return $this->messages;
+
+    } else {
+
+      return $number < $this->numberOfMessages ? array_slice($this->messages, $this->numberOfMessages - $number, $this->numberOfMessages) : $this->messages; 
+    
+    }
 
   }
 
@@ -37,18 +46,18 @@ class Conversation {
   */
   private function retrieveMessages(): array {
 
-    $out = [];
+    $messages = [];
     $params = [":chatWith" => "$this->chatWith", ":me" => "$this->user"];
     $resultset = $this->mysql->request($this->mysql->readConversationWithQuery, $params); //get the conversation from database
 
     foreach ($resultset as $row) {
 
       $messageObj = new Message($row["sender"], $row["recipient"], $row["timestamp"], $row["message"]);
-      array_push($out, $messageObj); 
+      array_push($messages, $messageObj); 
 
     }
 
-    return $out;
+    return $messages;
 
   }
 
