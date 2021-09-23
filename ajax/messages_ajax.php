@@ -12,13 +12,16 @@ output is ["user": user, "conversation": [ ["timeElapsed" => v, "sender" => v, "
 if ( isset($_REQUEST["chatRetrieve"], $_REQUEST["chatWith"]) ) {
 
   unset($_SESSION["lastChatUpdateTime"]); //unset session variable lastChatUpdateTime which is used in updating each conversation after one is loaded
+  
   $chatWith = $_REQUEST["chatWith"]; //the user this conversation is with
+  $id = isset($_REQUEST["id"]) ? $_REQUEST["id"] : null; //message id if is set or null if unset, set when retrieve specific message
   $numberOfMessagesToGet = 12; //how many messages to retrieve
 
   $conversation = new Conversation($user, $chatWith);
-  $messages = $conversation->getMessages($numberOfMessagesToGet); //array of Message objects
+  $messages = is_null($id) ? $conversation->getMessages($numberOfMessagesToGet) : $conversation->getMessages($numberOfMessagesToGet, $id, false, false); 
   
-  $result = ["user" => $user, "conversation" => $messages]; //array of arrays ["user", ["conversation"]] 
+  //output is ["user", ["conversation"], "total"], where user is current user's username, total is total number of messages available to be loaded
+  $result = ["user" => $user, "conversation" => $messages, "total" => $conversation->getNumberOfMessages()]; 
   echo json_encode($result); //return json
   exit();
 

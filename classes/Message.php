@@ -7,15 +7,17 @@ class Message {
   public $timestamp;
   public $timeElapsed;
   public $message;
+  public $id;
   protected $mysql; //object for mysql database access
 
-  public function __construct(string $sender, string $recipient, int $timestamp, string $message) {
+  public function __construct(string $sender, string $recipient, int $timestamp, string $message, int $id = null) {
 
     $this->sender = $sender;
     $this->recipient = $recipient;
     $this->timestamp = $timestamp;
     $this->timeElapsed = self::getDateTimeElapsed( intval($this->timestamp) );
     $this->message = $message;
+    $this->id = $id;
     $this->mysql = MySQL::getInstance();
 
   }
@@ -46,7 +48,7 @@ class Message {
   @return associative array ["sender", "recipient", "message", "timeElapsed", "timestamp"]
   */
   public function read(): array {
-    return ["sender" => $this->sender, "recipient" => $this->recipient, "message" => $this->message, "timeElapsed" => $this->timeElapsed, "timestamp" => $this->timestamp];
+    return ["sender" => $this->sender, "recipient" => $this->recipient, "message" => $this->message, "timeElapsed" => $this->timeElapsed, "timestamp" => $this->timestamp, "id" => $this->id];
   }
 
 

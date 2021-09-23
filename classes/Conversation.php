@@ -23,19 +23,60 @@ class Conversation {
 
   /*
   getter for messages
-  @param $number, the number of messages (latest) to get
-  @return array of Message objects
+  @param $id, the message id from which to start retrieving messages 
+  @param $length, the number of messages to retrieve
+  @param $forwardRetrieval, when a retrival id is provided, it indicates whether messages should be retrieved forward (newer than) or backward (older than) from that message
+  @param $inclusive, when a retrieval id is provided, it indicates whether the IDed message should be included or excluded
+  @return array of Message objects or null if id isn't found
   */
-  public function getMessages(int $number=null): array {
+  public function getMessages(?int $length = null, ?int $id = null, bool $forwardRetrieval = true, bool $inclusive = true): ?array {
 
-    if (is_null($number)) {
+    //if no id and length provided, return all messages in the conversation
+    if (is_null($length) && is_null($id)) {
 
       return $this->messages;
 
-    } else {
+    }
 
-      return $number < $this->numberOfMessages ? array_slice($this->messages, $this->numberOfMessages - $number, $this->numberOfMessages) : $this->messages; 
-    
+    if (is_null($id)) { //id not provided, only length is
+
+      return $length < $this->numberOfMessages ? array_slice($this->messages, $this->numberOfMessages - $length, $length) : $this->messages;      
+
+    } else { //id provided
+
+      $index = $this->getMessageIndex($id);
+
+      //if id not found in messages
+      if (is_null($index)) {
+        return null;
+      }
+
+      if ($forwardRetrieval) { //messages should be retrieved forward
+
+        if ($length) { //forward with length
+
+          return $inclusive ? array_slice($this->messages, $index, $length) : array_slice($this->messages, $index + 1, $length) ; 
+
+        } else { //forward without length
+
+          return $inclusive ? array_slice($this->messages, $index) : array_slice($this->messages, $index + 1); 
+
+        }
+
+      } else { //messages should be retrieved backward
+
+        if ($length) { //backward with length
+
+          return $inclusive ? array_slice( $this->messages, MAX($index - $length + 1, 0), MIN($length, $index + 1 ) ) : array_slice( $this->messages, MAX($index - $length, 0), MIN($length, $index ) ); 
+
+        } else { //backward without length
+
+          return $inclusive ? array_slice($this->messages, 0, $index + 1) : array_slice($this->messages, 0, $index); 
+
+        }
+
+      }
+
     }
 
   }
@@ -52,7 +93,7 @@ class Conversation {
 
     foreach ($resultset as $row) {
 
-      $messageObj = new Message($row["sender"], $row["recipient"], $row["timestamp"], $row["message"]);
+      $messageObj = new Message($row["sender"], $row["recipient"], $row["timestamp"], $row["message"], $row["id"]);
       array_push($messages, $messageObj); 
 
     }
@@ -120,6 +161,24 @@ class Conversation {
 
   }
 
+  /*
+  get the index in $messages array for a message id
+  in other words, given a message id, it returns index to retrieve that message from $messages array
+  @param $id the message id
+  @return index number in the $messages array or null if id is not found
+  */
+  protected function getMessageIndex(int $id): ?int {
+
+    //filter the message array using id equality
+    $filteredArray = array_filter($this->messages, function($msg) use($id) {
+      return $msg->id == $id;
+    });
+
+    //if id is found, return the array index of that element
+    return count($filteredArray) > 0 ? array_keys($filteredArray)[0] : null;
+
+  }
+  
   /*
   Comparator function for sorting Message objs based on timestamp
   more recent message (larger timestamp) is defined to be larger

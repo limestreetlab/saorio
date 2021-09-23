@@ -5,7 +5,7 @@ script contains mutiple functions from attaching Send function to send button an
 */
 
 //file-wide variables
-var loadMoreBtn = "<button type='button' class='btn btn-outline-secondary rounded-pill mb-5 border-0' id='loadMoreBtn' data-last-message-id=''><i class='bi bi-arrow-up-square'></i> Previous messages</button>";
+var loadMoreBtn = "<button type='button' class='btn btn-outline-secondary rounded-pill mb-5 border-0' id='loadMoreBtn' data-last-message-id=''><i class='bi bi-arrow-up-circle'></i> Previous messages</button>";
 
 
 $("document").ready(function() {
@@ -41,6 +41,7 @@ $(".conversationRow").click( function(){
   
   $("#chatPanel").empty(); //empty out the chat panel (display area) first
 
+  //set up the chatHeader
   let picture = $(this).find(".chatWithPicture").attr("src");
   let name = $(this).find(".name").text();
   $("#chatWithPicture").attr("src", picture);
@@ -60,6 +61,7 @@ $(".conversationRow").click( function(){
       let message; //the msg content
       let timeElapsed; //msg since 
       let chatBubble; //the msg display UI
+      let numberOfMessagesAvailable = dataReceive.total; //number of messages available to be loaded in the conversation
       
       //for each message exchanged between me and the other person (who)
       $.each(dataReceive.conversation, function() {
@@ -74,7 +76,13 @@ $(".conversationRow").click( function(){
 
       }); //close $.each
 
-      $("#chatPanel").prepend(loadMoreBtn);
+      let numberOfMessagesLoaded = $(".chat-bubble").length; //number of messages that have been loaded thus far
+      
+      if (numberOfMessagesAvailable > numberOfMessagesLoaded) {
+        let id = dataReceive.conversation[0].id; //id of the first message loaded
+        $("#chatPanel").prepend(loadMoreBtn); //add the load-more-message btn if more messages can be loaded
+        $("#loadMoreBtn").data("last-message-id", id); //attach a data-id to the btn
+      }       
       
     } //close callback 
     , "json"); //close $.post 
@@ -82,6 +90,52 @@ $(".conversationRow").click( function(){
   updateChat(); //after a conversation is opened, update it automatically
 
 }); //close onclick
+
+$("#chatPanel").on("click", "#loadMoreBtn", function() {
+  
+  let chatWith = $("#conversationDisplay").data("user");
+  let id = $(this).data("last-message-id");
+  $(this).remove(); //remove the button from view
+  let dataSend = {chatRetrieve: true, chatWith: chatWith, id: id};
+
+  $.post("ajax/messages_ajax.php", dataSend, 
+  //start callback
+  function(dataReceive) { 
+
+    //variable declarations
+    let myself = dataReceive.user; //the $user in php
+    let sender; //username of a msg sender
+    let message; //the msg content
+    let timeElapsed; //msg since 
+    let chatBubbles = ""; //the msg display UI
+    let numberOfMessagesAvailable = dataReceive.total; //number of messages available to be loaded in the conversation
+
+    //for each message exchanged between me and the other person (who)
+    $.each(dataReceive.conversation, function() {
+      
+      timeElapsed = this.timeElapsed; 
+      sender = this.sender; 
+      message = this.message;
+      
+      chatBubbles += makeChatBubble(myself, sender, message, timeElapsed);
+
+    }); //close $.each
+
+    $("#chatPanel").prepend(chatBubbles); //add the chat to the chat panel for display
+    
+    let numberOfMessagesLoaded = $(".chat-bubble").length; //number of messages that have been loaded thus far
+      
+    if (numberOfMessagesAvailable > numberOfMessagesLoaded) {
+      let id = dataReceive.conversation[0].id; //id of the first message loaded
+      $("#chatPanel").prepend(loadMoreBtn); //add the load-more-message btn if more messages can be loaded
+      $("#loadMoreBtn").data("last-message-id", id); //attach a data-id to the btn
+    }       
+  
+  } //close callback
+  
+  , "json");
+
+});
 
 /*
 function to repeatedly check for new chat messages and display if any
@@ -133,7 +187,7 @@ function makeChatBubble(myself, sender, message, timeElapsed) {
   }
 
   //unfortunately, Bootstrap style is mixed here
-  chatBubble = "<div class='row ms-1 me-1 mb-2 card-text justify-content-" + startOrEnd + "'><div class='col-5'><div class='p-3 text-start'>" +
+  chatBubble = "<div class='chat-bubble row ms-1 me-1 mb-2 justify-content-" + startOrEnd + "'><div class='col-5'><div class='p-3 text-start'>" +
                 message + "</div><div class='message-time mt-0 me-3 text-muted w-100 text-end'>" + timeElapsed + "</div></div></div>";
   
   return chatBubble;
