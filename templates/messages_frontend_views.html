@@ -1,0 +1,25 @@
+<main>
+
+<!--chat bubble for current user's chats, and the other user's chats-->
+  <!--the other user-->
+  <section class='chat-bubble row ms-1 me-1 mb-2 justify-content-start' id='hisChatBubble' data-db-id='{{id}}'>
+    <div class='col-5'>
+      <div class='p-3 text-start chat-bubble-message'>{{message}}</div>
+      <div class='message-time mt-0 me-3 text-muted w-100 text-end chat-bubble-time'>{{time}}</div>
+    </div>
+  </section>
+  <!--current user-->
+  <section class='chat-bubble row ms-1 me-1 mb-2 justify-content-end' id='myChatBubble' data-db-id='{{id}}'>
+    <div class='col-5'>
+      <div class='p-3 text-start chat-bubble-message'>{{message}}</div>
+      <div class='message-time mt-0 me-3 text-muted w-100 text-end chat-bubble-time'>{{time}}</div>
+    </div>
+  </section>
+
+<!--a button at top of chat panel for loading additional messages for a conversation-->  
+<button type='button' class='btn btn-outline-secondary rounded-pill mb-5 border-0' id='loadMoreBtn' data-last-message-id=''>
+  <i class='bi bi-arrow-up-circle'></i> Previous messages
+</button>
+
+
+</main>

@@ -34,7 +34,7 @@ foreach ($chatters as $chatter) { //for each User obj in the list
   $data = ["chatWith" => $username, "picture" => $picture, "name" => $fullname, "message" => $lastMessageSummary, "ago" => $lastMessageTime];
 
   $viewLoader->load("messages_list.html")->bind($data)->render();
-
+  
 }
 
 $viewLoader->load("messages_list_end.html")->render();
