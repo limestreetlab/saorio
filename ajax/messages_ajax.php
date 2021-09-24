@@ -55,7 +55,7 @@ requesting Ajax uses GET request with ?chatUpdate=[true/false]&chatWith=[usernam
 if ( isset($_REQUEST["chatUpdate"], $_REQUEST["chatWith"]) ) {
   
   $chatWith = $_REQUEST["chatWith"];
-  $now = time(); //timestamp now
+  $now = time(); //timestamp for now
   $lastChatUpdateTime = isset($_SESSION["lastChatUpdateTime"]) ? $_SESSION["lastChatUpdateTime"] : $now; //set for each conversation and unset when a new one clicked
   
   $newConversation = new Conversation($user, $chatWith);

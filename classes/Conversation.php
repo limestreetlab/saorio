@@ -116,7 +116,7 @@ class Conversation {
 
       foreach ($resultset as $row) {
 
-        $messageObj = new Message($row["sender"], $row["recipient"], $row["timestamp"], $row["message"]);
+        $messageObj = new Message($row["sender"], $row["recipient"], $row["timestamp"], $row["message"], $row["id"]);
         array_push($out, $messageObj);
 
       }

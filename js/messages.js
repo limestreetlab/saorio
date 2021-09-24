@@ -7,9 +7,10 @@ script contains mutiple functions from attaching Send function to send button an
 $("document").ready(function() {
   
   //register event handlers
-  $(".conversationRow").click(loadInitialConversation); //onclick event, used to load conversations with the clicked user onto chatPanel on the right
+  $(".conversationRow").on("click", loadInitialConversation); //onclick event, used to load conversations with the clicked user onto chatPanel on the right
   $("#chatPanel").on("click", "#loadMoreBtn", loadMoreMessages); //onclick event for button to load additional messages, delegated as button dynamically created
-  $("#chatMessageBtn").click(sendMessage); //onclick event for button to send a message
+  $("#chatMessageBtn").on("click", sendMessage); //onclick event for button to send a message
+  $("#chatMessage").on("keypress", enterToSendMessage); //enterkey pressed inside message form equivalent to a send btn click
  
   emulateFirstClick(); //click to initialize one of the conversations in view
 
@@ -36,19 +37,20 @@ function emulateFirstClick() {
 } //close function
 
 /*
-function to load a conversation initially
+handler to load a conversation initially when one is selected
 */
 function loadInitialConversation() {
 
   $("#chatPanel").empty(); //empty out the chat panel (display area) first
 
-  //set up the chatHeader
+  //setting up the chat panel header with picture and name
   let picture = $(this).find(".chatWithPicture").attr("src");
   let name = $(this).find(".name").text();
   
   $("#chatWithPicture").attr("src", picture);
   $("#chatWithName").text(name);
 
+  //get data for ajax call
   let chatWith = $(this).data("chat-with"); //the clickable element should embed a data-element containing the username of whom the chat is with
   $("#conversationDisplay").data("user", chatWith); //add a data-* to #conversationDisplay
   let dataSend = {chatRetrieve: true, chatWith: chatWith}; //the data to send over to php using ajax
@@ -63,7 +65,37 @@ function loadInitialConversation() {
     }  
 
     , "json");
+
+  updateChat();
   
+}
+
+/*
+handler to request further messages based on message id and load them into view when an id-embedded button is clicked
+*/
+function loadMoreMessages() {
+
+  //read data from views
+  let chatWith = $("#conversationDisplay").data("user");
+  let id = $("#loadMoreBtn").data("last-message-id");
+  
+  //remove the clicked button
+  $(this).remove();
+
+  let dataSend = {chatRetrieve: true, chatWith: chatWith, id: id};
+
+  //ajax post call
+  $.post("ajax/messages_ajax.php", dataSend, 
+
+    function(data) {
+
+      let makingChatBubbles = makeChatBubbles(data);
+      makingChatBubbles.then(addLoadMessageButton);
+
+    }  
+
+    , "json");
+
 }
 
 /*
@@ -90,52 +122,30 @@ function addLoadMessageButton(totalNumberOfMessagesAvailable) {
 }
 
 /*
-function to request further messages based on message id and load them into view
-*/
-function loadMoreMessages() {
-
-  //read data from views
-  let chatWith = $("#conversationDisplay").data("user");
-  let id = $("#loadMoreBtn").data("last-message-id");
-  
-  //remove this clicked button
-  $(this).remove();
-
-  let dataSend = {chatRetrieve: true, chatWith: chatWith, id: id};
-
-  //ajax post call
-  $.post("ajax/messages_ajax.php", dataSend, 
-
-    function(data) {
-
-      let makingChatBubbles = makeChatBubbles(data);
-      makingChatBubbles.then(addLoadMessageButton);
-
-    }  
-
-    , "json");
-
-}
-
-/*
-function to create chat bubbles and load them into view
+asynchronous function to create chat bubbles and load them into view by prepending
+suitable only for loading initial and previous messages, but not new messages after first load
+output is a promise object, because caller may want to wait for code completion before proceeding
 @param message data
 @return Promise
 */
 function makeChatBubbles(messageData) {
 
-  return new Promise(function(resolve, reject) {
-
+  let promise = new Promise(function(resolve, reject) {
+    //async call to load templated view elements 
     $.get("templates/messages_frontend_views.html", function(viewData) {
       
       //view elements
-      hisChatBubble = $(viewData).find("#hisChatBubble").prop("outerHTML");
-      myChatBubble = $(viewData).find("#myChatBubble").prop("outerHTML");
-      thisChatBubble = ''; //var for each one chat bubble
-      chatBubbles = ''; //var for multiple chat bubbles in a conversation
+      let hisChatBubble = $(viewData).find("#hisChatBubble").prop("outerHTML");
+      let myChatBubble = $(viewData).find("#myChatBubble").prop("outerHTML");
+      let thisChatBubble = ''; //var for each one chat bubble
+      let chatBubbles = ''; //var for multiple chat bubbles in a conversation
 
-      //current user's username
-      myself = messageData.user;
+      //current user's username and message data
+      let myself = messageData.user;
+      let sender;
+      let message;
+      let timeElapsed;
+      let id;
 
       //loop through array for each message object
       $.each(messageData.conversation, function() {
@@ -159,65 +169,93 @@ function makeChatBubbles(messageData) {
 
       }); //end of each
 
-      $("#chatPanel").prepend(chatBubbles);
+      $("#chatPanel").prepend(chatBubbles); //display all the chat bubbles created for the received messages
 
-      resolve(messageData.total);
+      resolve(messageData.total); //return and embed total number of messages for the conversation
 
     }); //end get async call
 
   }); //end Promise
 
+  return promise;
+
 } //end function
 
 /*
-function to repeatedly check for new chat messages and display if any
+asynchronous function to create a chat bubble and return it as Promise to caller without loading it into view
+@param message data
+@return Promise containing a chat bubble string
+*/
+function getChatBubble(self, sender, message, timeElapsed, id) {
+
+  let promise = new Promise(function(resolve, reject) {
+
+    $.get("templates/messages_frontend_views.html", function(viewData) {
+
+      if (sender == self) {
+
+        var html = $(viewData).find("#myChatBubble").prop("outerHTML");
+        
+      } else {
+
+        var html = $(viewData).find("#hisChatBubble").prop("outerHTML");
+
+      }
+
+      let output = html.replace("{{message}}", message).replace("{{time}}", timeElapsed).replace("{{id}}", id);
+      
+      resolve(output);
+
+    }); //end ajax get
+  
+  }); //end Promise
+
+  return promise;
+
+}
+
+/*
+function to repeatedly check for new chat messages and add them to display
 */
 function updateChat() {
   
   let chatWith = $("#conversationDisplay").data("user");//by design, the active conversation has its chatter's username embedded in a data-user attribute
   let dataSend = {chatUpdate: true, chatWith: chatWith};
   
+  //request new chat messages
   $.post("ajax/messages_ajax.php", dataSend,  
-    //start callback
-    function(dataReceive) { 
+    
+    function(data) { 
+      
       //will receive json of [user, [newMessages]]
-      if (dataReceive.newMessages.length > 0) { //there are new messages
+      if (data.newMessages.length > 0) { //there are new messages
         
-        let myself = dataReceive.user; //the $user in the session
-        //for each message exchanged between me and the other person (who)
-        $.each(dataReceive.newMessages, function() {
+        let myself = data.user; //current user in the session
+        //for each message exchanged
+        $.each(data.newMessages, function() {
         
           let timeElapsed = this.timeElapsed; 
           let sender = this.sender; 
           let message = this.message;
+          let id = this.id;
+          
+          let chatBubble = getChatBubble(myself, sender, message, timeElapsed, id); //get a bubble string
+          //when string gotten
+          chatBubble.then(function(html){
 
-          let chatBubble = makeChatBubble(myself, sender, message, timeElapsed);
+            $("#chatPanel").append(html); //append this bubble to display
 
-          $("#chatPanel").append(chatBubble); //add the chat to the chat panel for display
+          });
+          
         }); //close $.each
       } //close if 
     } //close callback
     
   , "json"); //close request
 
-  setTimeout(updateChat, 3000); //call self at timeout
+  setTimeout(updateChat, 3000); //repeatedly calling self
   
 } //close function
-
-/*
-link the enter key press to send button click
-*/
-$("#chatMessage").keypress( function(keyEvent) {
-
-  let keypressed = keyEvent.keyCode ? keyEvent.keyCode : keyEvent.which;
-  
-  if (keypressed == "13") { //if enter key is pressed
-
-    $("#chatMessageBtn").click(); //click the send button
-
-  }
-
-});
 
 /*
 function for sending a message
@@ -241,6 +279,22 @@ function sendMessage() {
 
     }, "json");
           
+  }
+
+}
+
+/*
+function to check if a keypress inside message box is enterkey, if then do a button click
+*/
+function enterToSendMessage(keyEvent) {
+
+  //get the key pressed
+  let keypressed = keyEvent.keyCode ? keyEvent.keyCode : keyEvent.which;
+  
+  if (keypressed == "13") { //if enter key is pressed
+
+    $("#chatMessageBtn").click(); //generate a click on the send button
+
   }
 
 }
