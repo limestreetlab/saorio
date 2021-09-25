@@ -57,10 +57,10 @@ function loadInitialConversation() {
   
   $.post("ajax/messages_ajax.php", dataSend, 
 
-    function(data) {
+    async function(data) {
 
-      let makingChatBubbles = makeChatBubbles(data);
-      makingChatBubbles.then(addLoadMessageButton);
+      let totalMessages = await makeChatBubbles(data);
+      addLoadMessageButton(totalMessages);
 
     }  
 
@@ -87,10 +87,10 @@ function loadMoreMessages() {
   //ajax post call
   $.post("ajax/messages_ajax.php", dataSend, 
 
-    function(data) {
+    async function(data) {
 
-      let makingChatBubbles = makeChatBubbles(data);
-      makingChatBubbles.then(addLoadMessageButton);
+      let totalMessages = await makeChatBubbles(data);
+      addLoadMessageButton(totalMessages);
 
     }  
 
