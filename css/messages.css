@@ -57,7 +57,7 @@ body::-webkit-scrollbar {
 
 #chatPanel {
   flex: 1 1 auto;
-  overflow-y: visible;
+  overflow-y: auto;
 }
 
 #chatFooter {

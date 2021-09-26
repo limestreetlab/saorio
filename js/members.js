@@ -1,5 +1,5 @@
 $("document").ready(function() {
-  //bind to the container of all elements to delegate event handling rather than directly to the elements, as they might not exist at page render time
+  //bind to the container of all elements to delegate event handling rather than directly onto the elements themselves, as they might be dynamically loaded and not exist at render time
   $(".relationshipBtn").on("click", ".friendRequestBtn", sendFriendRequest); 
   $(".relationshipBtn").on("mouseenter", ".friendRequestSentBtn", showRequestCancelBtn); 
   $(".relationshipBtn").on("mouseleave", ".friendRequestCancelBtn", reshowRequestSentBtn); 
@@ -96,29 +96,32 @@ function confirmFriendRequest() {
 
 /*
 callback to update the relationship button in frontend
+@param hisUsername, the username of the other user of this relationship
+@param relationshipCode, the defined code to update the relationship to
 */
 function updateRelationshipBtn(hisUsername, relationshipCode) {
-  //same codes as ones used inside members.php
-  
-  //direct mirrors of button definitions in the view
-  let stranger = "<button type='button' class='col-10 mt-3 btn btn-primary btn-sm friendRequestBtn' data-send-request-to='" + hisUsername + "'>Add Friend</button> " ; 
-  let friend = "<button type='button' class='col-10 mt-3 btn btn-outline-primary btn-sm' disabled>Your Friend</button>";
-  let requestSent = "<button type='button' class='col-10 mt-3 btn btn-primary btn-sm friendRequestSentBtn'>Request Sent</button><button type='button' class='col-8 mt-3 btn btn-primary btn-sm d-none friendRequestCancelBtn' data-cancel-request-to='" + hisUsername + "'>Cancel Request</button>";
-  
-  let relationshipWith = "#relationshipWith" + hisUsername; //the ID selector of this relationship
-  
-  switch (relationshipCode) {
-    case 0:
-      $(relationshipWith).html(stranger);
-      break;
-    case 1: 
-      $(relationshipWith).html(friend);
-      break;
-    case 2:
-      $(relationshipWith).html(requestSent);
-      break;
-    default:
-      console.log("Error: relationshipCode param passed must be either 0 or 1, for stranger or friend.");
-  }
+
+  fetch("templates/members_card.html")
+  .then(view => view.text())
+  .then(function(view) {
+    
+    let buttonName;
+    switch(relationshipCode) {
+      case 0:
+        buttonName = "friendRequestBtn"; //class name of the button to send a friend request
+        break;
+      case 1:
+        buttonName = "friendAlreadyBtn"; //class name of the button to indicate existing friend
+        break;
+      case 2:
+        buttonName = "friendRequestSentAndCancelBtnSet"; //class name of the buttons to indicate request sent and cancel a request
+        break;
+    }
+    
+    let relationshipBtn = "#relationshipWith" + hisUsername; //the ID selector of this relationship
+    let button = $(view).find("." + buttonName).prop("outerHTML").replace('{{hisUsername}}', hisUsername);
+    $(relationshipBtn).html(button);
+
+  });
   
 }

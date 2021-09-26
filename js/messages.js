@@ -232,20 +232,17 @@ function updateChat() {
         
         let myself = data.user; //current user in the session
         //for each message exchanged
-        $.each(data.newMessages, function() {
+        $.each(data.newMessages, async function() {
         
           let timeElapsed = this.timeElapsed; 
           let sender = this.sender; 
           let message = this.message;
           let id = this.id;
           
-          let chatBubble = getChatBubble(myself, sender, message, timeElapsed, id); //get a bubble string
-          //when string gotten
-          chatBubble.then(function(html){
-
-            $("#chatPanel").append(html); //append this bubble to display
-
-          });
+          let chatBubble = await getChatBubble(myself, sender, message, timeElapsed, id); //get a bubble string
+          
+          $("#chatPanel").append(chatBubble); //append this bubble to display
+          document.querySelector("[data-db-id='" + id + "']").scrollIntoView(true); //get the added chat element and scroll it into view
           
         }); //close $.each
       } //close if 
@@ -253,7 +250,7 @@ function updateChat() {
     
   , "json"); //close request
 
-  setTimeout(updateChat, 3000); //repeatedly calling self
+  setTimeout(updateChat, 2000); //repeatedly calling self at set interval
   
 } //close function
 

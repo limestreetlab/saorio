@@ -58,8 +58,7 @@ if ( isset($_REQUEST["chatUpdate"], $_REQUEST["chatWith"]) ) {
   $now = time(); //timestamp for now
   $lastChatUpdateTime = isset($_SESSION["lastChatUpdateTime"]) ? $_SESSION["lastChatUpdateTime"] : $now; //set for each conversation and unset when a new one clicked
   
-  $newConversation = new Conversation($user, $chatWith);
-  $newMessages = $newConversation->getMessagesSince($lastChatUpdateTime); //array of Message objects
+  $newMessages = (new Conversation($user, $chatWith))->getMessagesSince($lastChatUpdateTime); //array of Message objects
   
   $result = ["user" => $user, "newMessages" => $newMessages]; //array of arrays ["user", ["newMessages"]]
   echo json_encode($result); //return json

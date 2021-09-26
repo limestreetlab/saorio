@@ -14,12 +14,14 @@
         {{ENDIF}}
 
         {{IF {{relationship}} == 1}}
-          <button type='button' class='col-10 mt-3 btn btn-outline-primary btn-sm' disabled>Your Friend</button>
+          <button type='button' class='col-10 mt-3 btn btn-outline-primary btn-sm friendAlreadyBtn' disabled>Your Friend</button>
         {{ENDIF}}
 
         {{IF {{relationship}} == 2}}
+          <span class='friendRequestSentAndCancelBtnSet'>
           <button type='button' class='col-10 mt-3 btn btn-primary btn-sm friendRequestSentBtn'>Request Sent</button>
-          <button type='button' class='col-10 mt-3 btn btn-primary btn-sm d-none friendRequestCancelBtn' data-cancel-request-to='{{hisUsername}}'>Cancel Request</button>
+          <button type='button' class='col-10 mt-3 btn btn-primary btn-sm d-none friendRequestCancelBtn' data-cancel-request-to='{{hisUsername}}'>Cancel</button>
+          </span>
         {{ENDIF}}
 
         {{IF {{relationship}} == 3}}

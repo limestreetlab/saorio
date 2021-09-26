@@ -19,7 +19,7 @@ $tables = [];
 $tablename = "members";
 $columns = "user VARCHAR(20), 
 password VARCHAR(100),
-email VARCHAR(40) UNIQUE,
+email VARCHAR(50) UNIQUE,
 PRIMARY KEY(user),
 INDEX(user(5))";
 $tables["$tablename"] = $columns;

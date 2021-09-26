@@ -17,7 +17,7 @@ class Signup {
     /*
     constructor
     */
-    public function __construct($user, $password, $passwordRepeat, $email, $firstname, $lastname) {
+    public function __construct(string $user = null, string $password = null, string $passwordRepeat = null, string $email = null, string $firstname = null, string $lastname = null) {
 
         $this->user = $user;
         $this->password = $password;
@@ -32,28 +32,36 @@ class Signup {
     /*
     main register function to sign up users, performs validations and database entry
     @return 2-element array [success, [error codes]] where an error code is given when some validation error occurs or null otherwise
-    error codes are defined as -1 for internal failure, 1 for whitespaces in username, 2 for special characters in username, 3 for username starting with a digit, 4 for username beyond min/max length, 
+    error codes are defined as -1 for internal failure, 0 for duplicated username, 1 for whitespaces in username, 2 for special characters in username, 3 for username starting with a digit, 4 for username beyond min/max length, 
     5 for whitespaces in password, 6 for password containing disallowed special characters, 7 for password beyond min/max length, 8 for repeated password not matching,
-    9 for invalid email address, 10 for email address already used, 11 for email beyond min/max length, 12 for name beyong min/max length, 13 for name having non-English alphabets
+    9 for invalid email address, 10 for email address already used, 11 for email beyond min/max length, 12 for name beyong min/max length, 13 for name having non-English alphabets, 14 for having null fields
     */
     public function register(): array {
 
         $success = false;
 
-        if ( $this->validate() ) {
+        if (isset($this->user, $this->password, $this->passwordRepeat, $this->email, $this->firstname, $this->lastname)) {
 
-            try {
+            if ( $this->validate() ) {
 
-                $this->persist();
-                $this->initializeProfile();
-                $success = true; 
-            
-            } catch (Exception $ex) {
+                try {
 
-                array_push($this->errorCodes, -1);
-                error_log("Database error occurred during user signup. Exception message: " . $ex->getMessage());
+                    $this->persist();
+                    $this->initializeProfile();
+                    $success = true; 
                 
+                } catch (Exception $ex) {
+
+                    array_push($this->errorCodes, -1);
+                    error_log("Database error occurred during user signup. Exception message: " . $ex->getMessage());
+                    
+                }
             }
+        
+        } else {
+
+            array_push($this->errorCodes, 14);
+
         }
 
         return [$success, $this->errorCodes];
@@ -72,10 +80,17 @@ class Signup {
     /*
     helper function to check if username is acceptable
     */
-    private function checkUsername(): bool {
+    public function checkUsername(): bool {
         
         $success = true;
         $this->user = strtolower(filter_var(trim($this->user), FILTER_SANITIZE_STRING)); //sanitize, trim, lowercase
+
+        //check for username duplicate
+        $usernameExists = $this->mysql->request($this->mysql->readMembersTableQuery, [":user" => "$this->user"]);
+        if ($usernameExists) { 
+            $success = false;
+            array_push($this->errorCodes, 0);
+        }
 
         //check for whitespace
         if ( strpos( $this->user, " ") ) { 
@@ -113,7 +128,7 @@ class Signup {
     /*
     helper function to check password validity
     */
-    private function checkPassword(): bool {
+    public function checkPassword(): bool {
 
         $success = true;
         $this->password = trim($this->password); //trim
@@ -153,7 +168,7 @@ class Signup {
     /*
     helper function to check email address validity
     */
-    private function checkEmail(): bool {
+    public function checkEmail(): bool {
 
         $success = true;
         $this->email = strtolower(filter_var(trim($this->email), FILTER_SANITIZE_STRING)); //sanitize, trim, lowercase
@@ -173,7 +188,7 @@ class Signup {
 
         //check for length
         $minLength = 5;
-        $maxLength = 40;
+        $maxLength = 50;
         $length = strlen($this->email);
         if ( $length > $maxLength || $length < $minLength ) {
             $success = false;
@@ -187,7 +202,7 @@ class Signup {
     /*
     helper function to validate first and last names
     */
-    private function checkName(): bool {
+    public function checkName(): bool {
 
         $success = true;
         $this->firstname = ucwords(filter_var(trim($this->firstname), FILTER_SANITIZE_STRING)); //sanitize, trim, capitalize
@@ -214,6 +229,14 @@ class Signup {
 
     }
 
+    /*
+    errorCodes getter
+    */
+    public function getErrorCodes(): array {
+
+        return $this->errorCodes;
+
+    }
 
     /*
     function to persist validated data to database

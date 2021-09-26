@@ -142,7 +142,7 @@ final class MySQL {
 
   //for messages
   public $readConversationWithQuery = "SELECT * FROM (SELECT * FROM messages WHERE sender = :me AND recipient = :chatWith UNION SELECT * FROM messages WHERE sender = :chatWith AND recipient = :me) AS conversation ORDER BY timestamp ASC";
-  public $readConversationWithSinceQuery = "SELECT * FROM (SELECT * FROM messages WHERE sender = :me AND recipient = :chatWith AND timestamp > :since UNION SELECT * FROM messages WHERE sender = :chatWith AND recipient = :me AND timestamp > :since) AS conversation ORDER BY timestamp ASC";
+  public $readConversationWithSinceQuery = "SELECT * FROM (SELECT * FROM messages WHERE sender = :me AND recipient = :chatWith AND timestamp >= :since UNION SELECT * FROM messages WHERE sender = :chatWith AND recipient = :me AND timestamp >= :since) AS conversation ORDER BY timestamp ASC";
   public $readChattedWithQuery = "SELECT MAX(timestamp) AS lastTime, chatWith FROM ( SELECT sender AS chatWith, timestamp FROM messages WHERE recipient = :me UNION SELECT recipient AS chatWith, timestamp FROM messages WHERE sender = :me) AS m GROUP BY chatWith ORDER BY lastTime DESC";
   public $createMessageQuery = "INSERT INTO messages VALUES (NULL, :time, :from, :to, :message)";
 

@@ -64,13 +64,14 @@ function toggleFollowing() {
 }
 
 /*
+helper method to modify a friend's view
 1 for removing a friend's row after unfriending
 2 for adding notes about a friend
 3 for toggling following
 */
 function updateFriendship(username, action, data=null) {
 
-  let row = ".card[data-username='" + username + "']"; //selector
+  let row = ".card[data-username='" + username + "']"; //element selector
 
   switch(action) {
 

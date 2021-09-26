@@ -8,14 +8,14 @@ $mysql = MySQL::getInstance(); //object for mysql database access
 
 if (isset($_REQUEST["username"])) {
   
-  $user = filter_var(trim($_REQUEST["username"]), FILTER_SANITIZE_STRING); //sanitize the user input
-  $result = $mysql->request($mysql->readMembersTableQuery, [":user" => $user]); 
+  $signup = new Signup( $_REQUEST["username"] );
+  $signup->checkUsername();
   
-  if (count($result)) { //if result isn't empty, so username already exists
+  if ( in_array(0, $signup->getErrorCodes()) ) { 
    
     $availability = false;
     
-  } else { //username is available
+  } else { 
     
     $availability = true;
   
@@ -28,11 +28,10 @@ if (isset($_REQUEST["username"])) {
 
 if (isset($_REQUEST["email"])) {
 
-  $email = filter_var(trim($_REQUEST["email"]), FILTER_SANITIZE_STRING); //sanitize user input
-  $query = "SELECT * FROM members where email = '$email'"; //SQL to select if any data exist for this email
-  $result = $mysql->request($query); 
+  $signup = new Signup(null, null, null, $_REQUEST["email"]);
+  $signup->checkEmail();
 
-  if (count($result)) { //if result isn't empty, so email already exists
+  if ( in_array(10, $signup->getErrorCodes()) ) { 
    
     $emailExists = true;
     
