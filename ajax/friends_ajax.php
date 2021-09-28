@@ -5,6 +5,10 @@ header("Content-Type: application/json"); //return json output
     
 require_once "./../includes/ini.php"; //rel path to ini.php 
 
+
+/*
+serving unfriend requests
+*/
 if ( isset($_REQUEST["unfriend"]) ) {
 
   $unfriend = $_REQUEST["unfriend"];
@@ -17,7 +21,9 @@ if ( isset($_REQUEST["unfriend"]) ) {
 
 }
 
-
+/*
+serving add notes requests
+*/
 if ( isset($_REQUEST["notesAbout"], $_REQUEST["notes"]) ) {
 
   $friend = $_REQUEST["notesAbout"];
@@ -32,7 +38,9 @@ if ( isset($_REQUEST["notesAbout"], $_REQUEST["notes"]) ) {
 
 }
 
-
+/*
+serving follow friend requests
+*/
 if ( isset($_REQUEST["follow"]) ) {
 
   $friend = $_REQUEST["follow"];

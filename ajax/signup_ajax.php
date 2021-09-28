@@ -4,8 +4,9 @@ header("Content-Type: application/json"); //return json output
 
 require_once "./../includes/ini.php"; //rel path to ini.php
 
-$mysql = MySQL::getInstance(); //object for mysql database access
-
+/*
+serving username availability checking requests
+*/
 if (isset($_REQUEST["username"])) {
   
   $signup = new Signup( $_REQUEST["username"] );
@@ -26,6 +27,9 @@ if (isset($_REQUEST["username"])) {
 
 }
 
+/*
+serving email address existence checking requests
+*/
 if (isset($_REQUEST["email"])) {
 
   $signup = new Signup(null, null, null, $_REQUEST["email"]);

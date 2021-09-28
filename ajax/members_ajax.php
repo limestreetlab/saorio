@@ -5,6 +5,10 @@ header("Content-Type: application/json"); //return json output
     
 require_once "./../includes/ini.php"; //rel path to ini.php 
 
+/*
+serving friend request confirmation requests
+receives confirm/reject actions from user and reflects that in database
+*/
 if ( isset($_REQUEST["requestFrom"], $_REQUEST["action"]) ) {
   
   //assgin variables
@@ -34,6 +38,9 @@ if ( isset($_REQUEST["requestFrom"], $_REQUEST["action"]) ) {
 
 }
 
+/*
+serving friend request sending requests
+*/
 if ( isset($_REQUEST["sendRequestTo"]) ) {
 
   //assign variables
@@ -48,6 +55,9 @@ if ( isset($_REQUEST["sendRequestTo"]) ) {
 
 }
 
+/*
+serving sent friend request cancelling requests
+*/
 if ( isset($_REQUEST["cancelRequestTo"]) ) {
 
   //assign variables

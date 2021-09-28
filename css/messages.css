@@ -3,7 +3,13 @@ body::-webkit-scrollbar {
   display: none;
 }
 
-/*top picture size*/
+/*heading of the conversations list*/
+#conversations-header {
+  height: 50px;
+  border-bottom: 1px solid #f7f7f7;
+}
+
+/*the person's picture in the left side menu*/
 .chatWithPicture {
   width: 80px;
   height: 80px;
@@ -16,7 +22,7 @@ body::-webkit-scrollbar {
   border-bottom: 1px solid #f7f7f7;
 }
 
-.conversationRow:hover {
+.conversationRow:hover, .conversationRow:active, .conversationRow:focus {
   background-color: #f2f2f2;
 }
 
@@ -35,12 +41,12 @@ body::-webkit-scrollbar {
 }
 
 .row.justify-content-start .text-start {
-  background-color: honeydew;
+  background-color: lavender;
   border-radius: 15px 15px 15px 0;
 }
 
 .row.justify-content-end .text-start{
-  background-color: azure;
+  background-color: aliceblue;
   border-radius: 15px 15px 0 15px;
 }
 
@@ -73,6 +79,7 @@ body::-webkit-scrollbar {
   box-shadow: none !important;
 }
 
+/*the person's picture in the chat panel*/
 #chatWithPicture {
   width: 50px;
   height: 50px;
@@ -86,3 +93,4 @@ body::-webkit-scrollbar {
   box-shadow: none !important;
 
 }
+
