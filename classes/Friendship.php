@@ -54,7 +54,7 @@ class Friendship {
 
             //send a message to the other user
             $contents = "Hello, I would like to add you as a friend and sent you a request. ";
-            $friendRequestMessage = new Message($this->thisuser, $this->thatuser, time(), $contents);
+            $friendRequestMessage = new Message($this->thisuser, $this->thatuser, microtime(true), $contents);
             $friendRequestMessage->send();
 
             $this->status = 2;

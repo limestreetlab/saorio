@@ -14,28 +14,53 @@ abstract class UploadedImageFile {
   protected $width; //width in px
   protected $height; //height in px
   protected $tempFilePath; //full path including basename and ext
-  protected $permFilePath = null; //full path including basename and ext, to be set using setter
+  protected $permFilePath; //full path including basename and ext, to be set using setter
   protected $exifOrientation; //exif orientation values range 1-8 or null of exif data null
+  protected $id; //used to reference an existing object
 
   /*
-  constructor
+  constructor, used to create a new object or reference a created object
+  some id is used to gain handle to a created object, that can be database id, filename, etc
+  for new creation, file is provided; for old reference, file is null
   @param the file to upload
+  @param the id of an existing file
   */
-  public function __construct($uploadedFile) {
+  public function __construct($uploadedFile = null, $id = null) {
 
-    $this->tempFilePath = $uploadedFile["tmp_name"];
-    $this->fileExtension = strtolower(pathinfo($uploadedFile["name"], PATHINFO_EXTENSION)); //file ext
-    $this->fileSize = $uploadedFile["size"];
-    $this->exifOrientation = exif_read_data($this->tempFilePath)['Orientation'];  
+    if (is_null($uploadedFile) && is_null($id)) {
+      throw new Exception("parameters cannot all be null.");
+    }
 
-    $sizeInfo = getimagesize($this->tempFilePath); //getimagesize($file) where $file is path
+    if (isset($uploadedFile)) { //new file creation
+
+      $this->tempFilePath = $uploadedFile["tmp_name"];
+      $this->fileExtension = strtolower(pathinfo($uploadedFile["name"], PATHINFO_EXTENSION)); //file ext
+      $this->fileSize = $uploadedFile["size"];
+      $this->exifOrientation = exif_read_data($this->tempFilePath)['Orientation'];  
+
+      $sizeInfo = getimagesize($this->tempFilePath); //getimagesize($file) where $file is path
+      
+      $this->mime = $sizeInfo["mime"]; //mime type info in getimagesize()
+      $this->width = $sizeInfo[0];
+      $this->height = $sizeInfo[1];
+      $this->id = null;
+      $this->permFilePath = null; //set using setter
+
+      if ( !is_file($this->tempFilePath) || !is_array($sizeInfo) || $this->width == 0 || $this->height == 0 ) {
+        throw new Exception("Uploaded file doesn't appear to be an image.");
+      }
     
-    $this->mime = $sizeInfo["mime"]; //mime type info in getimagesize()
-    $this->width = $sizeInfo[0];
-    $this->height = $sizeInfo[1];
+    } else { //old file reference
 
-    if ( !is_file($this->tempFilePath) || !is_array($sizeInfo) || $this->width == 0 || $this->height == 0 ) {
-      throw new Exception("Uploaded file doesn't appear to be an image.");
+      $this->id = $id; 
+      $this->mime = null; //set in concrete class
+      $this->fileExtension = null; //set in concrete class
+      $this->fileSize = null; //set in concrete class
+      $this->permFilePath = null; //set in concrete class
+      $this->width = null; //set in concrete class
+      $this->height = null; //set in concrete class
+      $this->exifOrientation = null; //set in concrete class
+
     }
 
   }
@@ -65,6 +90,16 @@ abstract class UploadedImageFile {
   abstract method to factory call other methods for file checking, moving, processing, saving
   */
   abstract public function upload();
+  
+  /*
+  database persistence function to be implemented
+  */
+  abstract protected function persist();
+
+  /*
+  remove an uploaded file
+  */
+  abstract protected function delete();
 
   /*
   function to check user uploaded file for size, type
@@ -117,6 +152,12 @@ abstract class UploadedImageFile {
   function to move uploaded file from temporary to permanent destination
   */
   protected function move(): self {
+
+    if (!isset($this->tempFilePath, $this->permFilePath)) {
+
+      throw new Exception("both source and destination must be set to move a file.");
+
+    }
     
     if ( move_uploaded_file($this->tempFilePath, $this->permFilePath) ) {
 
@@ -130,12 +171,6 @@ abstract class UploadedImageFile {
     }
 
   }
-
-  /*
-  database persistence function to be implemented
-  */
-  abstract protected function persist();
-
 
   /*
   errorCodes getter
@@ -163,6 +198,12 @@ abstract class UploadedImageFile {
     return $this->permFilePath;
 
   }
+  
+  /*
+  function to convert the file's absolute path to relative one
+  @return relative file path
+  */
+  abstract protected function getFileRelativePath(): string;
 
   /*
   function to rotate/flip the image according to its Exif orientation tag
@@ -176,7 +217,7 @@ abstract class UploadedImageFile {
   7 = 270 degrees: image has been flipped back-to-front and is on its far side.
   8 = 270 degrees, mirrored: image is on its far side.
   @see https://sirv.com/help/articles/rotate-photos-to-be-upright/
-  @return success
+  @return self
   */
   protected function useExifOrientation(): self {
 
@@ -272,6 +313,7 @@ abstract class UploadedImageFile {
     return $dir;
 
   }
+
 
 } //end class
 

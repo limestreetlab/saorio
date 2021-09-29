@@ -3,6 +3,12 @@ body::-webkit-scrollbar {
   display: none;
 }
 
+/*row container for the conversations list in the left side menu*/
+#conversations-row {
+  position: sticky;
+  top: 60px; /*not a magic number but header's fixed height*/
+}
+
 /*heading of the conversations list*/
 #conversations-header {
   height: 50px;
@@ -11,7 +17,7 @@ body::-webkit-scrollbar {
 
 /*the person's picture in the left side menu*/
 .chatWithPicture {
-  width: 80px;
+  width: 80px; /*arbitrary size, not related to or linked to anywhere*/
   height: 80px;
 }
 
@@ -81,7 +87,7 @@ body::-webkit-scrollbar {
 
 /*the person's picture in the chat panel*/
 #chatWithPicture {
-  width: 50px;
+  width: 50px; /*arbitrary size, not related to or linked to anywhere*/
   height: 50px;
 }
 

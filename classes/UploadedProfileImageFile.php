@@ -4,7 +4,7 @@
 class UploadedProfileImageFile extends UploadedImageFile {
 
     //new static variables
-    protected static $uploadedDir = UPLOAD_DIR;
+    protected static $uploadedDir = PROFILE_UPLOAD_DIR;
     const MAX_WIDTH = 300; //max width allowed in px
     const MAX_HEIGHT = 300; //max height allowed in px
     //new instance variables
@@ -14,13 +14,37 @@ class UploadedProfileImageFile extends UploadedImageFile {
     /*
     @Override
     constructor, inherited from super
-    instantiate this class instance variables
+    id used to reference a created object is either its filename (with ext) or full absolute path
     */
-    public function __construct($uploadedFile) {
+    public function __construct($uploadedFile = null, $id = null) {
 
-        parent::__construct($uploadedFile); //super constructor 
-        $this->filename = $_SESSION["user"] . "-" . filemtime($this->tempFilePath); //<username>-<timestamp> as filename, where timestamp is unix upload time
+        parent::__construct($uploadedFile, $id); //super constructor 
         $this->mysql = MySQL::getInstance();
+
+        if (isset($uploadedFile)) { //new creation
+
+            $this->filename = $_SESSION["user"] . "-" . filemtime($this->tempFilePath); //<username>-<timestamp> as filename, where timestamp is unix upload time
+        
+        } else { //existing reference
+
+            //check if only filename provided, if so make it full path
+            $this->id = dirname($id) == "." ? self::$uploadedDir . $id : $id; //full path as id
+            
+            if (file_exists($this->id)) {
+                throw new Exception("the provided id does not exist: " . $this->id . "cannot be found.");
+            }
+
+            //re-create its variables
+            $this->permFilePath = $this->id;             
+            $this->fileExtension = strtolower(pathinfo($this->permFilePath, PATHINFO_EXTENSION)); 
+            $this->fileSize = filesize($this->permFilePath); //bytes 
+            $sizeInfo = getimagesize($this->permFilePath);        
+            $this->width = $sizeInfo[0]; 
+            $this->height = $sizeInfo[1];
+            $this->mime = $sizeInfo["mime"]; 
+            $this->exifOrientation = exif_read_data($this->permFilePath)['Orientation'];   
+            
+        }
 
     }
 
@@ -195,12 +219,32 @@ class UploadedProfileImageFile extends UploadedImageFile {
     } //end function
 
     /*
-    function to delete the current profile picture file of this user on server
+    @Override
+    function to delete the current profile picture file of this user on server and db
     */
-    public function deletePhoto(): bool {
+    public function delete(): bool {
 
-        $existingFilePath = $this->mysql->request($this->mysql->readBasicProfileQuery, [":user" => $_SESSION["user"]])[0]["profilePictureURL"];
-        return unlink($existingFilePath);
+        try {
+
+            $this->mysql->request($this->mysql->updateProfilePictureToDefaultQuery, [":user" => $_SESSION["user"]]); //remove from db
+
+        } catch (Exception $ex) {
+            
+            return false;
+        
+        }
+
+        return unlink($this->permFilePath); //removing from server 
+
+    }
+
+    /*
+    @Override
+    */
+    public function getFileRelativePath(): string {
+
+        $filename = basename($this->permFilePath); //filename with ext
+        return REL_PROFILE_UPLOAD_DIR . $filename; //relative path
 
     }
 

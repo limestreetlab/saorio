@@ -13,6 +13,7 @@ echo "<!DOCTYPE html>
      ";
 
 $tables = []; //to hold tables to be created in name:columns pairs
+$numberOfTablesCreated = 0;
 
 //the members table
 $tablename = "members";
@@ -30,8 +31,8 @@ $columns = "user VARCHAR(20),
 firstname VARCHAR(30) NOT NULL,
 lastname VARCHAR(30) NOT NULL,
 about VARCHAR(1000),
-profilePictureURL VARCHAR(300) DEFAULT 'C:/Program Files/Ampps/www/saorio/uploads/avatar0.png' COMMENT 'absolute path',
-profilePictureMIME VARCHAR(30) DEFAULT 'image/png' COMMENT 'full mime of image/xxx',
+profilePictureURL VARCHAR(300) NOT NULL DEFAULT 'C:/Program Files/Ampps/www/saorio/uploads/profiles/avatar0.png' COMMENT 'absolute path',
+profilePictureMIME VARCHAR(30) NOT NULL DEFAULT 'image/png' COMMENT 'full mime of image/xxx',
 gender VARCHAR(10) COMMENT 'female, male, intersex',
 dob INT COMMENT 'date of birth in epoch UTC',
 city VARCHAR(30),
@@ -51,8 +52,8 @@ $tables["$tablename"] = $columns;
 
 //the messages table
 $tablename = "messages";
-$columns = "id INT UNSIGNED AUTO_INCREMENT COMMENT 'timestamps can overlap so id more reliable',
-timestamp INT UNSIGNED NOT NULL COMMENT 'unix epoch UTC timestamp',
+$columns = "id INT UNSIGNED AUTO_INCREMENT,
+timestamp NUMERIC(14, 4) NOT NULL COMMENT 'unix epoch UTC timestamp formatted as double of seconds.milliseconds',
 sender VARCHAR(20) NOT NULL,
 recipient VARCHAR(20) NOT NULL,
 message VARCHAR(1000) NOT NULL,
@@ -91,36 +92,38 @@ $tables["$tablename"] = $columns;
 
 //posts table, to store data common to all posts made by a user, but posts have their more specific contents stored elsewhere and post reactions are stored elsewhere too
 $tablename = "posts";
-$columns = "id INT UNSIGNED AUTO_INCREMENT,
+$columns = "id VARCHAR(30) COMMENT 'generated using username and timestamp',
 user VARCHAR(20) NOT NULL COMMENT 'user making the post',
 timestamp TIMESTAMP DEFAULT NOW() COMMENT 'epoch timestamp to now whenever a post is made or modified',
-content_type TINYINT(1) NOT NULL COMMENT 'different types of posts can have different contents and post-to-content relationships so put into own tables',
+post_type TINYINT(1) NOT NULL COMMENT 'different types of posts can have different contents and post-to-content relationships so put into own tables',
 PRIMARY KEY (id),
 FOREIGN KEY (user) REFERENCES members(user) ON DELETE CASCADE";
 $tables["$tablename"] = $columns;
 
-//post contents for simple text-based posts, one-to-one
+//post contents for simple text-based posts, one-to-one. post_type = 1
 $tablename = "text_posts";
 $columns = "id INT UNSIGNED AUTO_INCREMENT,
-post_id INT UNSIGNED NOT NULL COMMENT 'id of the post the text attached to',
+post_id VARCHAR(30) UNIQUE COMMENT 'id of the post the text attached to',
 content VARCHAR(500) NOT NULL,
 PRIMARY KEY (id),
 FOREIGN KEY (post_id) REFERENCES posts (id) ON DELETE CASCADE";
 $tables["$tablename"] = $columns;
 
-//post contents for image-based posts, one-to-many (one post, many images) 
+//post contents for image-based posts, one-to-many (one post, many images). post_type = 2
 $tablename = "image_posts";
 $columns = "id INT UNSIGNED AUTO_INCREMENT,
-post_id INT UNSIGNED NOT NULL COMMENT 'id of the post the image attached to',
-imageURL VARCHAR(300) NOT NULL COMMENT 'absolute path to the image',
-imageMIME VARCHAR(30) NOT NULL COMMENT 'full mime of image/xxx',
+post_id VARCHAR(30) NOT NULL COMMENT 'id of the post the image attached to',
+imageURL VARCHAR(300) COMMENT 'absolute path to the image',
+imageMIME VARCHAR(30) COMMENT 'full mime of image/xxx',
+description VARCHAR(200) COMMENT 'text accompanying an image',
 PRIMARY KEY (id),
 FOREIGN KEY (post_id) REFERENCES posts (id) ON DELETE CASCADE"; 
+$tables["$tablename"] = $columns;
 
 //post comments, one-to-many (one post, many comments)
 $tablename = "post_comments";
 $columns = "comment_id INT UNSIGNED AUTO_INCREMENT,
-post_id INT UNSIGNED NOT NULL COMMENT 'id of the post commenting on',
+post_id VARCHAR(30) NOT NULL COMMENT 'id of the post commenting on',
 user VARCHAR(20) NOT NULL COMMENT 'user making the comment',
 comment VARCHAR(200) NOT NULL COMMENT 'the comment body',
 PRIMARY KEY (comment_id),
@@ -130,11 +133,10 @@ $tables["$tablename"] = $columns;
 
 //post likes and dislikes, one-to-many (one post, many likes/dislikes)
 $tablename = "post_reactions";
-$columns = "reaction_id INT UNSIGNED AUTO_INCREMENT,
-post_id INT UNSIGNED NOT NULL COMMENT 'id of the post reacting to',
+$columns = "post_id VARCHAR(30) NOT NULL COMMENT 'id of the post reacting to',
 user VARCHAR(20) NOT NULL COMMENT 'user making the reaction, once per post',
 reaction TINYINT(1) NOT NULL COMMENT 'boolean flag, use negative and positive numbers for negative and position reactions',
-PRIMARY KEY (reaction_id),
+PRIMARY KEY (post_id, user),
 FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
 FOREIGN KEY (user) REFERENCES members(user) ON DELETE CASCADE";
 $tables["$tablename"] = $columns;
@@ -145,8 +147,9 @@ foreach ($tables as $table => $columns) {
     $sql = "CREATE TABLE IF NOT EXISTS $table ($columns)";
     $mysql->request($sql);
     echo "The table $table is now in database ". DB_NAME. "<br>";
+    $numberOfTablesCreated++;
 }
 
-echo "<br> ...Table initialization completed. </body></html>";
+echo "<br> ...Table initialization completed. $numberOfTablesCreated tables are created.</body></html>";
 
 ?>

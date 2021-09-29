@@ -68,7 +68,7 @@ class BasicProfile {
   static public function convertPicturePathAbs2Rel(string $absolutePath): string {
 
     $filename = basename($absolutePath); //the filename with ext
-    return REL_UPLOAD_DIR . "$filename"; //root relative path to photo
+    return REL_PROFILE_UPLOAD_DIR . "$filename"; //root relative path to photo
 
   }
 

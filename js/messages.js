@@ -55,7 +55,7 @@ function loadInitialConversation() {
   $("#conversationDisplay").data("user", chatWith); //add a data-* to #conversationDisplay
   let dataSend = {chatRetrieve: true, chatWith: chatWith}; //the data to send over to php using ajax
   
-  $.post("ajax/messages_ajax.php", dataSend, 
+  $.get("ajax/messages_ajax.php", dataSend, 
 
     async function(data) {
 
@@ -85,7 +85,7 @@ function loadMoreMessages() {
   let dataSend = {chatRetrieve: true, chatWith: chatWith, id: id};
 
   //ajax post call
-  $.post("ajax/messages_ajax.php", dataSend, 
+  $.get("ajax/messages_ajax.php", dataSend, 
 
     async function(data) {
 
@@ -223,7 +223,7 @@ function updateChat() {
   let dataSend = {chatUpdate: true, chatWith: chatWith};
   
   //request new chat messages
-  $.post("ajax/messages_ajax.php", dataSend,  
+  $.get("ajax/messages_ajax.php", dataSend,  
     
     function(data) { 
       
@@ -250,7 +250,7 @@ function updateChat() {
     
   , "json"); //close request
 
-  setTimeout(updateChat, 2000); //repeatedly calling self at set interval
+  setTimeout(updateChat, 1000); //repeatedly calling self at set interval
   
 } //close function
 

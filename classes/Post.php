@@ -9,63 +9,64 @@ abstract class Post {
   protected $id; //an id to identify each post
   protected $user; //user of the post
   protected $timestamp; //unix epoch timestamp of the post
-  protected $content; //contents of the post
+  protected $content; //contents of the post, varies depending on concrete classes
   protected $comments = []; //others' comments of the post
   protected $likedBy = []; //users who reacted positively to the post
   protected $dislikedBy = []; //users who reacted negatively to the post
   protected $likes; //number of positive reactions
   protected $dislikes; //number of negative reactions
+  protected $mysql; 
 
   /*
   constructor
   */
-  public function __construct(mixed $content, int $id = null) {
+  public function __construct(mixed $content = null, mixed $id = null) {
+
+    if (is_null($content) && is_null($id)) {
+      throw new Exception("parameters cannot all be null.");
+    }
 
     $this->mysql = MySQL::getInstance(); //database accessor instance
 
-    if ( isset($id) ) { //id provided, so referencing an existing post
-
-      $this->id = $id;
-      $this->user = $_SESSION["user"]; //set to session user
-      //$this->timestamp = ;
-      $this->content = $this->getContent($this->id);
-      //$this->comments = ;
-      //$this->likedBy = ;
-      //$this->dislikedBy = ;
-      $this->likes = count($this->likedBy);
-      $this->dislikes = count($this->dislikedBy);
-      
-    
-    } else { //no id, so a new post
+    if ( isset($content) ) { //content provided, so a new post
 
       $this->id = null;
       $this->user = $_SESSION["user"]; //set to session user
-      $this->content = $content;
       $this->likes = 0;
       $this->dislikes = 0;
+    
+    } else { //no content, so reference to old post
+
+      $this->id = $id;
+      $this->content = $this->getContent();
+      $this->comments = $this->mysql->request($this->mysql->readPostCommentsQuery, [":post_id" => $id]);
+      $this->likedBy = $this->mysql->request($this->mysql->readPostLikedByQuery, [":post_id" => $id]);
+      $this->dislikedBy = $this->mysql->request($this->mysql->readPostDislikedByQuery, [":post_id" => $id]);;
+      $this->likes = count($this->likedBy);
+      $this->dislikes = count($this->dislikedBy);
 
     }
   }
 
   /*
-  function to complete and submit a post
+  function to complete and submit a new post
   */
   abstract public function post(): bool;
 
   /*
-  function to remove a post
+  function to remove an existing post
   */
   abstract public function delete(): bool;
 
   /*
-  function to modify a posted post
+  function to modify an existing post
   */
-  abstract public function edit(): bool;
+  abstract public function update($newContent): bool;
 
   /*
-  getter of a post's contents
+  function to retrieve content of an existing post
   */
-  abstract public function getContent(int $id): string;
+  abstract public function getContent(): mixed;
 
   /*
   liking a post
@@ -74,7 +75,8 @@ abstract class Post {
 
     if ( !$this->haveAlreadyLiked($username) ) {
 
-      array_push($this->likedBy, $username);
+      $this->mysql->request($this->mysql->createPostLikeQuery, [":post_id" => "$this->id", ":user" => $username]); //add the like to db
+      array_push($this->likedBy, $username); //add to array
 
     }
 
@@ -87,7 +89,37 @@ abstract class Post {
 
     if ( !$this->haveAlreadyDisliked($username) ) {
       
-      array_push($this->dislikedBy, $username);
+      $this->mysql->request($this->mysql->createPostDislikeQuery, [":post_id" => "$this->id", ":user" => $username]); //add the dislike to db
+      array_push($this->dislikedBy, $username); //add to array
+
+    }
+
+  }
+
+  /*
+  undo a given like
+  */
+  public function unlike(string $username): void {
+
+    if ( $this->haveAlreadyLiked($username) ) {
+
+      $this->mysql->request($this->mysql->deletePostLikeQuery, [":post_id" => "$this->id", ":user" => $username]); //remove the like from db
+      unset($this->likedBy[array_search($username, $this->likedBy)]); //remove from array
+
+    }
+
+  }
+
+  /*
+  undo a given dislike
+  */
+  public function undislike(string $username): void {
+
+    if ( $this->haveAlreadyDisliked($username) ) {
+
+      $this->mysql->request($this->mysql->deletePostDislikeQuery, [":post_id" => "$this->id", ":user" => $username]); //remove the dislike from db
+      unset($this->dislikedBy[array_search($username, $this->dislikedBy)]); //remove from array
+
     }
 
   }
@@ -126,7 +158,8 @@ abstract class Post {
 
     $comment = self::cleanString($comment);
 
-
+    $params = [":post_id" => "$this->id", ":user" => $username, ":comment" => $comment];
+    $this->mysql->request($this->mysql->createPostCommentQuery, $params);
 
   }
 
@@ -137,6 +170,9 @@ abstract class Post {
 
     $comment = self::cleanString($comment);
 
+    $params = [":comment_id" => $id, ":comment" => $comment];
+    $this->mysql->request($this->mysql->updatePostCommentQuery, $params);
+
   }
 
   /*
@@ -144,8 +180,9 @@ abstract class Post {
   */
   public function deleteComment(int $id): void {
 
-  }
+    $this->mysql->request($this->mysql->deletePostCommentQuery, [":comment_id" => $id]);
 
+  }
 
   /*
   class utility to clean string inputs, by trimming, sanitizing, and replacing double whitespaces
@@ -167,23 +204,7 @@ abstract class Post {
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-}
+} //end class
 
 ?>
 

@@ -95,7 +95,6 @@ final class MySQL {
   //for members
   public $readAllUsersQuery = "SELECT user FROM members";
 
-
   //for account logging
   public $readPasswordQuery = "SELECT password FROM members WHERE user = :user";
   public $readMembersTableQuery = "SELECT * FROM members WHERE user = :user";
@@ -105,12 +104,14 @@ final class MySQL {
 
   //for profile
   public $updateProfileQuery = "UPDATE profiles SET about = :about, gender = :gender, ageGroup = :ageGroup, location = :location, job = :job, company = :company, major = :major, school = :school, interests = :interests, quote = :quote WHERE user = :user"; 
-
   public $readProfileQuery = "SELECT * FROM profiles WHERE user = :user";
   public $readBasicProfileQuery = "SELECT firstname, lastname, profilePictureURL FROM profiles WHERE user = :user";
+  public $readAllPostsQuery = "SELECT posts.id, posts.timestamp, posts.post_type AS type, text_posts.content, image_posts.imageURL AS image, image_posts.description FROM posts LEFT JOIN text_posts ON posts.id = text_posts.post_id LEFT JOIN posts.id = image_posts.post_id WHERE posts.user = :user";
+  public $readAllImagePostsQuery = "SELECT posts.id, posts.timestamp, image_posts.imageURL AS image, image_posts.description FROM posts INNER JOIN image_posts ON posts.id = image_posts.post_id WHERE posts.user = :user";
 
   //for profile edits (atomic: one statement for each updatable field, inefficient and redundant but simple)
   public $updateProfilePictureQuery = "UPDATE profiles SET profilePictureURL = :url, profilePictureMIME = :mime WHERE user = :user"; 
+  public $updateProfilePictureToDefaultQuery = "UPDATE profiles SET profilePictureURL = DEFAULT, profilePictureMIME = DEFAULT WHERE user = :user";
   public $updateProfileAboutQuery = "UPDATE profiles SET about = :about WHERE user = :user";
   public $updateProfileGenderQuery = "UPDATE profiles SET gender = :gender WHERE user = :user";
   public $updateProfileDobQuery = "UPDATE profiles SET dob = :dob WHERE user = :user";
@@ -146,10 +147,32 @@ final class MySQL {
   public $readChattedWithQuery = "SELECT MAX(timestamp) AS lastTime, chatWith FROM ( SELECT sender AS chatWith, timestamp FROM messages WHERE recipient = :me UNION SELECT recipient AS chatWith, timestamp FROM messages WHERE sender = :me) AS m GROUP BY chatWith ORDER BY lastTime DESC";
   public $createMessageQuery = "INSERT INTO messages VALUES (NULL, :time, :from, :to, :message)";
 
+  //for post comments and likes
+  public $createPostCommentQuery = "INSERT INTO post_comments (post_id, user, comment) VALUES (:post_id, :user, :comment)";
+  public $updatePostCommentQuery = "UPDATE post_comments SET comment = :comment WHERE comment_id = :comment_id";
+  public $deletePostCommentQuery = "DELETE FROM post_comments WHERE comment_id = :comment_id";
+  public $readPostCommentsQuery = "SELECT * FROM post_comments WHERE post_id = :post_id";
+  public $createPostLikeQuery = "INSERT INTO post_reactions VALUES (:post_id, :user, 1)";
+  public $createPostDislikeQuery = "INSERT INTO post_reactions VALUES (:post_id, :user, -1)";
+  public $deletePostLikeQuery = "DELETE FROM post_reactions WHERE post_id = :post_id AND user = :user";
+  public $deletePostDislikeQuery = "DELETE FROM post_reactions WHERE post_id = :post_id AND user = :user";
+  public $readPostLikedByQuery = "SELECT user FROM post_reactions WHERE post_id = :post_id AND reaction > 0";
+  public $readPostDislikedByQuery = "SELECT user FROM post_reactions WHERE post_id = :post_id AND reaction < 0";
 
-
-  
-
+  //for post contents
+  public $createTextPostQuery = "INSERT INTO posts (id, user, post_type) VALUES (:id, :user, 1)";
+  public $createTextPostContentQuery = "INSERT INTO text_posts (post_id, content) VALUES (:post_id, :content)";
+  public $createImagePostQuery = "INSERT INTO posts (id, user, post_type) VALUES (:id, :user, 2)";
+  public $createImagePostContentQuery = "INSERT INTO image_posts (post_id, description) VALUES (:post_id, :description)";
+  public $updateImagePostImageQuery = "UPDATE image_posts SET imageURL = :imageURL, imageMIME = :imageMIME WHERE id = :id";
+  public $updateImagePostDescriptionQuery = "UPDATE image_posts SET description = :description WHERE id = :id";
+  public $readPostTypeQuery = "SELECT post_type AS type FROM posts WHERE id = :id";
+  public $readTextPostQuery = "SELECT posts.id, posts.user, posts.timestamp, text_posts.content AS post FROM posts INNER JOIN text_posts ON posts.id = text_posts.post_id WHERE posts.id = :id";
+  public $readImagePostQuery = "SELECT posts.id, posts.user, posts.timestamp, image_posts.imageURL AS image, image_posts.imageMIME AS mime, image_posts.description AS description FROM posts INNER JOIN image_posts ON posts.id = image_posts.post_id WHERE posts.id = :id";
+  public $updateTextPostQuery = "UPDATE text_posts SET content = :content WHERE post_id = :post_id";
+  public $deletePostQuery = "DELETE FROM posts WHERE id = :id";
+  public $deleteImagePostImageQuery = "DELETE FROM image_posts WHERE id = :id";
+  public $readImagePostImageQuery = "SELECT imageURL from image_posts WHERE id = :id";
 
 } //end class
 

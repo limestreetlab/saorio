@@ -25,8 +25,7 @@ foreach($_POST as $field => $value) {
       $profilePhoto = new UploadedProfileImageFile($file);
       if ($profilePhoto->upload(true)) { //file upload successful
         array_push($success, true);
-        $newAbsPath = $profilePhoto->getFilePath(); //get this file's new permanent absolute path
-        $newRelPath = $profile->convertPicturePathAbs2Rel($newAbsPath); //convert abs path to rel path, calling Profile's static method
+        $newRelPath = $profilePhoto->getFileRelativePath(); //get this file's new relative absolute path
         array_push($newData, $newRelPath); //new data to reflect for a photo is its relative path
       } else { //file upload failed
         array_push($success, false);

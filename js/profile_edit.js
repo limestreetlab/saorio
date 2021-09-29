@@ -1,12 +1,12 @@
 $("document").ready( function() {
 
   //register click handlers for all .edit-inline elements
-  for (const child of document.querySelectorAll(".edit-inline")) {
-    child.onclick = editData;
+  for (let data of document.querySelectorAll(".edit-inline")) {
+    data.addEventListener("click", editData);
   }
   //register click handlers for all .edit-inform elements
-  for (const child of document.querySelectorAll(".edit-inform")) {
-    child.onclick = showForm;
+  for (let data of document.querySelectorAll(".edit-inform")) {
+    data.addEventListener("click", showForm);
   }
 
   //register click handler to photo upload btn
