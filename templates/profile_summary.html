@@ -1,0 +1,50 @@
+<!--profile summary appears on the left-side of profile page-->
+
+
+<main class="card border-0 shadow profile-leftside">
+  <!--profile wallpaper-->
+  <img src='{{wallpaper}}' class="card-img-top img-responsive">
+
+  <section class="card-body">
+  <!--profile photo and user full name-->
+  <img src='{{profile-picture}}' class="card-img float-start me-2" id="profile-picture">
+  <h4 class="card-title float-start">{{firstname}} {{lastname}}</h4>
+
+  <!--a snapshot taken from his profile bio-->
+  <p class="card-text pt-2" id="profile-summary">{{summary}} </p>
+
+  <!--list of his activity statistics-->
+  <div class="d-flex flex-row justify-content-around">
+    <ul class="list-inline list-unstyled">
+
+      <li class="list-inline-item text-center"><!--his posts stat-->
+        <span class="text-muted small d-block">POSTS</span>
+        <span class="text-primary fw-bold">{{posts-stat}}</span>
+      </li>
+
+      <li class="list-inline-item text-center"><!--his posted photos stat-->
+        <span class="text-muted small d-block">PHOTOS</span>
+        <span class="text-primary fw-bold">{{photos-stat}}</span>
+      </li>
+      
+      <li class="list-inline-item text-center"><!--his comments stat-->
+        <span class="text-muted small d-block">COMMENTS</span>
+        <span class="text-primary fw-bold">{{comments-stat}}</span>
+      </li>
+
+      <li class="list-inline-item text-center"><!--his net number of likes received-->
+        <span class="text-muted small d-block">LIKES</span>
+        <span class="text-primary fw-bold">{{likes-stat}}</span>
+      </li>
+
+    </ul>
+  </div>
+  
+  <!--link to his full profile-->
+  <div class="d-flex justify-content-center">
+    <a href="{{profile-link}}" class="btn btn-primary">View Profile</a>
+  </div>
+
+  </section>
+
+</main>

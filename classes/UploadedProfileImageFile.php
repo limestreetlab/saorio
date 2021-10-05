@@ -4,12 +4,11 @@
 class UploadedProfileImageFile extends UploadedImageFile {
 
     //new static variables
-    protected static $uploadedDir = PROFILE_UPLOAD_DIR;
+    const DIR = PROFILE_UPLOAD_DIR;
     const MAX_WIDTH = 300; //max width allowed in px
     const MAX_HEIGHT = 300; //max height allowed in px
     //new instance variables
     protected $filename; //filename to save to, without ext
-    protected $mysql; //object for mysql database access
 
     /*
     @Override
@@ -19,7 +18,6 @@ class UploadedProfileImageFile extends UploadedImageFile {
     public function __construct($uploadedFile = null, $id = null) {
 
         parent::__construct($uploadedFile, $id); //super constructor 
-        $this->mysql = MySQL::getInstance();
 
         if (isset($uploadedFile)) { //new creation
 
@@ -28,10 +26,11 @@ class UploadedProfileImageFile extends UploadedImageFile {
         } else { //existing reference
 
             //check if only filename provided, if so make it full path
-            $this->id = dirname($id) == "." ? self::$uploadedDir . $id : $id; //full path as id
+            $this->id = dirname($id) == "." ? self::DIR . $id : $id; //full path as id
             
-            if (file_exists($this->id)) {
-                throw new Exception("the provided id does not exist: " . $this->id . "cannot be found.");
+            if (file_exists($this->id)) { //id defined is full path, so existence checked using file existence in system
+                array_push($this->errorCodes, 4);
+                throw new Exception("the provided id " . $this->id . " cannot be found.");
             }
 
             //re-create its variables
@@ -58,7 +57,7 @@ class UploadedProfileImageFile extends UploadedImageFile {
 
         try {
 
-            $this->setPermFilePath(self::$uploadedDir, $this->filename)->checkFile()->move();
+            $this->setPermFilePath(self::DIR, $this->filename)->checkFile()->move();
             $this->square()->useExifOrientation(); //must square first using non-exif width and height before rotating, because even after rotating width and height are based on non-exif
             
             if ($deleteExisting) { //if existing file should be removed, get the existing path, delete it after successful persistance
@@ -230,6 +229,7 @@ class UploadedProfileImageFile extends UploadedImageFile {
 
         } catch (Exception $ex) {
             
+            array_push($this->errorCodes, -1);
             return false;
         
         }

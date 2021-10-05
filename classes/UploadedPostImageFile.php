@@ -5,34 +5,34 @@
 class UploadedPostImageFile extends UploadedImageFile {
 
   //new variables
-  protected static $uploadDir = POST_UPLOAD_DIR;
-  protected $mysql; //mysql db access obj
+  const DIR = POST_UPLOAD_DIR;
   protected $filename; //filename to save to, without ext
 
   /*
   @Override
   constructor, inherited from super
-  id in the image posts table used as id to identify each posted image
+  id in the image posts table (primary key) used as id to identify each posted image
   a record in image posts table must pre-exist before an image file can be added
   the entry id is used to identify the record to insert the file
   both id and file for new creation, id only for old reference  
   */
   public function __construct(int $id, $uploadedFile = null) {
 
-    parent::__construct($uploadedFile); //super constructor
-    $this->mysql = MySQL::getInstance();
+    parent::__construct($uploadedFile, $id); //super constructor
     $this->id = $id;
 
     if (isset($uploadedFile)) { //new file creation
         
-      $this->filename = $_SESSION["user"] . filemtime($this->tempFilePath) . mt_rand(0, 100); //<username><timestamp><0-100> as filename, where timestamp is unix upload time
+      $this->filename = $_SESSION["user"] . filemtime($this->tempFilePath) . mt_rand(0, 99); //<username><timestamp><0-99> as filename, where timestamp is unix upload time
 
     } else { //existing reference
 
-      if (!$this->mysql->request($this->mysql->readImagePostImageQuery, [":id" => "$this->id"])) {
+      if ( !$this->mysql->request($this->mysql->readImagePostImageQuery, [":id" => "$this->id"]) ) { //id defined is database table primary key, existence checked by database query
+        array_push($this->errorCodes, 4);
         throw new Exception("the provided id " . $this->id . " cannot be found.");
       }
-      $this->permFilePath = $this->mysql->request($this->mysql->readImagePostImageQuery, [":id" => "$this->id"])[0]["imageURL"];
+
+      $this->permFilePath = $this->mysql->request($this->mysql->readImagePostImageQuery, [":id" => "$this->id"])[0]["image"];
       $this->fileExtension = strtolower(pathinfo($this->permFilePath, PATHINFO_EXTENSION)); 
       $this->fileSize = filesize($this->permFilePath); //bytes 
       $sizeInfo = getimagesize($this->permFilePath);        
@@ -61,6 +61,8 @@ class UploadedPostImageFile extends UploadedImageFile {
 
     } catch (Exception $ex) {
 
+      array_push($this->errorCodes, -1);
+      error_log("Cannot persist a post image upload: " . $ex->getMessage());
       return false;
 
     }
@@ -74,7 +76,7 @@ class UploadedPostImageFile extends UploadedImageFile {
 
     try {
 
-      $this->setPermFilePath(self::$uploadDir, $this->filename)->checkFile()->move();
+      $this->setPermFilePath(self::DIR, $this->filename)->checkFile()->move();
       $this->useExifOrientation()->persist();
       return true;
 
@@ -94,10 +96,11 @@ class UploadedPostImageFile extends UploadedImageFile {
 
     try {
 
-      $this->mysql->request($this->mysql->deleteImagePostImageQuery, [":id" => "$this->id"]);
+      $this->mysql->request($this->mysql->deleteImagePostQuery, [":id" => "$this->id"]);
 
     } catch (Exception $ex) {
 
+      array_push($this->errorCodes, -1);
       return false;
 
     }
@@ -113,6 +116,15 @@ class UploadedPostImageFile extends UploadedImageFile {
 
     $filename = basename($this->permFilePath);
     return REL_POST_UPLOAD_DIR . $filename;
+
+  }
+
+  /*
+  id getter
+  */
+  public function getId(): int {
+
+    return $this->id;
 
   }
 

@@ -163,16 +163,18 @@ final class MySQL {
   public $createTextPostQuery = "INSERT INTO posts (id, user, post_type) VALUES (:id, :user, 1)";
   public $createTextPostContentQuery = "INSERT INTO text_posts (post_id, content) VALUES (:post_id, :content)";
   public $createImagePostQuery = "INSERT INTO posts (id, user, post_type) VALUES (:id, :user, 2)";
-  public $createImagePostContentQuery = "INSERT INTO image_posts (post_id, description) VALUES (:post_id, :description)";
+  public $createImagePostContentQuery = "INSERT INTO image_posts (id, post_id, description) VALUES (:id, :post_id, :description)";
   public $updateImagePostImageQuery = "UPDATE image_posts SET imageURL = :imageURL, imageMIME = :imageMIME WHERE id = :id";
   public $updateImagePostDescriptionQuery = "UPDATE image_posts SET description = :description WHERE id = :id";
-  public $readPostTypeQuery = "SELECT post_type AS type FROM posts WHERE id = :id";
-  public $readTextPostQuery = "SELECT posts.id, posts.user, posts.timestamp, text_posts.content AS post FROM posts INNER JOIN text_posts ON posts.id = text_posts.post_id WHERE posts.id = :id";
-  public $readImagePostQuery = "SELECT posts.id, posts.user, posts.timestamp, image_posts.imageURL AS image, image_posts.imageMIME AS mime, image_posts.description AS description FROM posts INNER JOIN image_posts ON posts.id = image_posts.post_id WHERE posts.id = :id";
   public $updateTextPostQuery = "UPDATE text_posts SET content = :content WHERE post_id = :post_id";
+  public $readPostTypeQuery = "SELECT post_type AS type FROM posts WHERE id = :id";
+  public $readTextPostQuery = "SELECT posts.user, posts.timestamp, text_posts.content AS post FROM posts INNER JOIN text_posts ON posts.id = text_posts.post_id WHERE posts.id = :id";
+  public $readImagePostQuery = "SELECT posts.user, posts.timestamp, image_posts.id AS image_id, image_posts.imageURL AS image, image_posts.imageMIME AS mime, image_posts.description AS description FROM posts INNER JOIN image_posts ON posts.id = image_posts.post_id WHERE posts.id = :id";
+  public $readImagePostImageQuery = "SELECT imageURL AS image from image_posts WHERE id = :id";
+  public $readImagePostMaximumIdQuery = "SELECT MAX(id) AS max_id from image_posts"; //retrieve the max id used, used for knowing the next id to use in codes
   public $deletePostQuery = "DELETE FROM posts WHERE id = :id";
-  public $deleteImagePostImageQuery = "DELETE FROM image_posts WHERE id = :id";
-  public $readImagePostImageQuery = "SELECT imageURL from image_posts WHERE id = :id";
+  public $deleteImagePostQuery = "DELETE FROM image_posts WHERE id = :id";
+  
 
 } //end class
 

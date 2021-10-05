@@ -1,8 +1,6 @@
 <?php
 //PHP Script to support messages.js, which works for messages.php
 
-ob_start();
-
 header("Content-Type: application/json"); //return json output
     
 require_once "./../includes/ini.php"; //rel path to ini.php 

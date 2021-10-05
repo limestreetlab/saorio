@@ -1,0 +1,51 @@
+<!--template for each individual post shown in the profile page-->
+    
+<main class="card mt-3 border-0 shadow post">
+
+
+  <section class="card-header d-flex flex-row justify-content-start align-items-center bg-white border-0">
+      <img src="{{profile-picture}}" class="rounded-circle post-profile-picture">
+    <div class="d-flex flex-column ms-2">  
+      <div class="h6 my-0">{{firstname}} {{lastname}}</div>
+      <div class="text-muted small">{{date}}</div>
+    </div>
+  </section>
+
+
+  <!--INCOMPLETE, pending work-->
+  <section class="card-body pt-1">
+
+    {{IF !empty('{{text}}')}}<div class="post-text">{{text}}</div>{{ENDIF}}
+    {{FOREACH {{images}} AS image}}
+    <div class="post-image m-2"><img src='{{image}}' class="rounded mw-100"></div>
+    {{ENDFOREACH}}
+
+  </section>
+
+
+
+  <section class="card-footer bg-white border-top border-0">
+    <div class="mt-1 d-flex align-items-center">
+
+    <button type="button" class="btn fs-5 text-secondary ps-1 pe-0">
+      <i class="bi bi-hand-thumbs-up"></i>
+    </button>
+    <span class="fs-6 text-muted">{{likes-stat}}</span>
+
+    <button type="button" class="btn fs-5 text-secondary ps-2 pe-0">
+      <i class="bi bi-hand-thumbs-down"></i>
+    </button>
+    <span class="fs-6 text-muted">{{dislikes-stat}}</span>
+
+    <div class="form-control py-1 px-3 ms-3 rounded-pill flex-grow-1 flex-shrink-1 bg-light d-flex align-items-center">
+      <input type="text" class="bg-transparent flex-grow-1 flex-shrink-1 text-secondary border-0 small post-comment-form" placeholder="Write a comment...">
+      <button type="button" class="btn fs-5 flex-grow-0 flex-shrink-0 text-secondary p-0 pe-2">
+        <i class="bi bi-emoji-smile"></i>
+      </button>
+    </div>
+
+    </div>
+  </section>
+
+
+</main>

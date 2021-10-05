@@ -111,7 +111,7 @@ $tables["$tablename"] = $columns;
 
 //post contents for image-based posts, one-to-many (one post, many images). post_type = 2
 $tablename = "image_posts";
-$columns = "id INT UNSIGNED AUTO_INCREMENT,
+$columns = "id INT UNSIGNED,
 post_id VARCHAR(30) NOT NULL COMMENT 'id of the post the image attached to',
 imageURL VARCHAR(300) COMMENT 'absolute path to the image',
 imageMIME VARCHAR(30) COMMENT 'full mime of image/xxx',

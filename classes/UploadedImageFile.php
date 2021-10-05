@@ -4,10 +4,10 @@
 abstract class UploadedImageFile {
 
   //static variables
-  protected static $maxUploadSize = "2500000"; //max allowed size in bytes
-  protected static $imageMIME = ["image/jpeg", "image/png", "image/gif", "image/webp"]; //mime allowed
+  const MAX_UPLOAD_SIZE = "2500000"; //max allowed size in bytes
+  const IMAGE_MIME = ["image/jpeg", "image/png", "image/gif", "image/webp"]; //mime allowed
   //instance variables
-  protected $errorCodes = []; //array to append issues to. -1 for system error, 1 for over max-size, 2 for non-mime format, 3 for unknown photo orientation 
+  protected $errorCodes = []; //array to append errors to. -1 for system error, 1 for over max-size, 2 for non-mime format, 3 for unknown photo orientation, 4 for unfound image file id when referencing an existing file,  
   protected $mime;
   protected $fileExtension;
   protected $fileSize; //size in bytes
@@ -17,6 +17,7 @@ abstract class UploadedImageFile {
   protected $permFilePath; //full path including basename and ext, to be set using setter
   protected $exifOrientation; //exif orientation values range 1-8 or null of exif data null
   protected $id; //used to reference an existing object
+  protected $mysql; //object for mysql database access
 
   /*
   constructor, used to create a new object or reference a created object
@@ -31,6 +32,8 @@ abstract class UploadedImageFile {
       throw new Exception("parameters cannot all be null.");
     }
 
+    $this->mysql = MySQL::getInstance();
+
     if (isset($uploadedFile)) { //new file creation
 
       $this->tempFilePath = $uploadedFile["tmp_name"];
@@ -44,7 +47,6 @@ abstract class UploadedImageFile {
       $this->width = $sizeInfo[0];
       $this->height = $sizeInfo[1];
       $this->id = null;
-      $this->permFilePath = null; //set using setter
 
       if ( !is_file($this->tempFilePath) || !is_array($sizeInfo) || $this->width == 0 || $this->height == 0 ) {
         throw new Exception("Uploaded file doesn't appear to be an image.");
@@ -56,7 +58,7 @@ abstract class UploadedImageFile {
       $this->mime = null; //set in concrete class
       $this->fileExtension = null; //set in concrete class
       $this->fileSize = null; //set in concrete class
-      $this->permFilePath = null; //set in concrete class
+      $this->permFilePath; //set in concrete class
       $this->width = null; //set in concrete class
       $this->height = null; //set in concrete class
       $this->exifOrientation = null; //set in concrete class
@@ -80,6 +82,7 @@ abstract class UploadedImageFile {
 
     } else {
 
+      array_push($this->errorCodes, -1);
       throw new Exception("Failed to set file permanent path. Check the input directory or filename.");
 
     }
@@ -108,13 +111,13 @@ abstract class UploadedImageFile {
   protected function checkFile(): self {
 
     //check file size
-    $isSizeChecked = ($this->fileSize <= self::$maxUploadSize);
+    $isSizeChecked = ($this->fileSize <= self::MAX_UPLOAD_SIZE);
     if (!$isSizeChecked) {
       array_push($this->errorCodes, 1);
     }
 
     //check file type
-    $isTypeChecked = in_array($this->mime, self::$imageMIME);
+    $isTypeChecked = in_array($this->mime, self::IMAGE_MIME);
     if (!$isTypeChecked) {
       array_push($this->errorCodes, 2);
     }

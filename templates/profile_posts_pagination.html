@@ -1,0 +1,18 @@
+<!--pagination UI for posts-->
+  
+<nav>
+<ul class="pagination mt-5 justify-content-center">
+
+  <!--the left arrow that is present regardless of pages-->
+  <li class="page-item disabled"><a class="page-link" href='#'>&laquo;</a></li>
+  
+  <!--pagination dependent on pages, data given by backend-->
+  {{FOREACH {{pages}} AS page}}
+  <li class="page-item"><a class="page-link" href='index.php?reqPage=profile&pagination={{page}}'>{{page}}</a></li>
+  {{ENDFOREACH}}
+  
+  <!--the right arrow that is present regardless of pages-->
+  <li class="page-item"><a class="page-link" href='{{lastpage}}'>&raquo;</a></li>
+
+</ul>
+</nav>

@@ -15,12 +15,17 @@ abstract class Post {
   protected $dislikedBy = []; //users who reacted negatively to the post
   protected $likes; //number of positive reactions
   protected $dislikes; //number of negative reactions
+  protected $errorCodes = []; //array to append errors to. -1 for system errors, 1 for unfound object id, 2 for content above defined maximum size, 3 for content file format issue, 4 for post files over max number
   protected $mysql; 
 
   /*
-  constructor
+  constructor, used to create a new object or reference a created object
+  some id is used to gain handle to a created object, that can be database id, filename, etc
+  for new creation, content is provided; for old reference, content is null
+  @param the content of the post
+  @param the id referencing an existing post
   */
-  public function __construct(mixed $content = null, mixed $id = null) {
+  public function __construct($content = null, $id = null) {
 
     if (is_null($content) && is_null($id)) {
       throw new Exception("parameters cannot all be null.");
@@ -51,81 +56,130 @@ abstract class Post {
   /*
   function to complete and submit a new post
   */
-  abstract public function post(): bool;
+  abstract public function post();
 
   /*
   function to remove an existing post
   */
-  abstract public function delete(): bool;
+  abstract public function delete(): void;
 
   /*
   function to modify an existing post
   */
-  abstract public function update($newContent): bool;
+  abstract public function update();
 
   /*
   function to retrieve content of an existing post
   */
-  abstract public function getContent(): mixed;
+  abstract public function getContent();
 
   /*
   liking a post
+  @param username, user doing the liking of this post
   */
-  public function like(string $username): void {
+  public function like(string $username): self {
 
     if ( !$this->haveAlreadyLiked($username) ) {
 
-      $this->mysql->request($this->mysql->createPostLikeQuery, [":post_id" => "$this->id", ":user" => $username]); //add the like to db
-      array_push($this->likedBy, $username); //add to array
+      try {
+
+        $this->mysql->request($this->mysql->createPostLikeQuery, [":post_id" => "$this->id", ":user" => $username]); //add the like to db
+        array_push($this->likedBy, $username); //add username to array
+
+      } catch (Exception $ex) {
+
+        array_push($this->errorCodes, -1);
+        throw $ex;
+
+      }
 
     }
+
+    return $this;
 
   }
   
   /*
   disliking a post
+  @param username, user doing the disliking of this post
   */
-  public function dislike(string $username): void {
+  public function dislike(string $username): self {
 
     if ( !$this->haveAlreadyDisliked($username) ) {
       
-      $this->mysql->request($this->mysql->createPostDislikeQuery, [":post_id" => "$this->id", ":user" => $username]); //add the dislike to db
-      array_push($this->dislikedBy, $username); //add to array
+      try {
+
+        $this->mysql->request($this->mysql->createPostDislikeQuery, [":post_id" => "$this->id", ":user" => $username]); //add the dislike to db
+        array_push($this->dislikedBy, $username); //add username to array
+
+      } catch (Exception $ex) {
+
+        array_push($this->errorCodes, -1);
+        throw $ex;
+
+      }
 
     }
+
+    return $this;
 
   }
 
   /*
   undo a given like
+  @param username, user doing the unliking of the post
   */
-  public function unlike(string $username): void {
+  public function unlike(string $username): self {
 
     if ( $this->haveAlreadyLiked($username) ) {
 
-      $this->mysql->request($this->mysql->deletePostLikeQuery, [":post_id" => "$this->id", ":user" => $username]); //remove the like from db
-      unset($this->likedBy[array_search($username, $this->likedBy)]); //remove from array
+      try {
+
+        $this->mysql->request($this->mysql->deletePostLikeQuery, [":post_id" => "$this->id", ":user" => $username]); //remove the like from db
+        unset($this->likedBy[array_search($username, $this->likedBy)]); //remove username from array
+
+      } catch (Exception $ex) {
+
+        array_push($this->errorCodes, -1);
+        throw $ex;
+
+      }
 
     }
+
+    return $this;
 
   }
 
   /*
   undo a given dislike
+  @param username, user doing the undisliking of this post
   */
-  public function undislike(string $username): void {
+  public function undislike(string $username): self {
 
     if ( $this->haveAlreadyDisliked($username) ) {
 
-      $this->mysql->request($this->mysql->deletePostDislikeQuery, [":post_id" => "$this->id", ":user" => $username]); //remove the dislike from db
-      unset($this->dislikedBy[array_search($username, $this->dislikedBy)]); //remove from array
+      try {
+
+        $this->mysql->request($this->mysql->deletePostDislikeQuery, [":post_id" => "$this->id", ":user" => $username]); //remove the dislike from db
+        unset($this->dislikedBy[array_search($username, $this->dislikedBy)]); //remove username from array
+
+      } catch (Exception $ex) {
+
+        array_push($this->errorCodes, -1);
+        throw $ex;
+
+      }
 
     }
+
+    return $this;
 
   }
 
   /*
   flagging if an user has already reacted to the post positively
+  @param username, the user of whom has already liked the post
   */
   public function haveAlreadyLiked(string $username): bool {
 
@@ -135,6 +189,7 @@ abstract class Post {
 
   /*
   flagging if an user has already reacted to the post negatively
+  @param username, the user of whom has already disliked the post
   */
   public function haveAlreadyDisliked(string $username): bool {
 
@@ -153,34 +208,81 @@ abstract class Post {
 
   /*
   function to add a comment to a post by another user
+  @param username, the username of the user making a comment
+  @param comment, the comment to be added
   */
-  public function addComment(string $username, string $comment): void {
+  public function addComment(string $username, string $comment): self {
 
     $comment = self::cleanString($comment);
 
-    $params = [":post_id" => "$this->id", ":user" => $username, ":comment" => $comment];
-    $this->mysql->request($this->mysql->createPostCommentQuery, $params);
+    try {
+
+      $params = [":post_id" => "$this->id", ":user" => $username, ":comment" => $comment];
+      $this->mysql->request($this->mysql->createPostCommentQuery, $params);
+
+    } catch (Exception $ex) {
+
+      array_push($this->errorCodes, -1);
+      throw $ex;
+
+    }
+    
+    return $this;
 
   }
 
   /*
   function to edit an added comment to a post by another user
+  @param comment_id, the id in the comments table of which to update
+  @param newComment, the new comments to update to
   */
-  public function editComment(int $id, string $comment): void {
+  public function editComment(int $comment_id, string $newComment): self {
 
-    $comment = self::cleanString($comment);
+    $newComment = self::cleanString($newComment);
 
-    $params = [":comment_id" => $id, ":comment" => $comment];
-    $this->mysql->request($this->mysql->updatePostCommentQuery, $params);
+    try {
+
+      $params = [":comment_id" => $comment_id, ":comment" => $newComment];
+      $this->mysql->request($this->mysql->updatePostCommentQuery, $params);
+
+    } catch (Exception $ex) {
+
+      array_push($this->errorCodes, -1);
+      throw $ex;
+
+    }
+
+    return $this;
 
   }
 
   /*
   function to delete an added comment to a post by another user
+  @param comment_id, the id in the comments table of which to remove
   */
-  public function deleteComment(int $id): void {
+  public function deleteComment(int $comment_id): self {
 
-    $this->mysql->request($this->mysql->deletePostCommentQuery, [":comment_id" => $id]);
+    try {
+
+      $this->mysql->request($this->mysql->deletePostCommentQuery, [":comment_id" => $comment_id]);
+
+    } catch (Exception $ex) {
+
+      array_push($this->errorCodes, -1);
+      throw $ex;
+
+    }
+
+    return $this;
+
+  }
+  
+  /*
+  errorCodes getter
+  */
+  public function getErrors(): array {
+
+    return array_unique($this->errorCodes);
 
   }
 

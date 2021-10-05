@@ -1,0 +1,26 @@
+<!--a summary of posted photos in the profile page-->
+<!--link to more photos, clicked photos shown using lightbox-->
+
+
+<main class="card mt-4 border-0 shadow profile-leftside">
+  <div class="card-header fw-bold">Photos</div>
+
+  <section class="card-body">
+    <!--how many photos shown per row-->
+    <section class="row row-cols-2 g-2" id="profile-photos">
+
+      <!--loop through data to show each photo-->
+      {{FOREACH {{photos}} AS photo}}
+      <div class="col">
+      <div class="card">
+        <img src='{{photo}}' class="card-img">
+      </div>
+      </div>
+      {{ENDFOREACH}}
+      <!--end of loop-->
+
+    </section>
+
+  </section>
+
+</main>
