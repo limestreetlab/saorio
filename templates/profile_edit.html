@@ -35,11 +35,11 @@ Edit inline:
 
 
 <br><br>
-<main class='container mt-5 mb-5'>
+<main class='container mt-0 mb-2'>
   <main class='row justify-content-center'>
     <section class='col-10'>
       
-      <div class='card shadow pb-3'>
+      <div class='card mt-0 shadow-lg pb-3'>
 
         <div class='row justify-content-center'><!--inner row before card-header for photo-->
           <div class='col-4 position-relative'>
@@ -50,33 +50,39 @@ Edit inline:
           </div>
         </div><!--close inner row-->
 
-        <!--photo upload form-->
+        <div class='card-header bg-secondary border-0 position-relative' id='profile-wallpaper' style="background-image: url({{wallpaper}});"> 
+            <!--wallpaper edit button-->
+            <span class='btn btn-light btn rounded-circle position-absolute end-0 top-50 translate-middle d-none' id='wallpaper-upload-btn-container'><i class='bi bi-camera-fill' id='wallpaper-upload-btn'></i></span>
+        </div>
+
+        <!--hidden upload form for profile photo, wallpaper-->
         <form action="ajax/profile_edit_ajax.php" method="post" enctype="multipart/form-data" class="d-none" id="photo-upload-form">
-            <input type="file" name="file-upload" id="file-upload" accept="image/jpeg, image/png, image/gif, image/webp"><!--go to $_FILES, not $_POST-->
+            <input type="file" name="photo-upload" id="photo-upload" accept="image/jpeg, image/png, image/gif, image/webp"><!--go to $_FILES, not $_POST-->
+            <input type="file" name="wallpaper-upload" id="wallpaper-upload" accept="image/jpeg, image/png, image/gif, image/webp"><!--go to $_FILES, not $_POST-->
             <input type="submit" id="photo-upload-form-submit-btn">
         </form>
         <!--end of upload form-->
 
-        <div class='card-header bg-secondary border-0 pt-5 pb-5'> <!--a strip of secondary-color background behind photo-->
-          <!--empty header-->
-        </div>
+        <div class='card-body mt-5'><!--Card body to contain profile's info-->
 
-        <div class='card-body'><!--Card body to contain profile's info-->
-
-          <section class='row'><!--user activity stats-->
+          <section class='row mt-5'><!--user activity stats-->
             <div class='col'>
 
-              <div class='d-flex flex-row justify-content-center mt-5'>
+              <div class='d-flex flex-row justify-content-center'>
                 <span class='px-2'>
-                  22 Friends
+                  22 Posts
                 </span>
 
                 <span class='px-2'>
-                  20 Followers
+                  20 Photos
                 </span>
 
                 <span class='px-2'>
-                  19 Posts  
+                  19 Comments 
+                </span>
+
+                <span class='px-2'>
+                  19 Likes
                 </span>
               
               </div>

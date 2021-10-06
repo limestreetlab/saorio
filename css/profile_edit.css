@@ -1,15 +1,29 @@
 /*place the profile photo in middle of container*/
 #profile-picture {
   position: absolute;
-  width: 180px;
-  transform: translate(-50%, -30%);
+  width: 160px;
+  transform: translate(-50%, 150px); /*tied to wallpaper height*/
+  z-index: 2;
 }
 
 /*place the upload btn in container in position adjusted for profile photo position*/
 #photo-upload-btn-container {
   position: absolute;
-  left: calc(50% + 90px); /* 50% of img + half of img width */
-  transform: translate(-50%, 50%);
+  left: calc(50% + 80px); /* 50% of img + half of img width */
+  transform: translate(-50%, 215px); /*button height is appro 30px, so to position at photo middle, shift down by half the profile-pix height - half its size own height + the size of profile-pix shift */
+  z-index: 3;
+}
+
+#profile-wallpaper {
+  height: 230px;
+  z-index: 0;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+}
+
+#wallpaper-upload-btn-container {
+  z-index: 1;
 }
 
 /*edit btn appears 15% on the right*/

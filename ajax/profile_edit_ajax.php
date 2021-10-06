@@ -21,7 +21,7 @@ foreach($_POST as $field => $value) {
 
     case "photo": //photo upload request received
       
-      $file = $_FILES['file-upload']; //the upload form file input uses id file-upload
+      $file = $_FILES['photo-upload']; //the upload form file input uses id photo-upload
       $profilePhoto = new UploadedProfileImageFile($file);
       if ($profilePhoto->upload(true)) { //file upload successful
         array_push($success, true);
@@ -30,6 +30,20 @@ foreach($_POST as $field => $value) {
       } else { //file upload failed
         array_push($success, false);
         $errors = array_merge($errors, $profilePhoto->getErrors()); //ImageFile obj getErrors() returns an array of error codes
+      }
+      break;
+
+    case "wallpaper": //wallpaper upload request received
+      
+      $file = $_FILES['wallpaper-upload']; //the upload form file input uses id photo-upload
+      $wallpaper = new UploadedWallpaperImageFile($file);
+      if ($wallpaper->upload(true)) { //file upload successful
+        array_push($success, true);
+        $newRelPath = $wallpaper->getFileRelativePath(); //get this file's new relative absolute path
+        array_push($newData, $newRelPath); //new data to reflect for a photo is its relative path
+      } else { //file upload failed
+        array_push($success, false);
+        $errors = array_merge($errors, $wallpaper->getErrors()); //ImageFile obj getErrors() returns an array of error codes
       }
       break;
 

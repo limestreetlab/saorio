@@ -106,12 +106,12 @@ final class MySQL {
   public $updateProfileQuery = "UPDATE profiles SET about = :about, gender = :gender, ageGroup = :ageGroup, location = :location, job = :job, company = :company, major = :major, school = :school, interests = :interests, quote = :quote WHERE user = :user"; 
   public $readProfileQuery = "SELECT * FROM profiles WHERE user = :user";
   public $readBasicProfileQuery = "SELECT firstname, lastname, profilePictureURL FROM profiles WHERE user = :user";
-  public $readAllPostsQuery = "SELECT posts.id, posts.timestamp, posts.post_type AS type, text_posts.content, image_posts.imageURL AS image, image_posts.description FROM posts LEFT JOIN text_posts ON posts.id = text_posts.post_id LEFT JOIN posts.id = image_posts.post_id WHERE posts.user = :user";
-  public $readAllImagePostsQuery = "SELECT posts.id, posts.timestamp, image_posts.imageURL AS image, image_posts.description FROM posts INNER JOIN image_posts ON posts.id = image_posts.post_id WHERE posts.user = :user";
-
+  
   //for profile edits (atomic: one statement for each updatable field, inefficient and redundant but simple)
   public $updateProfilePictureQuery = "UPDATE profiles SET profilePictureURL = :url, profilePictureMIME = :mime WHERE user = :user"; 
   public $updateProfilePictureToDefaultQuery = "UPDATE profiles SET profilePictureURL = DEFAULT, profilePictureMIME = DEFAULT WHERE user = :user";
+  public $updateProfileWallpaperQuery = "UPDATE profiles SET wallpaper = :wallpaper WHERE user = :user";
+  public $updateProfileWallpaperToNullQuery = "UPDATE profiles SET wallpaper = NULL WHERE user = :user";
   public $updateProfileAboutQuery = "UPDATE profiles SET about = :about WHERE user = :user";
   public $updateProfileGenderQuery = "UPDATE profiles SET gender = :gender WHERE user = :user";
   public $updateProfileDobQuery = "UPDATE profiles SET dob = :dob WHERE user = :user";
@@ -160,6 +160,8 @@ final class MySQL {
   public $readPostDislikedByQuery = "SELECT user FROM post_reactions WHERE post_id = :post_id AND reaction < 0";
 
   //for post contents
+  public $readAllPostsQuery = "SELECT posts.id, posts.timestamp, posts.post_type AS type, text_posts.content, image_posts.imageURL AS image, image_posts.description FROM posts LEFT JOIN text_posts ON posts.id = text_posts.post_id LEFT JOIN posts.id = image_posts.post_id WHERE posts.user = :user";
+  public $readAllImagePostsQuery = "SELECT posts.id, posts.timestamp, image_posts.imageURL AS image, image_posts.description FROM posts INNER JOIN image_posts ON posts.id = image_posts.post_id WHERE posts.user = :user";
   public $createTextPostQuery = "INSERT INTO posts (id, user, post_type) VALUES (:id, :user, 1)";
   public $createTextPostContentQuery = "INSERT INTO text_posts (post_id, content) VALUES (:post_id, :content)";
   public $createImagePostQuery = "INSERT INTO posts (id, user, post_type) VALUES (:id, :user, 2)";

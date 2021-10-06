@@ -21,7 +21,7 @@ class UploadedProfileImageFile extends UploadedImageFile {
 
         if (isset($uploadedFile)) { //new creation
 
-            $this->filename = $_SESSION["user"] . "-" . filemtime($this->tempFilePath); //<username>-<timestamp> as filename, where timestamp is unix upload time
+            $this->filename = $_SESSION["user"] . "-avatar-" . filemtime($this->tempFilePath); //<username>-avatar-<timestamp> as filename, where timestamp is unix upload time
         
         } else { //existing reference
 
@@ -215,7 +215,7 @@ class UploadedProfileImageFile extends UploadedImageFile {
     
         return $this;
 
-    } //end function
+    } //end square function
 
     /*
     @Override

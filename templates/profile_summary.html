@@ -3,11 +3,11 @@
 
 <main class="card border-0 shadow profile-leftside">
   <!--profile wallpaper-->
-  <img src='{{wallpaper}}' class="card-img-top img-responsive">
+  <div class="bg-secondary" id="wallpaper" style="background-image: url({{wallpaper}})"></div>
 
   <section class="card-body">
   <!--profile photo and user full name-->
-  <img src='{{profile-picture}}' class="card-img float-start me-2" id="profile-picture">
+  <img src='{{profile-picture}}' class="card-img float-start border border-3 border-white rounded shadow-sm me-2" id="profile-picture">
   <h4 class="card-title float-start">{{firstname}} {{lastname}}</h4>
 
   <!--a snapshot taken from his profile bio-->

@@ -9,20 +9,47 @@ $("document").ready( function() {
     data.addEventListener("click", showForm);
   }
 
-  //register click handler to photo upload btn
-  $("#photo-upload-btn").on("click", uploadPhoto);
+  //register click handler to profile photo upload btn
+  $("#photo-upload-btn").on( "click", function(){uploadPhoto(1);} );
+  //register click handler to wallpaper upload btn
+  $("#wallpaper-upload-btn").on( "click", function(){uploadPhoto(2);} );
+  //register hover handler on wallpaper area
+  $("#profile-wallpaper").hover(toggleUploadBtn, toggleUploadBtn);
 
 });
 
 /*
-function for profile photo upload
+function to display upload button on hover and hide on mouseout
 */
-function uploadPhoto() {
+function toggleUploadBtn() {
+  //the element should initially have d-none set
+  $("#wallpaper-upload-btn-container").toggleClass("d-none"); //toggle the no-display class attribute
+
+}
+
+/*
+function for profile photo or wallpaper upload
+*/
+function uploadPhoto(imageType) {
+  
+  switch (imageType) {
+
+    case 1: 
+      var inputId = '#' + 'photo-upload';
+      var key = 'photo';
+      break;
+    case 2:
+      var inputId = '#' + 'wallpaper-upload';
+      var key = 'wallpaper';
+      break;
+    default: throw new Error("Incorrect parameter passed to function");
+
+  }
 
   //imitate a click on file button to prompt for file selection
-  $("#file-upload").trigger("click"); 
+  $(inputId).trigger("click"); 
   //onchange (when a file is selected) handler, js-validate size and type, then submit to server
-  $('#file-upload').off("change").change( function(event) { 
+  $(inputId).off("change").change( function(event) { 
     //files property of the file input element gives access to the FileList array containing File obj
     const file = event.target.files[0]; //get 1st element as no multiple files allowed
     //read file meta
@@ -43,9 +70,9 @@ function uploadPhoto() {
       return; //exit function
     }
     
-    let form = document.querySelector("#photo-upload-form");
-    let data = new FormData(form);    
-    data.set("photo", "");
+    let form = document.querySelector("#photo-upload-form"); //select the form element
+    let data = new FormData(form); //into a JS Form object
+    data.set(key, ""); //put a key named photo in the request so it can be identified in the handling script as the form doesn't have any keys (only file input)
     
     $.ajax({
       url: "ajax/profile_edit_ajax.php",
@@ -64,23 +91,33 @@ function uploadPhoto() {
           let msg = "";
           if (err == 1) {
             title = "File too large";
-            msg = "The uploaded file size is " + (size/1000000).toPrecision(3) + "MB, exceeding our limit of " + (maxSize/1000000).toPrecision(2) + "MB.";
+            msg = "Hey, too big! The uploaded file is " + (size/1000000).toPrecision(3) + "MB, exceeding our limit of " + (maxSize/1000000).toPrecision(2) + "MB.";
           } else if (err == 2) {
             title = "Unsupported file type";
-            msg = "The uploaded file type is not supported.";
+            msg = "Hey, the uploaded file type is not supported.";
           } else if (err == 3) {
             title = "Unknown orientation";
-            msg = "The uploaded file has an unknown or unsupported orientation.";
+            msg = "Mate, the uploaded file has an unknown or unsupported orientation.";
           } else {
             title = "Update failure";
-            msg = "An error occurred during the update. Sorry about that.";
+            msg = "Opps. An error occurred during the update. Sorry about that.";
           }
           showToast(title, msg); 
 
         } else { //upload succeeded
           
           let newPhoto = result.newData[0]; //new rel path
-          $("#profile-picture").attr("src", newPhoto);
+
+          switch (imageType) {
+            
+            case 1:
+              $("#profile-picture").attr("src", newPhoto);
+              break;
+            case 2:
+              $("#profile-wallpaper").css( "background-image", 'url(' + newPhoto + ')' );
+              break;
+
+          }
 
         }
 

@@ -1,0 +1,53 @@
+/*leftside col/part of the profile page*/
+.profile-leftside {
+  max-width: 320px; /*leftside width is dependent on col-*, but no need to be larger than this*/
+}
+
+#wallpaper {
+  height: 150px;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+#profile-picture {
+  width: 100px; /*can be changed*/
+  height: 100px;
+  margin-top: -60px; /*to have it go up and overlap with wallpaper*/
+}
+
+#profile-summary { /*come after picture and name which are floated left*/
+  clear: both; /*clear float*/
+}
+
+#profile-friends .card-img {
+  height: 100px; /*same as profile picture, width is driven by row-cols-* */
+}
+
+/*name shown in each friend item*/
+.profile-friend-name {
+  font-size: 10px; 
+}
+
+/*the profile picture shown in a post*/
+.post-profile-picture {
+  width: 40px;
+  height: 40px;
+}
+
+/*remove the default outlone of comment input control*/
+.post-comment-form:focus {
+  outline: none;
+}
+
+/*remove the default blue glow of bootstrap buttons*/
+.btn:active, .btn:focus {
+  outline: none;
+  border: none;
+  box-shadow: none;
+}
+
+
+
+
+

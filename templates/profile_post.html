@@ -16,10 +16,12 @@
   <section class="card-body pt-1">
 
     {{IF !empty('{{text}}')}}<div class="post-text">{{text}}</div>{{ENDIF}}
-    {{FOREACH {{images}} AS image}}
-    <div class="post-image m-2"><img src='{{image}}' class="rounded mw-100"></div>
-    {{ENDFOREACH}}
-
+    {{IF !empty('{{images}}')}}
+      {{FOREACH {{images}} AS image}}
+      <div class="post-image m-2"><img src='{{image}}' class="rounded mw-100"></div>
+      {{ENDFOREACH}}
+    {{ENDIF}}
+    
   </section>
 
 

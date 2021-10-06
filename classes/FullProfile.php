@@ -5,6 +5,7 @@
 class FullProfile extends BasicProfile {
 
   //additional instance variables
+  public $wallpaper;
   public $about;
   public $gender;
   public $dob;
@@ -40,6 +41,7 @@ class FullProfile extends BasicProfile {
       
     }
 
+    $this->wallpaper = self::convertPicturePathAbs2Rel( $profileData["wallpaper"] );
     $this->about = $profileData["about"];
     $this->gender = $profileData["gender"];
     $this->dob = $profileData["dob"]; //epoch timestamp
@@ -65,7 +67,7 @@ class FullProfile extends BasicProfile {
   public function getData(): array {
 
     $basicData = parent::getData();
-    $moreData = ["about" => $this->about, "gender" => $this->gender, "dob" => $this->dob, "age" => $this->age, "city" => $this->city, "country" => $this->country, "job" => $this->job, "company" => $this->company, "school" => $this->school, "major" => $this->major, "interests" => $this->interests, "quote" => $this->quote, "website" => $this->website, "socialmedia" => $this->socialmedia, "email" => $this->email];
+    $moreData = ["wallpaper" => $this->wallpaper, "about" => $this->about, "gender" => $this->gender, "dob" => $this->dob, "age" => $this->age, "city" => $this->city, "country" => $this->country, "job" => $this->job, "company" => $this->company, "school" => $this->school, "major" => $this->major, "interests" => $this->interests, "quote" => $this->quote, "website" => $this->website, "socialmedia" => $this->socialmedia, "email" => $this->email];
     return array_merge($basicData, $moreData);
 
   }
