@@ -1,7 +1,16 @@
 #profile-picture {
   position: absolute;
-  width: 180px;
-  transform: translate(-50%, -30%);
+  width: 160px;
+  transform: translate(-50%, 150px);
+  z-index: 1;
+}
+
+#profile-wallpaper {
+  height: 230px;
+  z-index: 0;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
 }
 
 #age {

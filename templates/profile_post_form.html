@@ -6,14 +6,58 @@
 <!--start the rightside menu-->
 <main class="col-8">
 
+
 <!--new post form-->
 <section class="card px-4 py-2 bg-white border-0 shadow">
-  <form id="new-post">
+  <form data-bs-toggle="modal" data-bs-target="#new-post-modal">
 
-  <input type="text" class="form-control bg-light text-secondary rounded-pill mt-3" placeholder="What's on your mind, {{firstname}}?">
-  <span id="new-post-photo"><button type="button" class="mt-2 btn"><i class="bi bi-camera-fill text-primary"></i><span class="fw-bold text-secondary small">  Photo</span></button></span>
-  <span id="new-post-link"><button type="button" class="mt-2 btn"><i class="bi bi-share-fill text-primary"></i><span class="fw-bold text-secondary small">  Link</span></button></span>
-  <span id="new-post-poll"><button type="button" class="mt-2 btn"><i class="bi bi-bar-chart-fill text-primary"></i><span class="fw-bold text-secondary small">  Poll</span></button></span>
+  <input type="text" class="form-control bg-light text-secondary rounded-pill mt-3" placeholder="What's on your mind, {{firstname}}?" disabled>
+  <span><button type="button" class="mt-2 btn"><i class="bi bi-camera-fill text-primary"></i><span class="fw-bold text-secondary small">  Photo</span></button></span>
+  <span><button type="button" class="mt-2 btn"><i class="bi bi-share-fill text-primary"></i><span class="fw-bold text-secondary small">  Link</span></button></span>
+  <span><button type="button" class="mt-2 btn"><i class="bi bi-bar-chart-fill text-primary"></i><span class="fw-bold text-secondary small">  Poll</span></button></span>
   
   </form>
-</section><!--end new post form-->
+</section>
+<!--end new post form-->
+
+
+<!--when the post form is clicked, a modal shows up for typing-->
+<!--post modal -->
+<section class="modal fade" id="new-post-modal">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header position-relative">
+        <h5 class="modal-title ms-auto me-auto">Create Post</h5>
+        <button type="button" class="btn-close position-absolute end-0 translate-middle-x" data-bs-dismiss="modal"></button>
+      </div>
+
+      <section class="modal-body">
+        <img src="{{profile-picture}}" class="rounded-circle" id="post-profile-picture-modal">
+        <span class="h6 ms-1 my-0">{{firstname}} {{lastname}}</span>
+
+        <div id="post-content">
+
+          <textarea id="new-post-text" class="form-control mt-2 border-0" rows="4" placeholder="What's on your mind, {{firstname}}?"></textarea>
+          
+          <!--add post attachments like images INSIDE here-->
+          <div id="post-attachment"></div>
+          <span id="new-post-photo"><button type="button" class="btn"><i class="bi bi-camera-fill text-primary"></i><span class="fw-bold text-secondary small">  Photo</span></button></span>
+          <span id="new-post-link"><button type="button" class="btn"><i class="bi bi-share-fill text-primary"></i><span class="fw-bold text-secondary small">  Link</span></button></span>
+          <span id="new-post-poll"><button type="button" class="btn"><i class="bi bi-bar-chart-fill text-primary"></i><span class="fw-bold text-secondary small">  Poll</span></button></span>
+
+        </div>
+
+      </section>
+
+      <div class="modal-footer border-0">
+        <button id="new-post-submit" type="button" class="w-50 ms-auto me-auto btn btn-primary disabled">Post</button>
+      </div>
+
+    </div>
+  </div>
+</section>
+<!--end post modal-->
+
+<!--below comes posts-->
+<main id="posts"><!--container for posts-->

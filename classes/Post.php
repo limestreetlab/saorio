@@ -85,6 +85,7 @@ abstract class Post {
 
         $this->mysql->request($this->mysql->createPostLikeQuery, [":post_id" => "$this->id", ":user" => $username]); //add the like to db
         array_push($this->likedBy, $username); //add username to array
+        $this->likes++;
 
       } catch (Exception $ex) {
 
@@ -111,6 +112,7 @@ abstract class Post {
 
         $this->mysql->request($this->mysql->createPostDislikeQuery, [":post_id" => "$this->id", ":user" => $username]); //add the dislike to db
         array_push($this->dislikedBy, $username); //add username to array
+        $this->dislikes++;
 
       } catch (Exception $ex) {
 
@@ -137,6 +139,7 @@ abstract class Post {
 
         $this->mysql->request($this->mysql->deletePostLikeQuery, [":post_id" => "$this->id", ":user" => $username]); //remove the like from db
         unset($this->likedBy[array_search($username, $this->likedBy)]); //remove username from array
+        $this->likes--;
 
       } catch (Exception $ex) {
 
@@ -163,6 +166,7 @@ abstract class Post {
 
         $this->mysql->request($this->mysql->deletePostDislikeQuery, [":post_id" => "$this->id", ":user" => $username]); //remove the dislike from db
         unset($this->dislikedBy[array_search($username, $this->dislikedBy)]); //remove username from array
+        $this->dislikes--;
 
       } catch (Exception $ex) {
 

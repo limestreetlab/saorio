@@ -29,13 +29,30 @@
   font-size: 10px; 
 }
 
+/*profile picture shown in the new post modal*/
+#post-profile-picture-modal {
+  width: 55px;
+  height: 55px;
+}
+
+/*post text enter area in modal*/
+#new-post-text {
+  resize: none;
+}
+
+/*disable default BS form-control blue glow*/
+#new-post-text:focus {
+  outline: none;
+  box-shadow: none;
+}
+
 /*the profile picture shown in a post*/
 .post-profile-picture {
   width: 40px;
   height: 40px;
 }
 
-/*remove the default outlone of comment input control*/
+/*remove the default outline of comment input control*/
 .post-comment-form:focus {
   outline: none;
 }

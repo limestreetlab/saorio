@@ -38,15 +38,18 @@ class User {
 
   /*
   function to get this User's friends list
+  @param $number, optional, the number of friends to get
   @return array of User objects
   */
-  public function getFriends(): array {
+  public function getFriends(int $number = null): array {
     
-    $resultset = $this->mysql->request($this->mysql->readAllFriendsQuery, [":user" => $this->user]); //data of friends' usernames
+    $friends = $this->mysql->request($this->mysql->readAllFriendsQuery, [":user" => $this->user]); //data of all friends' usernames
 
-    foreach ($resultset as $row) {
+    $n = isset($number) ? min( $number, count($friends) ) : count($friends); //loop limit, set to input param when set, but ensure it doesn't exceed friends number
+    
+    for ($m = 0; $m < $n; $m++) {
 
-      $friend = new User($row["user"]); //instantiate a User obj for each friend
+      $friend = new User($friends[$m]["user"]); //instantiate a User obj for each friend
       array_push($this->friends, $friend); //append to array of friend objs
 
     }
@@ -61,9 +64,9 @@ class User {
   */
   public function getNumberOfFriends(): int {
 
-    $resultset = $this->mysql->request($this->mysql->readAllFriendsQuery, [":user" => $this->user]); //data of friends' usernames
+    $friends = $this->mysql->request($this->mysql->readAllFriendsQuery, [":user" => $this->user]); //data of friends' usernames
 
-    $this->numberOfFriends = count($resultset);
+    $this->numberOfFriends = count($friends);
 
     return $this->numberOfFriends;
 

@@ -37,6 +37,7 @@
 
   $viewLoader->load("members_list_end.html")->render(); //page close html
   $viewLoader->load("friend_request_confirmation_modal.html")->render(); //modal 
+  $viewLoader->load("error_toast.html")->render(); //toast for errors
 
 ?>
 

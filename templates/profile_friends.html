@@ -8,6 +8,7 @@
     <!--how many friends to show per row-->
     <section class="row row-cols-3 g-2" id="profile-friends">
 
+    {{IF !empty('{{friends}}')}}
     <!--template to display each friend-->
     {{FOREACH {{friends}} AS friend {{photos}} AS photo}}<!--loop through a friend list-->
     <div class="col"><div class="card border-0">
@@ -21,6 +22,7 @@
     </div></div>
     {{ENDFOREACH}}<!--end loop-->
     <!--end a friend-->
+    {{ENDIF}}
 
     </section>
 

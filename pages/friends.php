@@ -31,8 +31,8 @@ foreach ($friends as $friend) {
 
 }
 
+$viewLoader->load("error_toast.html")->render(); //toast for errors
 $viewLoader->load("friends_list_end.html")->render();
-$viewLoader->load("friends_toast.html")->render();
 
 
 ?>

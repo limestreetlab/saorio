@@ -88,6 +88,19 @@ class Template {
   } //function render end
 
   /*
+  equivalent to render() but instead of rendering the view, this returns the view to caller
+  */
+  public function getView(): string {
+
+    $this->parseForeach(); //parse Foreach...Endforeach blocks
+
+    $this->parseIf(); //parse If...Endif conditional blocks
+   
+    return $this->view; //return the current template
+
+  }
+
+  /*
   helper function to parse IF <con> ...ENDIF conditional html codes
   */
   protected function parseIf(): void {

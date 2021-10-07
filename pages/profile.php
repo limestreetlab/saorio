@@ -24,6 +24,7 @@ if ( isset($_REQUEST["viewUser"]) ) { //viewing another user's home page (summar
   extract($profile->getData()); //use key names as variable names
   $profileData = ["picture" => $profilePictureURL, "wallpaper" => $wallpaper, "firstname" => $firstname, "lastname" => $lastname, "city" => $city, "country" => $country, "gender" => $gender, "age" => $age, "dob" => is_null($dob) ? null : (new DateTime("@$dob"))->format("m-d-Y"), "job" => $job, "company" => $company, "major" => $major, "school" => $school, "about" => $about, "interests" => $interests, "quote" => $quote, "email" => $email, "website" => $website, "socialmedia" => $socialmedia];
   
+  $viewLoader->load("error_toast.html")->render(); //toast for errors
   $viewLoader->load("profile_edit.html")->bind($profileData)->render(); //load data into profile edit view
   
 } else { //no request, self viewing own profile
@@ -48,17 +49,26 @@ if ( isset($_REQUEST["viewUser"]) ) { //viewing another user's home page (summar
   $viewLoader->load("profile_photos.html")->bind($photosData)->render();
 
   //friends snapshot 
-  $friendsData = [ "friends" => ["Britney Spears", "Tom Cruise", "Morgan Freeman", "George Clooney"], "photos" => ["https://hips.hearstapps.com/hmg-prod.s3.amazonaws.com/images/britney-spears3-1624538785.jpg", "https://www.goldenglobes.com/sites/default/files/styles/portrait_medium/public/gallery_images/17-tomcruiseag.jpg", "https://upload.wikimedia.org/wikipedia/commons/e/e4/Morgan_Freeman_Deauville_2018.jpg", "https://upload.wikimedia.org/wikipedia/commons/8/8d/George_Clooney_2016.jpg"] ];
+  $friends = $userObj->getFriends(9); //get 9 friends of this user
+  $friend_names = []; //array to store names of friends
+  $friend_photos = []; //array to store photos of friends
+
+  foreach ($friends as $friend) { //loop through friends to fill the arrays
+    $friend_data = $friend->getProfile(true)->getData();
+    array_push($friend_names, $friend_data["firstname"] . ' ' . $friend_data["lastname"]); 
+    array_push($friend_photos, $friend_data["profilePictureURL"]); 
+  }
+  
+  $friendsData = [ "friends" => $friend_names, "photos" => $friend_photos ];
   
   $viewLoader->load("profile_friends.html")->bind($friendsData)->render();
 
   //new post form 
-  $formData = ["firstname" => $firstname];
+  $formData = ["profile-picture" => $profilePictureURL, "firstname" => $firstname, "lastname" => $lastname];
   $viewLoader->load("profile_post_form.html")->bind($formData)->render();
 
   //old posts
-  $posts = ["profile-picture" => $profilePictureURL, "firstname" => $firstname, "lastname" => $lastname, "date" => "October 13, 2021", "text" => "My best friend is in town!", "images" => ["https://www.cyzo.com/wp-content/uploads/2020/12/nakata-kumicho-400x261.jpg", "https://livedoor.blogimg.jp/inakakisya/imgs/4/2/42eeed6b.jpg"], "likes-stat" => 8, "dislikes-stat" => 2];
-  $viewLoader->load("profile_post.html")->bind($posts)->render();
+  
   $posts = ["profile-picture" => "https://m.media-amazon.com/images/I/41vPqZrsW2L._AC_.jpg", "firstname" => "Johny", "lastname" => "Depp", "date" => "October 1, 2021", "text" => "Aloha, I&#39;m good. Maloha!", "images" => null, "likes-stat" => 38, "dislikes-stat" => 12];
   $viewLoader->load("profile_post.html")->bind($posts)->render();
   
@@ -73,3 +83,6 @@ if ( isset($_REQUEST["viewUser"]) ) { //viewing another user's home page (summar
 
 
 ?>
+
+<!--accompanying JS-->
+<script src="js/profile_post.js"></script>
