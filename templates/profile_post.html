@@ -4,7 +4,7 @@
 
 
   <section class="card-header d-flex flex-row justify-content-start align-items-center bg-white border-0">
-      <img src="{{profile-picture}}" class="rounded-circle post-profile-picture">
+      <img src="{{profile-picture}}" class="rounded-circle post-profile-picture" draggable="false">
     <div class="d-flex flex-column ms-2">  
       <div class="h6 my-0">{{firstname}} {{lastname}}</div>
       <div class="text-muted small">{{date}}</div>
@@ -18,7 +18,7 @@
     {{IF !empty('{{text}}')}}<div class="post-text">{{text}}</div>{{ENDIF}}
     {{IF !empty('{{images}}')}}
       {{FOREACH {{images}} AS image}}
-      <div class="post-image m-2"><img src='{{image}}' class="rounded mw-100"></div>
+      <div class="post-image m-2"><img src='{{image}}' class="rounded mw-100" draggable="false"></div>
       {{ENDFOREACH}}
     {{ENDIF}}
     
