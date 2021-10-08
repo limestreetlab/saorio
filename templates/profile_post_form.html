@@ -49,6 +49,12 @@
         </div>
 
       </section>
+      <!--hidden upload form for profile photo-->
+      <form action="ajax/posts_ajax.php" method="post" enctype="multipart/form-data" class="d-none" id="photo-upload-form">
+          <input type="file" name="photo-upload" id="photo-upload" accept="image/jpeg, image/png, image/gif, image/webp">
+          <input type="submit" id="photo-upload-form-submit-btn">
+      </form>
+      <!--end of upload form-->
 
       <div class="modal-footer border-0">
         <button id="new-post-submit" type="button" class="w-50 ms-auto me-auto btn btn-primary disabled">Post</button>

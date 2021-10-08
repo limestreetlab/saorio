@@ -52,27 +52,13 @@ function uploadPhoto(imageType) {
   $(inputId).off("change").change( function(event) { 
     //files property of the file input element gives access to the FileList array containing File obj
     const file = event.target.files[0]; //get 1st element as no multiple files allowed
-    //read file meta
-    const type = file.type ? file.type : "NA"; //mime type
-    const size = file.size; //in bytes
-
-    //validate type
-    const mimeTypes = ["image/jpeg", "image/png", "image/gif", "image/svg+xml", "image/webp"]; //allowed mime
-    if (!mimeTypes.includes(type)) {
-      showToast("Unsupported file type", "The uploaded file type is not supported.");
-      return; //exit function
-    }
-
-    //validate size
-    const maxSize = 2500000; //set max size at 2.5mb
-    if (size > maxSize) {
-      showToast("File too large", "The uploaded file size is " + (size/1000000).toPrecision(3) + "MB, exceeding our limit of " + (maxSize/1000000).toPrecision(2) + "MB.");
-      return; //exit function
+    if (!checkFile(file)) {
+      return;
     }
     
     let form = document.querySelector("#photo-upload-form"); //select the form element
     let data = new FormData(form); //into a JS Form object
-    data.set(key, ""); //put a key named photo in the request so it can be identified in the handling script as the form doesn't have any keys (only file input)
+    data.set(key, ""); //put a key in the request so it can be identified in the handling script as the form doesn't have any keys (only file input)
     
     $.ajax({
       url: "ajax/profile_edit_ajax.php",
@@ -368,6 +354,33 @@ function showForm(event) {
   $(saveBtn).click(save);
   
 } //end showForm function
+
+/*
+helper function to check upload file
+*/
+function checkFile(file) {
+
+//read file meta
+const type = file.type ? file.type : "NA"; //mime type
+const size = file.size; //in bytes
+
+//validate type
+const mimeTypes = ["image/jpeg", "image/png", "image/gif", "image/svg+xml", "image/webp"]; //allowed mime
+if (!mimeTypes.includes(type)) {
+  showToast("Unsupported file type", "The uploaded file type is not supported.");
+  return false; //exit function
+}
+
+//validate size
+const maxSize = 2500000; //set max size at 2.5mb
+if (size > maxSize) {
+  showToast("File too large", "The uploaded file size is " + (size/1000000).toPrecision(3) + "MB, exceeding our limit of " + (maxSize/1000000).toPrecision(2) + "MB.");
+  return false; //exit function
+}
+
+return true;
+
+}
 
 
 

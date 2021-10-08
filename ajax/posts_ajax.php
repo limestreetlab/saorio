@@ -34,6 +34,17 @@ if (isset($_REQUEST["text"]) && $_REQUEST["action"] == "send") {
 
 }
 
+/*
+script to send an image post
+@return [bool success, array errors, string post] where post is the render-ready text post string
+*/
+if (isset($_REQUEST["photo"]) && $_REQUEST["action"] == "send") {
+
+
+
+
+}
+
 
 ?>
 

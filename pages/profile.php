@@ -29,7 +29,7 @@ if ( isset($_REQUEST["viewUser"]) ) { //viewing another user's home page (summar
   
 } else { //no request, self viewing own profile
 
-  //collecting data and loading them into views, 1 by 1
+  //UI consists of different views, collecting data and loading them into views, 1 by 1
 
   //extract current user's data
   $profile = $userObj->getProfile(false);
@@ -38,17 +38,17 @@ if ( isset($_REQUEST["viewUser"]) ) { //viewing another user's home page (summar
   //opening view
   $viewLoader->load("profile_start.html")->render();
 
-  //profile snapshot 
+  //profile snapshot view
   $summaryData = ["wallpaper" => $wallpaper, "profile-picture" => $profilePictureURL, "firstname" => $firstname, "lastname" => $lastname, "summary" => strlen($about) > 100 ? substr( $about, 0, strpos(wordwrap($about, 100), "\n") ) . '...' : $about, "posts-stat" => 51, "photos-stat" => 11, "comments-stat" => 12, "likes-stat" => 188, "profile-link" => $_SERVER["PHP_SELF"] . '?' . $_SERVER["QUERY_STRING"] . '&editProfile=true'];
   
   $viewLoader->load("profile_summary.html")->bind($summaryData)->render();
 
-  //photos summary 
+  //photos summary view
   $photosData = [ "photos" => ["https://mdbcdn.b-cdn.net/img/new/standard/city/041.jpg", "https://mdbcdn.b-cdn.net/img/new/standard/city/042.jpg", "https://mdbcdn.b-cdn.net/img/new/standard/city/043.jpg", "https://mdbcdn.b-cdn.net/img/new/standard/city/044.jpg"] ];
   
   $viewLoader->load("profile_photos.html")->bind($photosData)->render();
 
-  //friends snapshot 
+  //friends snapshot view
   $friends = $userObj->getFriends(9); //get 9 friends of this user
   $friend_names = []; //array to store names of friends
   $friend_photos = []; //array to store photos of friends
@@ -63,21 +63,24 @@ if ( isset($_REQUEST["viewUser"]) ) { //viewing another user's home page (summar
   
   $viewLoader->load("profile_friends.html")->bind($friendsData)->render();
 
-  //new post form 
+  //new post form view
   $formData = ["profile-picture" => $profilePictureURL, "firstname" => $firstname, "lastname" => $lastname];
   $viewLoader->load("profile_post_form.html")->bind($formData)->render();
 
-  //old posts
+  //old posts view
   
-  $posts = ["profile-picture" => "https://m.media-amazon.com/images/I/41vPqZrsW2L._AC_.jpg", "firstname" => "Johny", "lastname" => "Depp", "date" => "October 1, 2021", "text" => "Aloha, I&#39;m good. Maloha!", "images" => null, "likes-stat" => 38, "dislikes-stat" => 12];
-  $viewLoader->load("profile_post.html")->bind($posts)->render();
+  $postData = ["profile-picture" => "https://m.media-amazon.com/images/I/41vPqZrsW2L._AC_.jpg", "firstname" => "Johny", "lastname" => "Depp", "date" => "October 1, 2021", "text" => "Aloha, I&#39;m good. Maloha!", "images" => null, "likes-stat" => 38, "dislikes-stat" => 12];
+  $viewLoader->load("profile_post.html")->bind($postData)->render();
   
-  //pagination
+  //pagination view
   $pages = ["pages" => [1,2,3,4]];
   $viewLoader->load("profile_posts_pagination.html")->bind($pages)->render();
 
   //closing view
   $viewLoader->load("profile_end.html")->render();
+  
+  //toast for errors
+  $viewLoader->load("error_toast.html")->render(); 
 
 }
 

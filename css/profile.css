@@ -64,6 +64,11 @@
   box-shadow: none;
 }
 
+/*toast for displaying errors should always come on top*/
+#toast-container {
+  z-index: 9999; 
+}
+
 
 
 
