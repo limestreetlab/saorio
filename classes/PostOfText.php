@@ -19,8 +19,7 @@ class PostOfText extends Post {
     if ( isset($content) ) { //content provided, so a new post creation
 
       $this->content = self::cleanString($content);
-      $this->id = $this->user . time(); //concatenate username and obj creation time as id
-
+      
       if (strlen($this->content) > self::MAX_LENGTH) { //check if length below max
         array_push($this->errorCodes, 2);
         throw new Exception("entered texts exceed max length of " . self::MAX_LENGTH);
@@ -44,27 +43,65 @@ class PostOfText extends Post {
 
   /*
   @Override
+  text post can be contained in a non-text post such as an image post containing a text post to hold text content
+  hence, creating a non-text post can result in creating two kinds of posts (that non-text post itself and a text post)
+  given current model where all types of posts get recorded in one table and contents in different tables, the shared timestamp-based id for the common table can overlap
+  when an overlapping id occurs, one of the two posts should adjust its id; text-post is the one to adjust here
+  text-post adjusts its id by changing the last digit, incrementing by 1 for 0-8 or to 1 for 9
+  note that because only text-post will adjust, the non-text post must be recorded first so when ids overlap, text-post will experience error anad just
+  id only adjusts once, if it still fails, an exception will be thrown
   */
   public function post(): bool {
 
     if (!empty($this->content)) { //do nothing if empty content
 
-      try {
+      try { //create a record in the common post table and then one in the text post record, using existing id
 
-        $this->mysql->request($this->mysql->createTextPostQuery, [":id" => $this->id, ":user" => $this->user]);
+        $this->mysql->beginTransaction();
+
+        $this->mysql->request($this->mysql->createTextPostQuery, [":id" => $this->id, ":user" => $this->user]); //id can potentially clash 
         $this->mysql->request($this->mysql->createTextPostContentQuery, [":post_id" => $this->id, ":content" => $this->content]);
-        return true;
 
-      } catch (Exception $ex) {
+        return $this->mysql->commit();
 
-        array_push($this->errorCodes, -1);
-        return false;
+      } catch (PDOException $ex) {
 
-      }
+        if ($ex->errorInfo[0] == 23000 && $ex->errorInfo[1] == 1062) { //primary key duplicate exception
 
-    }
+          try { //re-try using a new id
 
-  }
+            $this->id = substr($this->id, 0, strlen($this->id) - 1) . ((string)(substr($this->id, -1) + 1))[0]; //increment by 1; when last digit is 9, take 1st digit (=1) instead of using 10
+            $this->mysql->rollBack(); //roll back so to start from scratch
+            
+            $this->mysql->beginTransaction(); //start again
+
+            $this->mysql->request($this->mysql->createTextPostQuery, [":id" => $this->id, ":user" => $this->user]); 
+            $this->mysql->request($this->mysql->createTextPostContentQuery, [":post_id" => $this->id, ":content" => $this->content]);
+
+            $this->mysql->commit(); 
+            return true; //succeeding this time
+
+          } catch (PDOException $ex) { //failed again for whatever reason, giving up
+
+            $this->mysql->rollBack(); //roll back 
+            array_push($this->errorCodes, $ex->getMessage()); //log system error
+            return false;
+
+          }
+
+        } else { //non-primary-key error
+
+          $this->mysql->rollBack(); //roll back 
+          array_push($this->errorCodes, $ex->getMessage()); //log system error
+          return false;
+
+        }
+
+      }//end catch 
+
+    }//end if
+
+  }//end function
 
   /*
   @Override

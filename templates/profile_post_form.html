@@ -41,14 +41,53 @@
           <textarea id="new-post-text" class="form-control mt-2 border-0" rows="4" placeholder="What's on your mind, {{firstname}}?"></textarea>
           
           <!--add post attachments like images INSIDE here-->
-          <div id="post-attachment"></div>
+          <section id="post-attachment" class="d-none text-center mt-1 mb-3 p-0 position-relative"><span class='btn btn-light rounded-circle position-absolute' id='upload-cancel-btn-container'><i class='bi bi-x-lg' id='upload-cancel-btn'></i></span></section>
           <span id="new-post-photo"><button type="button" class="btn"><i class="bi bi-camera-fill text-primary"></i><span class="fw-bold text-secondary small">  Photo</span></button></span>
           <span id="new-post-link"><button type="button" class="btn"><i class="bi bi-share-fill text-primary"></i><span class="fw-bold text-secondary small">  Link</span></button></span>
           <span id="new-post-poll"><button type="button" class="btn"><i class="bi bi-bar-chart-fill text-primary"></i><span class="fw-bold text-secondary small">  Poll</span></button></span>
+ 
+          <!--2nd modal for photo captions-->
+          <section class="modal fade" id="photo-caption-modal">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content w-75 mx-auto">
+                <div class="modal-header">
+                  <h6 class="modal-title">Add a photo caption</h6>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                  <textarea class="form-control border-0 small p-1" id="photo-caption" rows="3" placeholder="Write a caption"></textarea>
+                </div>
+                <div class="modal-footer border-top-0 pt-0 mt-0">
+                  <button type ="button" class="btn btn-primary btn-sm" data-bs-dismiss="modal" id="photo-caption-save-btn">Save</button>
+                </div>
+              </div>
+            </div>
+          </section>
+          <!--end caption modal-->
+
+          <!--2nd modal for information display-->
+          <section class="modal fade" id="feature-unavailable-modal">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content w-75 mx-auto">
+                <div class="modal-header">
+                 <h6 class="modal-title">Upcoming feature</h6>
+                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                  Stay tuned. We are working on this function.
+                </div>
+                <div class="modal-footer border-top-0 pt-0 mt-0">
+                  <button type ="button" class="btn btn-primary btn-sm" data-bs-dismiss="modal">Okay</button>
+                </div>
+              </div>
+            </div>
+          </section>
+          <!--end info modal-->
 
         </div>
 
       </section>
+      
       <!--hidden upload form for profile photo-->
       <form action="ajax/posts_ajax.php" method="post" enctype="multipart/form-data" class="d-none" id="photo-upload-form">
           <input type="file" name="photo-upload" id="photo-upload" accept="image/jpeg, image/png, image/gif, image/webp">

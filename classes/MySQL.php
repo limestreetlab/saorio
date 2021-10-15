@@ -4,7 +4,7 @@ create MySQL database connection and single access-point to database
 singleton class
 */
 
-require_once $_SERVER["DOCUMENT_ROOT"] . "/Saorio/includes/config.php"; //load database credentials from config file
+require_once $_SERVER["DOCUMENT_ROOT"] . "/Saorio/includes/credentials.php"; //load database credentials from config file
 
 final class MySQL {
 
@@ -21,6 +21,7 @@ final class MySQL {
 
       $this->dsn = "mysql:host=". DB_HOST .";dbname=". DB_NAME .";port=". DB_PORT; 
       $this->dbh = new PDO($this->dsn, DB_USER, DB_PASSWORD);
+      $this->dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
     } catch (PDOException $ex) {
 
@@ -47,10 +48,10 @@ final class MySQL {
   key function to access database, for all CRUD operations
   @param $query: SQL query string, can be either a straight query (without any inputs) or a prepared statement using either named parameters (:param) or positional params (?)
   @param $params: values, in array, to bind to a prepared statement, [value1, value2, ...] or ["name1" => value1, "name2" => value2, ...] for positional or named params
-  @return full resultset
+  @return array resultset if one exists or null if there is no resultset (not a Select query)
   */
-  public function request(string $query, array $params=null): array {
-    
+  public function request(string $query, array $params=null): ?array {
+
     if (isset($params)) { //query params provided, so a prepared statement
       
       $stmt = ($this->dbh)->prepare($query); //set up the prepared statement
@@ -61,7 +62,7 @@ final class MySQL {
         
         foreach ($params as $key => &$value) {  //bind the parameters 1-by-1
           if (substr($key, 0, 1) != ":") { //if the provided parameter isn't prefixed with ':' which is required in bindParam()
-            $name = ":".$key; //prefix it with ':'
+            $key = ":".$key; //prefix it with ':'
           }
 
           $stmt->bindParam($key, $value);
@@ -83,10 +84,42 @@ final class MySQL {
 
     }
 
-    $resultset = $stmt->fetchAll(); //grab the entire resultset
+    //using fetch() or fetchAll() when there is no resultset will result in an exception
+    //before fetching, use columnCount() to check if a resultset exists, it returns 0 if no resultset
+    $resultset = $stmt->columnCount() > 0 ? $stmt->fetchAll() : null;
     return $resultset;
 
   }//end function
+
+  /*
+  initiate a transaction, to be 
+  @return boolean success
+  */
+  public function beginTransaction(): bool {
+
+    return ($this->dbh)->beginTransaction();
+
+  }
+
+  /*
+  commit a transaction and return to auto-commit mode
+  @return boolean success
+  */
+  public function commit(): bool {
+
+    return ($this->dbh)->commit();
+
+  }
+
+  /*
+  roll back a transaction that is initiated by beginTransaction() and return to auto-commit mode
+  @return boolean success
+  */
+  public function rollBack(): bool {
+
+    return ($this->dbh)->rollBack();
+
+  }
 
   /*
   Collection of all SQL query strings used throughout the app

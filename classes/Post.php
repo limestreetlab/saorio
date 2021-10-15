@@ -35,8 +35,8 @@ abstract class Post {
 
     if ( isset($content) ) { //content provided, so a new post
 
-      $this->id = null;
       $this->user = $_SESSION["user"]; //set to session user
+      $this->id = $this->user . time(); //concatenate username and obj creation time as id
       $this->likes = 0;
       $this->dislikes = 0;
     

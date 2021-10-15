@@ -70,6 +70,210 @@
 }
 
 
+#upload-cancel-btn-container {
+  top: 5%;
+  right: 5%; 
+}
+
+#photo-caption {
+  resize: none;
+  font-size: 0.9em;
+}
+
+#post-attachment img {
+  display: inline;
+  border-radius: 10px;
+  border: 3px solid transparent;
+  max-height: 100%;
+  max-width: 100%;
+  -webkit-user-drag: none; 
+  -khtml-user-drag: none; 
+  -moz-user-drag: none; 
+  -o-user-drag: none; 
+  user-drag: none; 
+  cursor: pointer;
+}
+
+#post-attachment {
+  max-height: 600px;
+  width: auto;
+}
+
+/*images CSS stylings for different photo configurations based on number of images and portrait vs landscape*/
+
+/*1 photo*/
+#post-attachment img.portrait-1-in-1-portrait {
+  position: relative;
+  width: 100%;
+  height: auto;
+  max-height: 600px; 
+  object-fit: cover;
+}
+
+#post-attachment img.landscape-1-in-1-landscape {
+  position: relative;
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+}
+
+/*2 photos*/
+#post-attachment img.portrait-1-in-2-portrait, #post-attachment img.portrait-2-in-2-portrait {
+  position: relative;
+  width: 50%;
+  height: 320px;
+  object-fit: cover;
+}
+
+#post-attachment img.landscape-1-in-2-landscape, #post-attachment img.landscape-2-in-2-landscape {
+  position: relative;
+  width: 100%;
+  height: 250px;
+  object-fit: cover;
+}
+
+#post-attachment img.landscape-1-in-2-mixed, #post-attachment img.landscape-2-in-2-mixed {
+  position: relative;
+  width: 50%;
+  height: 250px;
+  object-fit: cover;
+}
+
+/*3 photos*/
+#post-attachment img.portrait-1-in-3-portrait {
+  position: relative;
+  width: 50%;
+  height: 360px;
+  object-fit: cover;
+}
+
+#post-attachment img.portrait-2-in-3-portrait, #post-attachment img.portrait-3-in-3-portrait {
+  width: 50%;
+  height: 180px;
+  object-fit: cover;
+}
+
+#post-attachment img.portrait-2-in-3-portrait {
+  position: relative;
+  vertical-align: top;
+}
+
+#post-attachment img.portrait-3-in-3-portrait {
+  position: absolute;
+  bottom: 0%;
+  right: 0%;
+}
+
+#post-attachment img.landscape-1-in-3-landscape {
+  position: relative;
+  width: 100%;
+  height: 250px;
+  object-fit: cover;
+}
+
+#post-attachment img.landscape-2-in-3-landscape, #post-attachment img.landscape-3-in-3-landscape {
+  position: relative;
+  width: 50%;
+  height: 150px;
+  object-fit: cover;
+}
+
+/*4 photos*/
+#post-attachment img.portrait-1-in-4-portrait {
+  positive: relative;
+  width: 60%;
+  height: 390px;
+  object-fit: cover;
+}
+
+#post-attachment img.portrait-2-in-4-portrait, #post-attachment img.portrait-3-in-4-portrait, #post-attachment img.portrait-4-in-4-portrait {
+  width: 40%;
+  height: 130px;
+  object-fit: cover;
+}
+
+#post-attachment img.portrait-2-in-4-portrait {
+  position: relative;
+  vertical-align: top;
+}
+
+#post-attachment img.portrait-3-in-4-portrait {
+  position: absolute;
+  bottom: 33.33%;
+  right: 0%;
+}
+
+#post-attachment img.portrait-4-in-4-portrait {
+  position: absolute;
+  bottom: 0%;
+  right: 0%;
+}
+
+#post-attachment img.landscape-1-in-4-landscape {
+  position: relative;
+  width: 100%;
+  height: 250px;
+  object-fit: cover;
+}
+
+#post-attachment img.landscape-2-in-4-landscape, #post-attachment img.landscape-3-in-4-landscape, #post-attachment img.landscape-4-in-4-landscape {
+  position: relative;
+  width: 33.3%;
+  height: 125px;
+  object-fit: cover;
+}
+
+/*5 photos*/
+#post-attachment img.landscape-1-in-5-landscape, #post-attachment img.landscape-2-in-5-landscape, #post-attachment img.landscape-3-in-5-landscape, #post-attachment img.landscape-4-in-5-landscape, #post-attachment img.landscape-5-in-5-landscape {
+  position: relative;
+  object-fit: cover;
+}
+#post-attachment img.landscape-1-in-5-landscape, #post-attachment img.landscape-2-in-5-landscape {
+  width: 50%;
+  height: 160px;
+}
+
+#post-attachment img.landscape-3-in-5-landscape, #post-attachment img.landscape-4-in-5-landscape, #post-attachment img.landscape-5-in-5-landscape {
+  width: 33.3%;
+  height: 120px;
+}
+
+#post-attachment img.portrait-1-in-5-portrait, #post-attachment img.portrait-2-in-5-portrait, #post-attachment img.portrait-3-in-5-portrait, #post-attachment img.portrait-4-in-5-portrait, #post-attachment img.portrait-5-in-5-portrait {
+  object-fit: cover;
+}
+
+#post-attachment img.portrait-1-in-5-portrait, #post-attachment img.portrait-3-in-5-portrait {
+  width: 60%;
+  position: relative;
+  height: 270px;
+}
+
+#post-attachment img.portrait-2-in-5-portrait, #post-attachment img.portrait-4-in-5-portrait, #post-attachment img.portrait-5-in-5-portrait {
+  width: 40%;
+  height: 180px;
+}
+
+#post-attachment img.portrait-2-in-5-portrait  {
+  position: relative;
+  vertical-align: top;
+}
+
+#post-attachment img.portrait-3-in-5-portrait  {
+  display: block;
+}
+
+#post-attachment img.portrait-4-in-5-portrait  {
+  position: absolute;
+  right: 0%;
+  top: 33.3%;
+}
+
+#post-attachment img.portrait-5-in-5-portrait  {
+  position: absolute;
+  right: 0%;
+  top: 66.6%;
+}
+
 
 
 

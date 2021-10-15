@@ -3,18 +3,22 @@
 class PostOfImage extends Post {
 
   //new variables
-  const MAX_IMAGES = 10; //max number of photos per post
-  const MAX_DESCRIPTION_LENGTH = 200;//max text length for description
+  const MAX_IMAGES = 5; //max number of photos per post
+  const MAX_DESCRIPTION_LENGTH = 100;//max text length for description
   protected $numberOfImages; //number of images contained in this post
   protected $content = []; //overriding instance variable to be an array (of arrays)
+  protected $text; //text post object when a post contains text
 
   /*
   constructor, used to create a new object or reference a created object
   Post id is used to identify an existing object
   for new creation, content is provided; for old reference, content is null
   each image post can contain multiple images of which each can contain a text description
-  so content is an array, each element is an array [file, description]  
-  @param content, an array of arrays, [[file1, description1], [file2, description2], ...]
+  so content is an array, each image element being an array having [file, description] 
+  now, an image post can have an accompany text (for the entire post, not photo description)
+  when a text exists, it must be included as the 1st element (string) of the content array before any image elements (arrays)
+  if there is no text for the post, the first content element can be either null or starting image element
+  @param content, an array of arrays, [string text or null, [File file1, string description1], [File file2, string description2], ...]
   @param id, post id
   */
   public function __construct(array $content = null, string $id = null) {
@@ -23,27 +27,45 @@ class PostOfImage extends Post {
 
     if ( isset($content) ) { //content provided, so a new post creation
 
-      //check the input content format
+      //check content format is as defined [string or null, [File file1, string description1], [File file2, string description2], ...] or [[File file1, string description1], [File file2, string description2], ...]
       if (!is_array($content)) { //check content is an array
 
         array_push($this->errorCodes, -1);
         throw new Exception("code bugs: input content should be an array.");
 
-      } elseif ( count($content) != count(array_filter($content, function($el){return count($el)==2;})) ) { //check all elements are 2-element arrays
+      } elseif ( count(array_slice($content, 1))  != count(array_filter($content, function($el){return count($el)==2;})) ) { //check all elements (except 1st) are 2-element arrays
 
         array_push($this->errorCodes, -1);
-        throw new Exception("code bugs: input content's elements should be 2-element arrays.");
+        throw new Exception("code bugs: input content's elements (except first one) must be 2-element arrays.");
+
+      } elseif ( !is_string($content[0]) && !is_null($content[0]) && !(is_array($content[0]) && count($content[0]) == 2) ) { //check 1st element is either string or null (for text) or 2-element img array (no text) 
+
+        array_push($this->errorCodes, -1);
+        throw new Exception("code bugs: input content's first element must be either a string, null, or 2-element array.");
 
       }
 
-      $this->numberOfImages = count($content);
-      
+      //assign the text to variable and remove it from content array
+      if ( is_string($content[0]) || is_null($content[0]) ) { //text provided as string or explicitly null
+        
+        $text = array_shift($content); //remove the first element from array to variable
+
+      } else { //text is implicitly null
+
+        $text = null; //declare null text, no need to change array which is already image-only
+
+      }
+      //create text post object if text isn't null
+      $this->text = !is_null($text) ? new PostOfText($text) : null; 
+
+      $this->numberOfImages = count($content); //at this point, array only contains images as 1st element text is popped off
+      //check images don't exceed limit
       if ($this->numberOfImages > self::MAX_IMAGES) {
         array_push($this->errorCodes, 4);
         throw new Exception("Each post can contain up to " . self::MAX_IMAGES . "files but " . $this->numberOfImages . " provided");
       } 
 
-      $this->id = $this->user . time(); //concatenate username and obj creation time as post id
+      //note that id instance variable refers to the id of posts table, image id refers to id of image posts table 
       $image_id_available = $this->mysql->request($this->mysql->readImagePostMaximumIdQuery)[0]["max_id"] + 1; //next available id to use in the image post table
 
       //convert image files into Image File objects and clean strings for the content variable
@@ -91,26 +113,27 @@ class PostOfImage extends Post {
 
     try {
 
-      //create this post in db
-      $this->mysql->request($this->mysql->createImagePostQuery, [":id" => $this->id, ":user" => $this->user]);
+      $this->mysql->beginTransaction();
+
+      $this->mysql->request($this->mysql->createImagePostQuery, [":id" => $this->id, ":user" => $this->user]); //create a post of image type
       
-      $success = []; //to account for upload successes
+      if (!is_null($this->text)) {
+        $this->text->post(); //post the text post, which creates a post of text type and a text post
+      }
+      
       //create an entry for each image in db, each references the post
       foreach ($this->content as $el) {
 
         $imageDescription = $el[1];
         $imageFileObj = $el[0];
         $id = $imageFileObj->getId();
-        $this->mysql->request($this->mysql->createImagePostContentQuery, [":id" => $id, ":post_id" => $this->id, ":description" => $imageDescription]);
+        $this->mysql->request($this->mysql->createImagePostContentQuery, [":id" => $id, ":post_id" => $this->id, ":description" => $imageDescription]); //create a image post
 
         if ( !$imageFileObj->upload() ) {
 
-          $this->mysql->request($this->mysql->deleteImagePostQuery, [":id" => $id]); //remove the database record just create for this image
-          array_push($success, false);
-
           switch($imageFileObj->getErrors()[0]) {
             //mapping file class error codes to post class error codes
-            case 1:
+            case 1: //file too big
               array_push($this->errorCodes, 2);
               break;
             case 2:
@@ -119,17 +142,25 @@ class PostOfImage extends Post {
               break;
 
           }
+        
+          throw new Exception();
 
         }
 
-      }
+      } //image post created, text post (if one) created, images and descrptions added to image post
 
-      return !in_array(false, $success);
+      $this->mysql->commit();
+      return true;
 
     } catch (Exception $ex) {
 
-      array_push($this->errorCodes, -1);
-      throw $ex;
+      $this->mysql->rollBack();
+
+      if (empty($this->errorCodes)) { //not file upload related error
+        array_push($this->errorCodes, -1);
+      }
+
+      return false;
 
     }
 

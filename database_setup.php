@@ -106,8 +106,10 @@ $tablename = "text_posts";
 $columns = "id INT UNSIGNED AUTO_INCREMENT,
 post_id VARCHAR(30) UNIQUE COMMENT 'id of the post the text attached to',
 content VARCHAR(500) NOT NULL,
+text_for VARCHAR(30) COMMENT 'other posts can contain a text post, if so, this column points to the containing post's id',
 PRIMARY KEY (id),
-FOREIGN KEY (post_id) REFERENCES posts (id) ON DELETE CASCADE";
+FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
+FOREIGN KEY (text_for) REFERENCES posts(id) ON DELETE CASCADE";
 $tables["$tablename"] = $columns;
 
 //post contents for image-based posts, one-to-many (one post, many images). post_type = 2
@@ -118,7 +120,7 @@ imageURL VARCHAR(300) COMMENT 'absolute path to the image',
 imageMIME VARCHAR(30) COMMENT 'full mime of image/xxx',
 description VARCHAR(200) COMMENT 'text accompanying an image',
 PRIMARY KEY (id),
-FOREIGN KEY (post_id) REFERENCES posts (id) ON DELETE CASCADE"; 
+FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE";
 $tables["$tablename"] = $columns;
 
 //post comments, one-to-many (one post, many comments)

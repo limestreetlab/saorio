@@ -1,5 +1,10 @@
 <?php
-//concrete class for post image posts
+/*
+concrete class for the image of an image post
+note it represents the image, not the post per se
+hence, a post (image post) must exist separately that contains an image (class composition)
+this is enforced by requiring a post to pre-exist before a post image can be constructed using an id parameter in constructor
+*/
 
 
 class UploadedPostImageFile extends UploadedImageFile {
@@ -11,9 +16,8 @@ class UploadedPostImageFile extends UploadedImageFile {
   /*
   @Override
   constructor, inherited from super
-  id in the image posts table (primary key) used as id to identify each posted image
+  id to articulate which post the image belongs to; here it is the id (primary key) in the database image posts table (primary key)
   a record in image posts table must pre-exist before an image file can be added
-  the entry id is used to identify the record to insert the file
   both id and file for new creation, id only for old reference  
   */
   public function __construct(int $id, $uploadedFile = null) {
