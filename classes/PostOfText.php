@@ -112,15 +112,15 @@ class PostOfText extends Post {
 
     if (strlen($newContent) > self::MAX_LENGTH) { //check if length below max
       array_push($this->errorCodes, 2);
-      throw new Exception("entered texts exceed max length.");
+      throw new Exception("entered texts exceed max length of " . self::MAX_LENGTH);
     }
 
     if (!empty($newContent)) { //do nothing if empty content
 
       try {
 
-        $this->mysql->request($this->mysql->updateTextPostQuery, [":content" => $newContent, ":post_id" => $this->id]);
-        $this->content = $newContent;
+        $this->mysql->request($this->mysql->updateTextPostQuery, [":content" => $newContent, ":post_id" => $this->id]); //update db
+        $this->content = $newContent; //update object
 
       } catch (Exception $ex) {
 
@@ -156,6 +156,7 @@ class PostOfText extends Post {
 
   /*
   @Override
+  @return string the content of this text post
   */
   public function getContent(): string {
 

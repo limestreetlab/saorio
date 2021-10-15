@@ -192,8 +192,8 @@ final class MySQL {
   public $readPostLikedByQuery = "SELECT user FROM post_reactions WHERE post_id = :post_id AND reaction > 0";
   public $readPostDislikedByQuery = "SELECT user FROM post_reactions WHERE post_id = :post_id AND reaction < 0";
 
-  //for post contents
-  public $readAllPostsQuery = "SELECT posts.id, posts.timestamp, posts.post_type AS type, text_posts.content, image_posts.imageURL AS image, image_posts.description FROM posts LEFT JOIN text_posts ON posts.id = text_posts.post_id LEFT JOIN posts.id = image_posts.post_id WHERE posts.user = :user";
+  //for posts and post contents
+  public $readAllPostsQuery = "SELECT posts.id, posts.timestamp, posts.post_type AS type, text_posts.content, text_posts.text_for, image_posts.imageURL AS image, image_posts.description FROM posts LEFT JOIN text_posts ON posts.id = text_posts.post_id LEFT JOIN image_posts ON posts.id = image_posts.post_id WHERE posts.user = :user";
   public $readAllImagePostsQuery = "SELECT posts.id, posts.timestamp, image_posts.imageURL AS image, image_posts.description FROM posts INNER JOIN image_posts ON posts.id = image_posts.post_id WHERE posts.user = :user";
   public $createTextPostQuery = "INSERT INTO posts (id, user, post_type) VALUES (:id, :user, 1)";
   public $createTextPostContentQuery = "INSERT INTO text_posts (post_id, content) VALUES (:post_id, :content)";
@@ -201,10 +201,12 @@ final class MySQL {
   public $createImagePostContentQuery = "INSERT INTO image_posts (id, post_id, description) VALUES (:id, :post_id, :description)";
   public $updateImagePostImageQuery = "UPDATE image_posts SET imageURL = :imageURL, imageMIME = :imageMIME WHERE id = :id";
   public $updateImagePostDescriptionQuery = "UPDATE image_posts SET description = :description WHERE id = :id";
+  public $updateImagePostTextQuery = "UPDATE text_posts SET content = :content WHERE text_for = :id";
+  public $updateTextPostForQuery = "UPDATE text_posts SET text_for = :for WHERE post_id = :post_id"; //specify for which non-text post this text post is associated with
   public $updateTextPostQuery = "UPDATE text_posts SET content = :content WHERE post_id = :post_id";
   public $readPostTypeQuery = "SELECT post_type AS type FROM posts WHERE id = :id";
   public $readTextPostQuery = "SELECT posts.user, posts.timestamp, text_posts.content AS post FROM posts INNER JOIN text_posts ON posts.id = text_posts.post_id WHERE posts.id = :id";
-  public $readImagePostQuery = "SELECT posts.user, posts.timestamp, image_posts.id AS image_id, image_posts.imageURL AS image, image_posts.imageMIME AS mime, image_posts.description AS description FROM posts INNER JOIN image_posts ON posts.id = image_posts.post_id WHERE posts.id = :id";
+  public $readImagePostQuery = "SELECT posts.user, posts.timestamp, text_posts.content AS text, image_posts.id AS image_id, image_posts.imageURL AS image, image_posts.imageMIME AS mime, image_posts.description AS description FROM posts INNER JOIN image_posts ON posts.id = image_posts.post_id INNER JOIN text_posts ON posts.id = text_posts.text_for WHERE posts.id = :id";
   public $readImagePostImageQuery = "SELECT imageURL AS image from image_posts WHERE id = :id";
   public $readImagePostMaximumIdQuery = "SELECT MAX(id) AS max_id from image_posts"; //retrieve the max id used, used for knowing the next id to use in codes
   public $deletePostQuery = "DELETE FROM posts WHERE id = :id";

@@ -98,6 +98,7 @@ class PostOfImage extends Post {
 
       $this->user = $postData[0]["user"];
       $this->timestamp = $postData[0]["timestamp"];
+      $this->text = !is_null( $postData[0]["text"] ) ? new PostOfText( $postData[0]["text"] ) : null;
       $this->numberOfImages = count($this->content);
 
     }
@@ -117,16 +118,21 @@ class PostOfImage extends Post {
 
       $this->mysql->request($this->mysql->createImagePostQuery, [":id" => $this->id, ":user" => $this->user]); //create a post of image type
       
-      if (!is_null($this->text)) {
+      //create a text post and then link it to the image post
+      if (!is_null($this->text)) { //do something if text is not null
         $this->text->post(); //post the text post, which creates a post of text type and a text post
       }
-      
-      //create an entry for each image in db, each references the post
+      //a text post needs to be explicity linked to an image post to declare belonging
+      $text_post_id = $this->text->getData()["id"]; //retrieve the id of the contained text post
+      $this->mysql->request($this->mysql->updateTextPostForQuery, [":for" => $this->id, ":post_id" => $text_post_id]); //declaring the text post belongs to this image post
+      //done with text post
+
+      //create an entry for each image in database
       foreach ($this->content as $el) {
 
-        $imageDescription = $el[1];
-        $imageFileObj = $el[0];
-        $id = $imageFileObj->getId();
+        $imageDescription = $el[1]; //the caption of this image
+        $imageFileObj = $el[0]; //file object of this image
+        $id = $imageFileObj->getId(); //image post this image belongs to
         $this->mysql->request($this->mysql->createImagePostContentQuery, [":id" => $id, ":post_id" => $this->id, ":description" => $imageDescription]); //create a image post
 
         if ( !$imageFileObj->upload() ) {
@@ -156,8 +162,8 @@ class PostOfImage extends Post {
 
       $this->mysql->rollBack();
 
-      if (empty($this->errorCodes)) { //not file upload related error
-        array_push($this->errorCodes, -1);
+      if (empty($this->errorCodes)) { //no file upload related error
+        array_push($this->errorCodes, -1); //is system error
       }
 
       return false;
@@ -170,40 +176,77 @@ class PostOfImage extends Post {
   @Override
   factory method to update parts of an existing post
   it can update image descriptions, delete images, add images
-  @param switch, int to switch among update operations, 1 for description, 2 for img delete, 3 for img add
-  @param data, array containing data to accompany the update, [[img index, new description],...] for 1, [img index, ...] for 2, [[file, description],...] for 3 
+  @param switch, int to switch among update operations, 1 for description, 2 for img delete, 3 for img add, 4 for updating the associated text
+  @param data, array containing data to accompany the update, [[img index, new description],...] for 1, [img index, ...] for 2, [[file, description],...] for 3, ["new text"] for 4
   @return success, true if all elements succeed, false if not all succeed
   */
   public function update(int $switch = 0, array $data = null): bool {
 
-    $success = [];
+    try {
 
-    switch ($switch) {
+      switch ($switch) {
 
-      case 1:
-        foreach ($data as $el) {
-          array_push($success, $this->updateImageDescription($el[0], $el[1]) );
-        }
-        break;
+        case 1: //update image captions/descriptions
 
-      case 2:
-        foreach ($data as $el) {
-          array_push($success, $this->removeImage($el) );
-        }
-        break;
+          $this->mysql->beginTransaction();
 
-      case 3:
-        foreach ($data as $el) {
-          array_push($success, $this->addImage($el[0], $el[1]) );
-        }
-        break;
+          foreach ($data as $el) {
+            
+            if ( !$this->updateImageDescription($el[0], $el[1]) ) {
+              throw new Exception("image update failed.");  
+            }
 
-      default:
-        throw new Exception("unknown function parameter provided.");
+          }
+
+          $this->mysql->commit();
+          break;
+
+        case 2: //remove images
+
+          $this->mysql->beginTransaction();
+
+          foreach ($data as $el) {
+
+            if ( !$this->removeImage($el) ) {
+              throw new Exception("image removal failed.");
+            }
+
+          }
+
+          $this->mysql->commit();
+          break;
+
+        case 3: //add images
+
+          $this->mysql->beginTransaction();
+
+          foreach ($data as $el) {
+
+            if ( !$this->addImage($el[0], $el[1]) ) {
+              throw new Exception("image addition failed.");
+            }
+            
+          }
+
+          $this->mysql->commit();
+          break;
+
+        default:
+          throw new Exception("unknown function parameter.");
+
+        case 4: //update text
+          
+          $text = $data[0];
+          $this->text->update($text); //update db
+
+      }
+
+    } catch (Exception $ex) {
+
+      $this->mysql->rollBack();
+      return false;
 
     }
-
-    return !in_array(false, $success);
 
   }
 
@@ -278,12 +321,12 @@ class PostOfImage extends Post {
     if ( strlen($description) > self::MAX_DESCRIPTION_LENGTH ) {
 
       array_push($this->errorCodes, 2);
-      return false;
+      throw new Exception();
 
-    } elseif ($this->numberOfImages > self::MAX_IMAGES) { 
+    } elseif ($this->numberOfImages >= self::MAX_IMAGES) { 
 
       array_push($this->errorCodes, 4);
-      return false;
+      throw new Exception();
 
     } else {      
 
@@ -295,32 +338,39 @@ class PostOfImage extends Post {
     //add to database
     try {
       
+      $this->mysql->beginTransanction();
+
       $this->mysql->request($this->mysql->createImagePostContentQuery, [":id" => $image_id_available, ":post_id" => $this->id, ":description" => $description]);
       
+      if ( !$imageFileObj->upload() ) { //upload failed
+
+        switch($imageFileObj->getErrors()[0]) {
+          //mapping file class error codes to post class error codes
+          case 1: //file too big
+            array_push($this->errorCodes, 2);
+            break;
+          case 2:
+          case 3:
+            array_push($this->errorCodes, 3);
+            break;  
+        }
+
+        throw new Exception();
+  
+      } else { //upload done
+
+        $this->mysql->commit();
+        return true;
+
+      }
+
+
     } catch (Exception $ex) {
 
-      array_push($this->errorCodes, -1);
-      return false;
+      $this->mysql->rollBack();
 
-    }
-
-    if ( $imageFileObj->upload() ) { //file check and upload succeeded
-
-      return true;
-
-    } else { //unload failed
-
-      $this->mysql->request($this->mysql->deleteImagePostQuery, [":id" => $image_id_available]); //remove the record just created for this image
-      switch($imageFileObj->getErrors()[0]) { //mapping file class error codes to post class error codes
-        
-        case 1:
-          array_push($this->errorCodes, 2);
-          break;
-        case 2:
-        case 3:
-          array_push($this->errorCodes, 3);
-          break;
-
+      if (empty($this->errorCodes)) { //no file upload related error
+        array_push($this->errorCodes, -1); //is system error
       }
 
       return false;
@@ -337,7 +387,7 @@ class PostOfImage extends Post {
 
     try {
 
-      $this->mysql->request( $this->mysql->deletePostQuery, [":id" => $this->id] );
+      $this->mysql->request( $this->mysql->deletePostQuery, [":id" => $this->id] ); //remove post from database
       unset($this->id); //cannot unset the object itself, merely unset its key instance handle variable
 
     } catch (Exception $ex) {

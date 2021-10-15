@@ -16,7 +16,7 @@ class UploadedPostImageFile extends UploadedImageFile {
   /*
   @Override
   constructor, inherited from super
-  id to articulate which post the image belongs to; here it is the id (primary key) in the database image posts table (primary key)
+  id to specify which post the image belongs to; here it is the id (primary key) in the database image posts table (primary key)
   a record in image posts table must pre-exist before an image file can be added
   both id and file for new creation, id only for old reference  
   */
