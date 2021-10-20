@@ -206,7 +206,14 @@ abstract class UploadedImageFile {
   function to convert the file's absolute path to relative one
   @return relative file path
   */
-  abstract protected function getFileRelativePath(): string;
+  abstract public function getFileRelativePath(): string;
+
+  /*
+  utility function to convert a given absolute path of this class to relative one
+  @param absolute path of a file of this class
+  @return relative file path
+  */
+  abstract static public function convertFileRelativePath(string $absolutePath): string;
 
   /*
   function to rotate/flip the image according to its Exif orientation tag

@@ -98,15 +98,15 @@ user VARCHAR(20) NOT NULL COMMENT 'user making the post',
 timestamp TIMESTAMP DEFAULT NOW() COMMENT 'epoch timestamp to now whenever a post is made or modified',
 post_type TINYINT(1) NOT NULL COMMENT 'different types of posts can have different contents and post-to-content relationships so put into own tables',
 PRIMARY KEY (id),
-FOREIGN KEY (user) REFERENCES members(user) ON DELETE CASCADE";
+FOREIGN KEY (user) REFERENCES members(user) ON DELETE CASCADE ON UPDATE CASCADE";
 $tables["$tablename"] = $columns;
 
 //post contents for simple text-based posts, one-to-one. post_type = 1
 $tablename = "text_posts";
 $columns = "id INT UNSIGNED AUTO_INCREMENT,
-post_id VARCHAR(30) UNIQUE COMMENT 'id of the post the text attached to',
+post_id VARCHAR(30) UNIQUE COMMENT 'id of the parent post',
 content VARCHAR(500) NOT NULL,
-text_for VARCHAR(30) COMMENT 'other posts can contain a text post, if so, this column points to the containing post's id',
+text_for VARCHAR(30) COMMENT 'text for other non-text posts, id of whom it belongs to',
 PRIMARY KEY (id),
 FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
 FOREIGN KEY (text_for) REFERENCES posts(id) ON DELETE CASCADE";
@@ -115,7 +115,7 @@ $tables["$tablename"] = $columns;
 //post contents for image-based posts, one-to-many (one post, many images). post_type = 2
 $tablename = "image_posts";
 $columns = "id INT UNSIGNED,
-post_id VARCHAR(30) NOT NULL COMMENT 'id of the post the image attached to',
+post_id VARCHAR(30) NOT NULL COMMENT 'id of the parent post',
 imageURL VARCHAR(300) COMMENT 'absolute path to the image',
 imageMIME VARCHAR(30) COMMENT 'full mime of image/xxx',
 description VARCHAR(200) COMMENT 'text accompanying an image',
@@ -131,7 +131,7 @@ user VARCHAR(20) NOT NULL COMMENT 'user making the comment',
 comment VARCHAR(200) NOT NULL COMMENT 'the comment body',
 PRIMARY KEY (comment_id),
 FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
-FOREIGN KEY (user) REFERENCES members(user) ON DELETE CASCADE";
+FOREIGN KEY (user) REFERENCES members(user) ON DELETE CASCADE ON UPDATE CASCADE";
 $tables["$tablename"] = $columns;
 
 //post likes and dislikes, one-to-many (one post, many likes/dislikes)
@@ -141,7 +141,7 @@ user VARCHAR(20) NOT NULL COMMENT 'user making the reaction, once per post',
 reaction TINYINT(1) NOT NULL COMMENT 'boolean flag, use negative and positive numbers for negative and position reactions',
 PRIMARY KEY (post_id, user),
 FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
-FOREIGN KEY (user) REFERENCES members(user) ON DELETE CASCADE";
+FOREIGN KEY (user) REFERENCES members(user) ON DELETE CASCADE ON UPDATE CASCADE";
 $tables["$tablename"] = $columns;
 
 //create table for every member of $tables

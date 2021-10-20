@@ -69,7 +69,7 @@ if ( isset($_REQUEST["viewUser"]) ) { //viewing another user's home page (summar
 
   //old posts view
   
-  $postData = ["profile-picture" => "https://m.media-amazon.com/images/I/41vPqZrsW2L._AC_.jpg", "firstname" => "Johny", "lastname" => "Depp", "date" => "October 1, 2021", "text" => "Aloha, I&#39;m good. Maloha!", "images" => null, "likes-stat" => 38, "dislikes-stat" => 12];
+  $postData = ["profile-picture" => "https://m.media-amazon.com/images/I/41vPqZrsW2L._AC_.jpg", "firstname" => "Johny", "lastname" => "Depp", "date" => "October 1, 2021", "text" => "Aloha, I&#39;m good. Maloha!", "images" => null, "configs"=> null, "likes-stat" => 38, "dislikes-stat" => 12];
   $viewLoader->load("profile_post.html")->bind($postData)->render();
   
   //pagination view

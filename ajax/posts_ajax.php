@@ -15,7 +15,7 @@ if ($_REQUEST["type"] == "text" && $_REQUEST["action"] == "send") {
   $post = new PostOfText($_REQUEST["text"], null); //create post obj
   $success = $post->post(); //post it
 
-  if ($success) {
+  if ($success) { //successfully posted to database, display frontend
 
     //collect data for front-end view
     $profile = $userObj->getProfile(true);
@@ -24,7 +24,7 @@ if ($_REQUEST["type"] == "text" && $_REQUEST["action"] == "send") {
     $date = (new DateTime("@$now"))->format("M d, Y");
 
     //organize view data for binding
-    $postData = ["profile-picture" => $profilePictureURL, "firstname" => $firstname, "lastname" => $lastname, "date" => $date, "text" => $post->getContent(), "images" => null, "likes-stat" => 0, "dislikes-stat" => 0];
+    $postData = ["profile-picture" => $profilePictureURL, "firstname" => $firstname, "lastname" => $lastname, "date" => $date, "text" => $post->getContent(), "images" => null, "configs" => null, "likes-stat" => 0, "dislikes-stat" => 0];
     $postView = $viewLoader->load("./../templates/profile_post.html")->bind($postData)->getView(); //get view string
 
   }
@@ -40,12 +40,48 @@ script to send an image post
 */
 if ($_REQUEST["type"] == "image" && $_REQUEST["action"] == "send") {
 
-  $text = $_REQUEST["text"]; //string, text data
+  $text = !empty($_REQUEST["text"]) ? $_REQUEST["text"] : null; //string, text data
   $captions = $_REQUEST["captions"]; //array, img captions data
   $files = fixArrayFiles($_FILES["images"]); //array, img files data
-
   
-  echo json_encode(["success" => true, "request arr is " => $_POST, "files arr is " => $files]);
+  $content = [$text]; //first element is text, follows by arrays of file and description
+  for ($i = 0; $i < count($files); $i++) {
+
+    array_push( $content, [$files[$i], $captions[$i]] );
+
+  }
+  
+  $post = new PostOfImage($content, null); //create post obj
+  $success = $post->post(); //post it
+
+  if ($success) { //successfully posted to database, display frontend
+    
+    //collect data for front-end view
+    $profile = $userObj->getProfile(true);
+    extract($profile->getData());
+    $now = time();
+    $date = (new DateTime("@$now"))->format("M d, Y");
+    //image data
+    $content = $post->getContent();
+    $images = []; //array of image file relative paths
+    $imagesAbsPaths = []; //array of image rile absolute paths
+    $descriptions = []; //array of image captions
+    
+    foreach ($content as $el) {
+      array_push($images, $el[0]->getFileRelativePath()); //relative paths for data bind
+      array_push($imagesAbsPaths, $el[0]->getFilePath()); //absolute paths for css classes
+      array_push($descriptions, $el[1]); //photo descriptions for data bind
+    }
+    
+    $configs = PostManager::getImageCssClasses($imagesAbsPaths);
+
+    //organize view data for binding
+    $postData = ["profile-picture" => $profilePictureURL, "firstname" => $firstname, "lastname" => $lastname, "date" => $date, "text" => $text, "images" => $images, "configs" => $configs, "likes-stat" => 0, "dislikes-stat" => 0];
+    $postView = $viewLoader->load("./../templates/profile_post.html")->bind($postData)->getView(); //get view string
+
+  }
+   
+  echo json_encode(["success" => $success, "errors" => $post->getErrors(), "postView" => $postView]);
   exit();
 
 }
@@ -72,6 +108,7 @@ function fixArrayFiles(&$files) {
   }
 
   return $file_arr;
+
 }
 
 

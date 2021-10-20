@@ -124,6 +124,16 @@ class UploadedPostImageFile extends UploadedImageFile {
   }
 
   /*
+  @Override
+  */
+  static public function convertFileRelativePath(string $absolutePath): string {
+
+    $filename = basename($absolutePath);
+    return REL_POST_UPLOAD_DIR . $filename;
+
+  }
+
+  /*
   id getter
   */
   public function getId(): int {

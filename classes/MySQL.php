@@ -52,42 +52,50 @@ final class MySQL {
   */
   public function request(string $query, array $params=null): ?array {
 
-    if (isset($params)) { //query params provided, so a prepared statement
-      
-      $stmt = ($this->dbh)->prepare($query); //set up the prepared statement
+    try {
 
-      $isAssocArray = count(array_filter(array_keys($params), "is_string")) == 0 ? false : true; //boolean flag for associative array (dict, with keys) versus sequential array (list, without keys)  
-      
-      if ($isAssocArray) { //the prepared statement uses named parameters (:name1, :name2, ...)
+      if (isset($params)) { //query params provided, so a prepared statement
         
-        foreach ($params as $key => &$value) {  //bind the parameters 1-by-1
-          if (substr($key, 0, 1) != ":") { //if the provided parameter isn't prefixed with ':' which is required in bindParam()
-            $key = ":".$key; //prefix it with ':'
+        $stmt = ($this->dbh)->prepare($query); //set up the prepared statement
+
+        $isAssocArray = count(array_filter(array_keys($params), "is_string")) == 0 ? false : true; //boolean flag for associative array (dict, with keys) versus sequential array (list, without keys)  
+        
+        if ($isAssocArray) { //the prepared statement uses named parameters (:name1, :name2, ...)
+          
+          foreach ($params as $key => &$value) {  //bind the parameters 1-by-1
+            if (substr($key, 0, 1) != ":") { //if the provided parameter isn't prefixed with ':' which is required in bindParam()
+              $key = ":".$key; //prefix it with ':'
+            }
+
+            $stmt->bindParam($key, $value);
           }
 
-          $stmt->bindParam($key, $value);
-        }
+        } else { //the prepared statement uses unnamed parameters (?, ?, ...) 
+          
+          for($i = 1; $i <= count($params); $i++) { //bind the parameters 1-by-1
+            $stmt->bindParam($i, $params[$i-1]); 
+          }
 
-      } else { //the prepared statement uses unnamed parameters (?, ?, ...) 
-        
-        for($i = 1; $i <= count($params); $i++) { //bind the parameters 1-by-1
-          $stmt->bindParam($i, $params[$i-1]); 
-        }
+        } //the prepared statement has its values bound and ready for execution
 
-      } //the prepared statement has its values bound and ready for execution
+        $stmt->execute();
 
-      $stmt->execute();
+      } else { //not a prepared statement, a straight query
 
-    } else { //not a prepared statement, a straight query
+        $stmt = ($this->dbh)->query($query);   
 
-      $stmt = ($this->dbh)->query($query);   
+      }
+
+      //using fetch() or fetchAll() when there is no resultset will result in an exception
+      //before fetching, use columnCount() to check if a resultset exists, it returns 0 if no resultset
+      $resultset = $stmt->columnCount() > 0 ? $stmt->fetchAll() : null;
+      return $resultset;
+
+    } catch (PDOException $ex) {
+
+      throw $ex;
 
     }
-
-    //using fetch() or fetchAll() when there is no resultset will result in an exception
-    //before fetching, use columnCount() to check if a resultset exists, it returns 0 if no resultset
-    $resultset = $stmt->columnCount() > 0 ? $stmt->fetchAll() : null;
-    return $resultset;
 
   }//end function
 
@@ -118,6 +126,24 @@ final class MySQL {
   public function rollBack(): bool {
 
     return ($this->dbh)->rollBack();
+
+  }
+
+  /*
+  turn off foreign key checks for a transaction.
+  */
+  public function deferForeignKeyChecks(): void {
+
+    $this->dbh->query("SET FOREIGN_KEY_CHECKS=0");
+
+  }
+
+  /*
+  turn on foreign key checks for a transaction.
+  */
+  public function restoreForeignKeyChecks(): void {
+
+    $this->dbh->query("SET FOREIGN_KEY_CHECKS=1");
 
   }
 
@@ -192,25 +218,63 @@ final class MySQL {
   public $readPostLikedByQuery = "SELECT user FROM post_reactions WHERE post_id = :post_id AND reaction > 0";
   public $readPostDislikedByQuery = "SELECT user FROM post_reactions WHERE post_id = :post_id AND reaction < 0";
 
-  //for posts and post contents
-  public $readAllPostsQuery = "SELECT posts.id, posts.timestamp, posts.post_type AS type, text_posts.content, text_posts.text_for, image_posts.imageURL AS image, image_posts.description FROM posts LEFT JOIN text_posts ON posts.id = text_posts.post_id LEFT JOIN image_posts ON posts.id = image_posts.post_id WHERE posts.user = :user";
-  public $readAllImagePostsQuery = "SELECT posts.id, posts.timestamp, image_posts.imageURL AS image, image_posts.description FROM posts INNER JOIN image_posts ON posts.id = image_posts.post_id WHERE posts.user = :user";
+  /*
+  for posts statistics
+  */
+  public $readPostNumberQuery = "SELECT COUNT(posts.id) AS number FROM posts LEFT JOIN text_posts ON posts.id = text_posts.post_id WHERE text_posts.text_for IS NULL AND posts.user = :user";
+  public $readPostsQuery = "SELECT posts.id, posts.timestamp, posts.post_type AS type FROM posts WHERE user = :user ORDER BY timestamp DESC LIMIT :offset, :count"; 
+  public $readImagePostNumberQuery = "SELECT COUNT(*) FROM posts WHERE post_type = 2 AND user = :user";  
+  public $readImagesNumber = "SELECT COUNT(*) FROM posts INNER JOIN image_posts ON posts.id = image_posts.post_id WHERE posts.user = :user";
+  public $readTextPostNumberQuery = "SELECT COUNT(*) FROM posts INNER JOIN text_posts ON posts.id = text_posts.post_id WHERE text_posts.text_for IS NULL AND posts.user = :user";
+
+  /*
+  for post contents
+  */
+  //for all posts
+  public $readPostTypeQuery = "SELECT post_type AS type FROM posts WHERE id = :id";
+  public $deletePostQuery = "DELETE FROM posts WHERE id = :id";
+
+  //for text posts
   public $createTextPostQuery = "INSERT INTO posts (id, user, post_type) VALUES (:id, :user, 1)";
   public $createTextPostContentQuery = "INSERT INTO text_posts (post_id, content) VALUES (:post_id, :content)";
-  public $createImagePostQuery = "INSERT INTO posts (id, user, post_type) VALUES (:id, :user, 2)";
-  public $createImagePostContentQuery = "INSERT INTO image_posts (id, post_id, description) VALUES (:id, :post_id, :description)";
-  public $updateImagePostImageQuery = "UPDATE image_posts SET imageURL = :imageURL, imageMIME = :imageMIME WHERE id = :id";
-  public $updateImagePostDescriptionQuery = "UPDATE image_posts SET description = :description WHERE id = :id";
-  public $updateImagePostTextQuery = "UPDATE text_posts SET content = :content WHERE text_for = :id";
+  //read text posts by user
+  public $readTextPostsQuery = "SELECT posts.id, posts.timestamp, text_posts.content AS post FROM posts INNER JOIN text_posts ON posts.id = text_posts.post_id WHERE posts.user = :user ORDER BY posts.timestamp DESC LIMIT :offset, :count";
+  //read one text post by id
+  public $readTextPostQuery = "SELECT posts.user, posts.timestamp, text_posts.content AS post FROM posts INNER JOIN text_posts ON posts.id = text_posts.post_id WHERE posts.id = :id";
   public $updateTextPostForQuery = "UPDATE text_posts SET text_for = :for WHERE post_id = :post_id"; //specify for which non-text post this text post is associated with
   public $updateTextPostQuery = "UPDATE text_posts SET content = :content WHERE post_id = :post_id";
-  public $readPostTypeQuery = "SELECT post_type AS type FROM posts WHERE id = :id";
-  public $readTextPostQuery = "SELECT posts.user, posts.timestamp, text_posts.content AS post FROM posts INNER JOIN text_posts ON posts.id = text_posts.post_id WHERE posts.id = :id";
-  public $readImagePostQuery = "SELECT posts.user, posts.timestamp, text_posts.content AS text, image_posts.id AS image_id, image_posts.imageURL AS image, image_posts.imageMIME AS mime, image_posts.description AS description FROM posts INNER JOIN image_posts ON posts.id = image_posts.post_id INNER JOIN text_posts ON posts.id = text_posts.text_for WHERE posts.id = :id";
-  public $readImagePostImageQuery = "SELECT imageURL AS image from image_posts WHERE id = :id";
+
+  //for image posts
+  public $createImagePostQuery = "INSERT INTO posts (id, user, post_type) VALUES (:id, :user, 2)";
+  public $createImagePostContentQuery = "INSERT INTO image_posts (id, post_id, description) VALUES (:id, :post_id, :description)";
+  //read image posts by user
+  public $readImagePostsQuery = "SELECT images.id, images.timestamp, texts.text, images.imageURL AS image, images.description FROM 
+                                (SELECT posts.id, posts.timestamp, image_posts.imageURL, image_posts.description FROM posts INNER JOIN image_posts ON posts.id = image_posts.post_id WHERE posts.user = :user ORDER BY posts.timestamp DESC LIMIT :offset, :count) AS images 
+                                LEFT JOIN 
+                                (SELECT text_posts.content AS text, text_posts.text_for FROM posts INNER JOIN text_posts ON posts.id = text_posts.post_id WHERE posts.user = :user AND text_posts.text_for IS NOT NULL) AS texts 
+                                ON images.id = texts.text_for";  
+  //read one image post by id
+  public $readImagePostQuery = " SELECT images.*, text_posts.content AS text FROM 
+                                (SELECT posts.id, posts.timestamp, image_posts.imageURL AS image, image_posts.imageMIME AS mime, image_posts.description FROM posts INNER JOIN image_posts ON posts.id = image_posts.post_id WHERE posts.id = :id) AS images 
+                                LEFT JOIN text_posts ON images.id = text_posts.text_for";
+  //read the ids of image posts in a range 
+  public $readImagePostIdQuery = "SELECT posts.id FROM posts INNER JOIN image_posts ON posts.id = image_posts.post_id WHERE posts.user = :user ORDER BY posts.timestamp DESC LIMIT :offset, :count";
+  public $readImagePostImageQuery = "SELECT imageURL AS image from image_posts WHERE post_id = :id";
   public $readImagePostMaximumIdQuery = "SELECT MAX(id) AS max_id from image_posts"; //retrieve the max id used, used for knowing the next id to use in codes
-  public $deletePostQuery = "DELETE FROM posts WHERE id = :id";
+  public $updateImagePostImageQuery = "UPDATE image_posts SET imageURL = :imageURL, imageMIME = :imageMIME WHERE id = :id"; //recall image belongs to a post, so a post must exist before an image can be persisted
+  public $updateImagePostDescriptionQuery = "UPDATE image_posts SET description = :description WHERE id = :id";
   public $deleteImagePostQuery = "DELETE FROM image_posts WHERE id = :id";
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
   
 
 } //end class

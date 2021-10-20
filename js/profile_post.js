@@ -13,6 +13,7 @@ $("document").ready(function(){
 
   //disable or enable post submit btn on input fields change
   $("#post-content").on("input DOMSubtreeModified", enablePostBtn);
+  //send the form data to backend
   $("#new-post-submit").on("click", post);
   $("#new-post-photo").on("click", upload);
   $("#new-post-poll").on("click", () => { new bootstrap.Modal($("#feature-unavailable-modal")).show()} );
@@ -80,8 +81,8 @@ function post() {
           callbackError(data.errors);
 
         } else { //upload succeeded
-          
-          //callbackSuccess(data.postView);
+          callbackSuccess(data.postView);
+          //alert(JSON.stringify(data));
           
         }
 
@@ -186,7 +187,7 @@ function showAttachment(file) {
   //use promise because onload is asynchronous and next operation needs img to be completely loaded
   let promise = new Promise(function(resolve, reject) {
      img.onload = function() {
-       if (img.width > img.height) {
+       if (img.width >= img.height) {
          $(img).addClass("landscape");
        } else {
          $(img).addClass("portrait");
@@ -198,7 +199,6 @@ function showAttachment(file) {
   return promise;
   
 }
-
 
 /*
 function to organize attachments in the attachment div
@@ -246,9 +246,10 @@ function manageAttachment() {
     if (orientation[0] == "portrait") { //most recent image is a portrait 
       config.push("portrait-1-in-3-portrait", "portrait-2-in-3-portrait", "portrait-3-in-3-portrait");
      } else {
-       config.push("landscape-1-in-3-landscape", "landscape-2-in-3-landscape", "landscape-3-in-3-landscape");
+      config.push("landscape-1-in-3-landscape", "landscape-2-in-3-landscape", "landscape-3-in-3-landscape");
      }
      break;
+
    case 4:
     if (orientation[0] == "portrait") { //most recent image is a portrait
       config.push("portrait-1-in-4-portrait", "portrait-2-in-4-portrait", "portrait-3-in-4-portrait", "portrait-4-in-4-portrait");
@@ -256,6 +257,7 @@ function manageAttachment() {
       config.push("landscape-1-in-4-landscape", "landscape-2-in-4-landscape", "landscape-3-in-4-landscape", "landscape-4-in-4-landscape");
     } 
     break;
+
    case 5:
      if (orientation[0] == "portrait") { //most recent image is a portrait
        config.push("portrait-1-in-5-portrait", "portrait-2-in-5-portrait", "portrait-3-in-5-portrait", "portrait-4-in-5-portrait", "portrait-5-in-5-portrait");

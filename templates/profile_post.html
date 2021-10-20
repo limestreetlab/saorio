@@ -15,11 +15,13 @@
   <!--INCOMPLETE, pending work-->
   <section class="card-body pt-1">
 
-    {{IF !empty('{{text}}')}}<div class="post-text">{{text}}</div>{{ENDIF}}
+    {{IF !empty('{{text}}')}}<div class="post-text mb-2">{{text}}</div>{{ENDIF}}
     {{IF !empty('{{images}}')}}
-      {{FOREACH {{images}} AS image}}
-      <div class="post-image m-2"><img src='{{image}}' class="rounded mw-100" draggable="false"></div>
+      <div class="post-attachment w-100 p-0 position-relative">
+      {{FOREACH {{images}} AS image {{configs}} AS config}}
+        <img src='{{image}}' class="{{config}}" draggable="false">
       {{ENDFOREACH}}
+      </div>
     {{ENDIF}}
     
   </section>

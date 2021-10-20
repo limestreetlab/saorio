@@ -33,30 +33,34 @@ class PostOfImage extends Post {
         array_push($this->errorCodes, -1);
         throw new Exception("code bugs: input content should be an array.");
 
-      } elseif ( count(array_slice($content, 1))  != count(array_filter($content, function($el){return count($el)==2;})) ) { //check all elements (except 1st) are 2-element arrays
+      } elseif ( count(array_slice($content, 1)) != count(array_filter(array_slice($content, 1), "is_array")) ) {
 
         array_push($this->errorCodes, -1);
-        throw new Exception("code bugs: input content's elements (except first one) must be 2-element arrays.");
+        throw new Exception("code bugs: input content elements must be arrays.");
+      
+      } elseif ( count(array_slice($content, 1)) != count(array_filter(array_slice($content, 1), function($el){return count($el)==2;})) ) { //check all elements (except 1st) are 2-element arrays
+
+        array_push($this->errorCodes, -1);
+        throw new Exception("code bugs: input content elements must be 2-element arrays.");
 
       } elseif ( !is_string($content[0]) && !is_null($content[0]) && !(is_array($content[0]) && count($content[0]) == 2) ) { //check 1st element is either string or null (for text) or 2-element img array (no text) 
 
         array_push($this->errorCodes, -1);
-        throw new Exception("code bugs: input content's first element must be either a string, null, or 2-element array.");
+        throw new Exception("code bugs: input content first element must be either a string, null, or 2-element array.");
 
       }
 
       //assign the text to variable and remove it from content array
-      if ( is_string($content[0]) || is_null($content[0]) ) { //text provided as string or explicitly null
+      if ( is_string($content[0]) || is_null($content[0]) ) { //text explicitly provided as string or null
         
-        $text = array_shift($content); //remove the first element from array to variable
+        $text = array_shift($content) ; //remove the first element from array to construct an obj
 
       } else { //text is implicitly null
 
-        $text = null; //declare null text, no need to change array which is already image-only
+        $text = null;
 
       }
-      //create text post object if text isn't null
-      $this->text = !is_null($text) ? new PostOfText($text) : null; 
+      $this->text = !is_null($text) ? new PostOfText($text, null) : null;
 
       $this->numberOfImages = count($content); //at this point, array only contains images as 1st element text is popped off
       //check images don't exceed limit
@@ -110,31 +114,24 @@ class PostOfImage extends Post {
   function to submit the post object
   @return: true if all post image uploads succeed, false if not all succeed
   */
-  public function post(): bool {
-
+  public function post() {
+    
     try {
-
+      
       $this->mysql->beginTransaction();
+      $this->mysql->deferForeignKeyChecks();
 
       $this->mysql->request($this->mysql->createImagePostQuery, [":id" => $this->id, ":user" => $this->user]); //create a post of image type
       
-      //create a text post and then link it to the image post
-      if (!is_null($this->text)) { //do something if text is not null
-        $this->text->post(); //post the text post, which creates a post of text type and a text post
-      }
-      //a text post needs to be explicity linked to an image post to declare belonging
-      $text_post_id = $this->text->getData()["id"]; //retrieve the id of the contained text post
-      $this->mysql->request($this->mysql->updateTextPostForQuery, [":for" => $this->id, ":post_id" => $text_post_id]); //declaring the text post belongs to this image post
-      //done with text post
-
       //create an entry for each image in database
       foreach ($this->content as $el) {
-
+        
         $imageDescription = $el[1]; //the caption of this image
         $imageFileObj = $el[0]; //file object of this image
         $id = $imageFileObj->getId(); //image post this image belongs to
+        
         $this->mysql->request($this->mysql->createImagePostContentQuery, [":id" => $id, ":post_id" => $this->id, ":description" => $imageDescription]); //create a image post
-
+        
         if ( !$imageFileObj->upload() ) {
 
           switch($imageFileObj->getErrors()[0]) {
@@ -148,19 +145,32 @@ class PostOfImage extends Post {
               break;
 
           }
-        
+          
           throw new Exception();
 
         }
-
+       
       } //image post created, text post (if one) created, images and descrptions added to image post
+      
+      $this->mysql->commit(); 
+      $this->mysql->restoreForeignKeyChecks();
 
-      $this->mysql->commit();
+      //create a text post and then link it to the image post (outside of transaction due to primary key clashing in transaction)
+      if (!is_null($this->text)) { //do something if text is not null
+
+        $this->text->post(); //post the text post, which creates a post of text type and a text post
+        //a text post needs to be explicity linked to an image post to declare belonging
+        $text_post_id = $this->text->getData()["id"]; //retrieve the id of the contained text post
+        $this->mysql->request($this->mysql->updateTextPostForQuery, [":for" => $this->id, ":post_id" => $text_post_id]); //declaring the text post belongs to this image post
+      
+      }
+
       return true;
 
     } catch (Exception $ex) {
 
       $this->mysql->rollBack();
+      $this->mysql->restoreForeignKeyChecks();
 
       if (empty($this->errorCodes)) { //no file upload related error
         array_push($this->errorCodes, -1); //is system error
