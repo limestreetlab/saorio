@@ -152,12 +152,12 @@ class Template {
 
       $loopExpressionPattern = '/(.*?)\s*AS\s*?(\w+)\s*/si'; //used to capture the varibles before AS, and variable name after AS
       preg_match_all($loopExpressionPattern, $iterativeExpression, $matches); //capturing variables and names into $matches
-      $variablesAsStrings = $matches[1]; //string arrays, each string comprises variables delimited by comma
-      $variables = array_map(function (string $s): array {return explode(",", $s);}, $variablesAsStrings); //go from string arrays to array arrays
+      $variablesAsStrings = $matches[1]; //array of strings, each string element being elements of an array parameter values separated by comma like "x1, x2, x3, ...", "y1, y2, y3, ...", ...
+      $variables = array_map(function (string $s): array {return explode(",", $s);}, $variablesAsStrings); //go from array of strings to array of arrays, each parameter value as array array element
       $keys = $matches[2]; //array of variable names after AS
       /** @var array $variables */
-      $numberOfVariables = count($variables); //number of variable arrays for this for-loop
-      $numberOfIteration = count($variables[0]); //number of variables inside the first variable array
+      $numberOfVariables = !empty($variables[0][0]) ? count($variables) : 0; //number of variable arrays for this for-loop, set to 0 in case empty arg supplied
+      $numberOfIteration = !empty($variables[0][0]) ? count($variables[0]) : 0; //number of variables inside the first variable array, set to 0 in case empty arg supplied
       $loopContents = ""; //to accumulate contents for each loop iteration
 
       //ensure the numbers of iteration of each variable are equal 

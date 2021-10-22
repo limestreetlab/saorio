@@ -68,8 +68,9 @@ if ( isset($_REQUEST["viewUser"]) ) { //viewing another user's home page (summar
   $viewLoader->load("profile_post_form.html")->bind($formData)->render();
 
   //old posts view
+  $page = isset($_REQUEST["pagination"]) ? $_REQUEST["pagination"] : 1; //paginated number assigned if requested else starting with 1
   $pm = new PostManager($user);
-  $posts = $pm->getPage(1);
+  $posts = $pm->getPage($page);
   foreach ($posts as $post) {
 
     $text = $post["text"];
@@ -84,9 +85,9 @@ if ( isset($_REQUEST["viewUser"]) ) { //viewing another user's home page (summar
   }
 
   //pagination view
-  $paginationNumber = $pm->getNumberOfPages();
-  $pages = ["pages" => range(1, $paginationNumber)];
-  $viewLoader->load("profile_posts_pagination.html")->bind($pages)->render();
+  $pagination = $pm->paginate($page);
+  $viewLoader->load("profile_posts_pagination.html")->bind(["pages" => $pagination, "activePage" => $page])->render();
+  
 
   //closing view
   $viewLoader->load("profile_end.html")->render();

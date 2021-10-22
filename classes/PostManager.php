@@ -7,6 +7,7 @@ class PostManager {
   protected $numberOfPosts; //total number of posts by user
   protected $numberOfPages; //number of pages 
   protected const POSTS_PER_PAGE = 5; //number of posts to show per page in pagination
+  protected const PAGES_TO_SHOW = 7; //total number of explicit pages to display in pagination, 2 for start and end pages, x for left and right pages (wings) from active page, oldd number for balanced wings
 
 
   public function __construct(string $user) {
@@ -22,7 +23,7 @@ class PostManager {
     }
 
     $this->numberOfPosts = $this->mysql->request($this->mysql->readPostNumberQuery, [":user" => $this->user])[0]["number"];
-    $this->numberOfPages = ceil( $this->numberOfPosts / self::POSTS_PER_PAGE ); //total post number divided by posts per page, rounded up
+    $this->numberOfPages = MAX(ceil( $this->numberOfPosts / self::POSTS_PER_PAGE ), 1); //total post number divided by posts per page, rounded up
 
   }
 
@@ -207,12 +208,68 @@ class PostManager {
   }
 
   /*
-  get the number of pages available for this user's posts according to pagination
-  @return number of pages available
+  function to create a range of page numbers for pagination use
+  @param int activePage, a number indicating which page is currently active
+  @return array of paginated numbers or null if there is only 1 page (so none needed)
   */
-  public function getNumberOfPages(): int {
+  public function paginate(int $activePage = 1): ?array {
 
-    return ceil( $this->numberOfPosts / self::POSTS_PER_PAGE ); //total post number divided by posts per page, rounded up
+    $totalPages = max(ceil( $this->numberOfPosts / self::POSTS_PER_PAGE ), 1); //make it 1 when psot numebr zero
+
+    if ($totalPages <= SELF::PAGES_TO_SHOW) { //if available pages are less than total pages to show, just show all
+
+      $pagination = range(1, $totalPages); //
+
+    } else { //there are more available pages than pages to show, truncate them
+
+      $pageRangeSize = self::PAGES_TO_SHOW - 2; //minus 2 for the start and end pages
+      $pageWingSize = ($pageRangeSize - 1) / 2; //number of pages to show next to active page
+      $startActivePageBound = 1 + $pageRangeSize - 2; //if active page below this number, the pagination range contains or right next to page 1, else ellipsis used between 1
+      $endActivePageBound = $totalPages - $pageRangeSize + 2; //if active page above this number, the pagination range contains or right next to max page, else ellipsis used between max page
+      $ellipsis = ["..."]; 
+      $ellipsis2 = ["......"];
+      $midpoint = ceil($totalPages / 2);
+
+      if ($activePage <= $startActivePageBound) {
+
+        $pages = range($startActivePageBound - $pageWingSize, $startActivePageBound + $pageWingSize); 
+        $startEllipsis = []; //ellipsis to the left of pagination
+        $endEllipsis = $ellipsis2; //ellipsis to the right of pagination
+
+      } elseif ($activePage >= $endActivePageBound) {
+        
+        $pages = range($endActivePageBound - $pageWingSize, $endActivePageBound + $pageWingSize);
+        $startEllipsis = $ellipsis2;
+        $endEllipsis = []; 
+
+      } else {
+
+        $pages = range($activePage - $pageWingSize, $activePage + $pageWingSize);
+        
+        if ($activePage < $midpoint) {
+
+          $startEllipsis = $ellipsis;
+          $endEllipsis = $ellipsis2;
+
+        } elseif ($activePage > $midpoint) {
+
+          $startEllipsis = $ellipsis2;
+          $endEllipsis = $ellipsis;
+
+        } else {
+
+          $startEllipsis = $ellipsis;
+          $endEllipsis = $ellipsis;
+
+        }
+
+      }
+
+      $pagination = array_merge( [1], $startEllipsis, $pages, $endEllipsis, [$totalPages] );
+
+    }
+
+    return $totalPages > 1 ? $pagination: null;
 
   }
 

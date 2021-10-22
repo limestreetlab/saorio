@@ -5,7 +5,7 @@ This script simply sends table creation codes to MySQL.
 */
 
 require_once "./includes/config.php";
-require_once INCLUDE_DIR . "ini.php";
+require_once CLASS_DIR . "MySQL.php";
 
 echo "<!DOCTYPE html>
         <html><head><title>Database initialization for $appName </title></head>
