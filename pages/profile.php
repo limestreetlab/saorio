@@ -68,12 +68,24 @@ if ( isset($_REQUEST["viewUser"]) ) { //viewing another user's home page (summar
   $viewLoader->load("profile_post_form.html")->bind($formData)->render();
 
   //old posts view
+  $pm = new PostManager($user);
+  $posts = $pm->getPage(1);
+  foreach ($posts as $post) {
+
+    $text = $post["text"];
+    $images = $post["images"];
+    $timestamp = intval($post["timestamp"]);
+    $date = (new DateTime("@$timestamp"))->format("M d, Y");
+    $configs = is_null($images) ? null : $pm::getImageCssClasses($images);
+
+    $postData = ["profile-picture" => "$profilePictureURL", "firstname" => "$firstname", "lastname" => "$lastname", "date" => $date, "text" => $text, "images" => $images, "configs"=> $configs, "likes-stat" => 38, "dislikes-stat" => 12];
+    $viewLoader->load("profile_post.html")->bind($postData)->render();
   
-  $postData = ["profile-picture" => "https://m.media-amazon.com/images/I/41vPqZrsW2L._AC_.jpg", "firstname" => "Johny", "lastname" => "Depp", "date" => "October 1, 2021", "text" => "Aloha, I&#39;m good. Maloha!", "images" => null, "configs"=> null, "likes-stat" => 38, "dislikes-stat" => 12];
-  $viewLoader->load("profile_post.html")->bind($postData)->render();
-  
+  }
+
   //pagination view
-  $pages = ["pages" => [1,2,3,4]];
+  $paginationNumber = $pm->getNumberOfPages();
+  $pages = ["pages" => range(1, $paginationNumber)];
   $viewLoader->load("profile_posts_pagination.html")->bind($pages)->render();
 
   //closing view

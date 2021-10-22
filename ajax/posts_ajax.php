@@ -69,11 +69,10 @@ if ($_REQUEST["type"] == "image" && $_REQUEST["action"] == "send") {
     
     foreach ($content as $el) {
       array_push($images, $el[0]->getFileRelativePath()); //relative paths for data bind
-      array_push($imagesAbsPaths, $el[0]->getFilePath()); //absolute paths for css classes
       array_push($descriptions, $el[1]); //photo descriptions for data bind
     }
     
-    $configs = PostManager::getImageCssClasses($imagesAbsPaths);
+    $configs = PostManager::getImageCssClasses($images);
 
     //organize view data for binding
     $postData = ["profile-picture" => $profilePictureURL, "firstname" => $firstname, "lastname" => $lastname, "date" => $date, "text" => $text, "images" => $images, "configs" => $configs, "likes-stat" => 0, "dislikes-stat" => 0];

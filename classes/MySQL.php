@@ -63,17 +63,21 @@ final class MySQL {
         if ($isAssocArray) { //the prepared statement uses named parameters (:name1, :name2, ...)
           
           foreach ($params as $key => &$value) {  //bind the parameters 1-by-1
+            
             if (substr($key, 0, 1) != ":") { //if the provided parameter isn't prefixed with ':' which is required in bindParam()
               $key = ":".$key; //prefix it with ':'
             }
 
-            $stmt->bindParam($key, $value);
+            is_integer($value) ? $stmt->bindParam($key, $value, PDO::PARAM_INT) : $stmt->bindParam($key, $value, PDO::PARAM_STR) ;
+          
           }
 
         } else { //the prepared statement uses unnamed parameters (?, ?, ...) 
           
           for($i = 1; $i <= count($params); $i++) { //bind the parameters 1-by-1
-            $stmt->bindParam($i, $params[$i-1]); 
+            
+            is_integer($params[$i-1]) ? $stmt->bindParam($i, $params[$i-1], PDO::PARAM_INT) : $stmt->bindParam($i, $params[$i-1], PDO::PARAM_STR) ;
+          
           }
 
         } //the prepared statement has its values bound and ready for execution
@@ -222,7 +226,6 @@ final class MySQL {
   for posts statistics
   */
   public $readPostNumberQuery = "SELECT COUNT(posts.id) AS number FROM posts LEFT JOIN text_posts ON posts.id = text_posts.post_id WHERE text_posts.text_for IS NULL AND posts.user = :user";
-  public $readPostsQuery = "SELECT posts.id, posts.timestamp, posts.post_type AS type FROM posts WHERE user = :user ORDER BY timestamp DESC LIMIT :offset, :count"; 
   public $readImagePostNumberQuery = "SELECT COUNT(*) FROM posts WHERE post_type = 2 AND user = :user";  
   public $readImagesNumber = "SELECT COUNT(*) FROM posts INNER JOIN image_posts ON posts.id = image_posts.post_id WHERE posts.user = :user";
   public $readTextPostNumberQuery = "SELECT COUNT(*) FROM posts INNER JOIN text_posts ON posts.id = text_posts.post_id WHERE text_posts.text_for IS NULL AND posts.user = :user";
@@ -232,30 +235,58 @@ final class MySQL {
   */
   //for all posts
   public $readPostTypeQuery = "SELECT post_type AS type FROM posts WHERE id = :id";
+  //retrieve [id timestamp, type] for every post created by user
+  public $readPostsQuery = "SELECT id, UNIX_TIMESTAMP(timestamp) AS timestamp, post_type AS type FROM posts WHERE post_type = 2 AND user = :user /*the image posts*/
+                            UNION
+                            SELECT posts.id, UNIX_TIMESTAMP(posts.timestamp) AS timestamp, posts.post_type AS type FROM posts INNER JOIN text_posts ON posts.id = text_posts.post_id WHERE user = :user AND text_for IS NULL /*the standalone text posts*/
+                            ORDER BY timestamp DESC LIMIT :offset, :count"; 
+
+  //retrieve [id, timestamp, text, image, description] of every posted content (thus multiple image rows from the same post) submitted by user
+  public $readPostContentsQuery = "SELECT contents.*, UNIX_TIMESTAMP(posts.timestamp) AS timestamp FROM
+
+                              (SELECT * FROM posts WHERE user = :user) AS posts
+
+                              INNER JOIN 
+
+                              (SELECT * FROM 
+
+                                (SELECT image_posts.post_id AS id, imageURL AS image, description, content AS text FROM 
+                                image_posts LEFT JOIN text_posts 
+                                ON image_posts.post_id = text_posts.text_for) AS image_posts /*every image posted with accompanying text*/
+
+                                UNION
+
+                                (SELECT text_posts.post_id AS id, imageURL AS image, description, content AS text FROM 
+                                text_posts LEFT JOIN image_posts ON text_posts.text_for != image_posts.post_id WHERE text_for IS NULL)
+
+                              ) AS contents  /*every single content, text and image*/
+
+                              ON posts.id = contents.id
+                              ORDER BY timestamp DESC LIMIT :offset, :count";
   public $deletePostQuery = "DELETE FROM posts WHERE id = :id";
 
   //for text posts
   public $createTextPostQuery = "INSERT INTO posts (id, user, post_type) VALUES (:id, :user, 1)";
   public $createTextPostContentQuery = "INSERT INTO text_posts (post_id, content) VALUES (:post_id, :content)";
   //read text posts by user
-  public $readTextPostsQuery = "SELECT posts.id, posts.timestamp, text_posts.content AS post FROM posts INNER JOIN text_posts ON posts.id = text_posts.post_id WHERE posts.user = :user ORDER BY posts.timestamp DESC LIMIT :offset, :count";
+  public $readTextPostsQuery = "SELECT posts.id, UNIX_TIMESTAMP(posts.timestamp) AS timestamp, text_posts.content AS post FROM posts INNER JOIN text_posts ON posts.id = text_posts.post_id WHERE posts.user = :user ORDER BY posts.timestamp DESC LIMIT :offset, :count";
   //read one text post by id
-  public $readTextPostQuery = "SELECT posts.user, posts.timestamp, text_posts.content AS post FROM posts INNER JOIN text_posts ON posts.id = text_posts.post_id WHERE posts.id = :id";
+  public $readTextPostQuery = "SELECT posts.user, UNIX_TIMESTAMP(posts.timestamp) AS timestamp, text_posts.content AS post FROM posts INNER JOIN text_posts ON posts.id = text_posts.post_id WHERE posts.id = :id";
   public $updateTextPostForQuery = "UPDATE text_posts SET text_for = :for WHERE post_id = :post_id"; //specify for which non-text post this text post is associated with
   public $updateTextPostQuery = "UPDATE text_posts SET content = :content WHERE post_id = :post_id";
 
   //for image posts
   public $createImagePostQuery = "INSERT INTO posts (id, user, post_type) VALUES (:id, :user, 2)";
   public $createImagePostContentQuery = "INSERT INTO image_posts (id, post_id, description) VALUES (:id, :post_id, :description)";
-  //read image posts by user
+  //read image contents by user
   public $readImagePostsQuery = "SELECT images.id, images.timestamp, texts.text, images.imageURL AS image, images.description FROM 
-                                (SELECT posts.id, posts.timestamp, image_posts.imageURL, image_posts.description FROM posts INNER JOIN image_posts ON posts.id = image_posts.post_id WHERE posts.user = :user ORDER BY posts.timestamp DESC LIMIT :offset, :count) AS images 
+                                (SELECT posts.id, UNIX_TIMESTAMP(posts.timestamp) AS timestamp, image_posts.imageURL, image_posts.description FROM posts INNER JOIN image_posts ON posts.id = image_posts.post_id WHERE posts.user = :user ORDER BY posts.timestamp DESC LIMIT :offset, :count) AS images 
                                 LEFT JOIN 
                                 (SELECT text_posts.content AS text, text_posts.text_for FROM posts INNER JOIN text_posts ON posts.id = text_posts.post_id WHERE posts.user = :user AND text_posts.text_for IS NOT NULL) AS texts 
                                 ON images.id = texts.text_for";  
   //read one image post by id
   public $readImagePostQuery = " SELECT images.*, text_posts.content AS text FROM 
-                                (SELECT posts.id, posts.timestamp, image_posts.imageURL AS image, image_posts.imageMIME AS mime, image_posts.description FROM posts INNER JOIN image_posts ON posts.id = image_posts.post_id WHERE posts.id = :id) AS images 
+                                (SELECT posts.id, UNIX_TIMESTAMP(posts.timestamp) AS timestamp, image_posts.imageURL AS image, image_posts.imageMIME AS mime, image_posts.description FROM posts INNER JOIN image_posts ON posts.id = image_posts.post_id WHERE posts.id = :id) AS images 
                                 LEFT JOIN text_posts ON images.id = text_posts.text_for";
   //read the ids of image posts in a range 
   public $readImagePostIdQuery = "SELECT posts.id FROM posts INNER JOIN image_posts ON posts.id = image_posts.post_id WHERE posts.user = :user ORDER BY posts.timestamp DESC LIMIT :offset, :count";
@@ -264,14 +295,6 @@ final class MySQL {
   public $updateImagePostImageQuery = "UPDATE image_posts SET imageURL = :imageURL, imageMIME = :imageMIME WHERE id = :id"; //recall image belongs to a post, so a post must exist before an image can be persisted
   public $updateImagePostDescriptionQuery = "UPDATE image_posts SET description = :description WHERE id = :id";
   public $deleteImagePostQuery = "DELETE FROM image_posts WHERE id = :id";
-  
-  
-  
-  
-  
-  
-  
-  
   
   
   

@@ -16,18 +16,18 @@ class PostManager {
     //check username entered exists
     $usernameExists = $this->mysql->request($this->mysql->readMembersTableQuery, [":user" => $user]);
     if (!$usernameExists) {
-      throw new Exception("username entered does not exist.");
+      throw new Exception("username is invalid");
     } else {
       $this->user = $user;
     }
 
-    $this->numberOfPosts = $this->mysql->request($this->mysql->readPostNumberQuery, [":user" => $this->user])[0];
+    $this->numberOfPosts = $this->mysql->request($this->mysql->readPostNumberQuery, [":user" => $this->user])[0]["number"];
     $this->numberOfPages = ceil( $this->numberOfPosts / self::POSTS_PER_PAGE ); //total post number divided by posts per page, rounded up
 
   }
 
   /*
-  get posts created by user
+  get posts created by user, from most recent
   @param int number, number of posts to retrieve
   @param int skip, number of posts to skip from 1 being most recent 
   @return array of post data [id, type, timestamp, text, [image rel paths], [image descriptions]]
@@ -246,6 +246,7 @@ class PostManager {
   $orientations = []; //array of landscape vs portrait in matching order as images array
   foreach ($images as $image) {
 
+    $image = $_SERVER["DOCUMENT_ROOT"] . $image;
     list($width, $height) = getimagesize($image); 
     $width >= $height ? array_push($orientations, "landscape") : array_push($orientations, "portrait");  //tag each img as either portrait or landscape
 
