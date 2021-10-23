@@ -156,8 +156,8 @@ class Template {
       $variables = array_map(function (string $s): array {return explode(",", $s);}, $variablesAsStrings); //go from array of strings to array of arrays, each parameter value as array array element
       $keys = $matches[2]; //array of variable names after AS
       /** @var array $variables */
-      $numberOfVariables = !empty($variables[0][0]) ? count($variables) : 0; //number of variable arrays for this for-loop, set to 0 in case empty arg supplied
-      $numberOfIteration = !empty($variables[0][0]) ? count($variables[0]) : 0; //number of variables inside the first variable array, set to 0 in case empty arg supplied
+      $numberOfVariables = !empty($variables[0][0]) ? count($variables) : 0; //number of variable arrays for this for-loop, 0 in case variable is null or empty string
+      $numberOfIteration = !empty($variables[0][0]) ? count($variables[0]) : 0; //number of variables inside the first variable array, 0 in case variable is null or empty string
       $loopContents = ""; //to accumulate contents for each loop iteration
 
       //ensure the numbers of iteration of each variable are equal 

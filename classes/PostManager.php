@@ -180,15 +180,15 @@ class PostManager {
   public function getPostedImages(int $number = null): ?array {
 
     $number = is_null($number) ? 99 : $number; //set number to all if isn't already set
-    $ids = $this->mysql->request($this->mysql->readImagePostIdQuery, [":user" => $this->user, ":offset" => 0, ":count" => $number]);
-
+    $id_rows = $this->mysql->request($this->mysql->readImagePostIdQuery, [":user" => $this->user, ":count" => $number]);
+    
     $paths = [];
-    foreach($ids as $id) {
+    foreach($id_rows as $id_row) {
 
-      $rows = $this->mysql->request($this->mysql->readImagePostImageQuery, [":id" => $id]);
+      $img_rows = $this->mysql->request($this->mysql->readImagePostImageQuery, [":id" => $id_row[0]]);
 
-      foreach($rows as $row) {
-        array_push($paths, UploadedPostImageFile::convertFileRelativePath( $row["image"] ) );
+      foreach($img_rows as $img_row) {
+        array_push($paths, UploadedPostImageFile::convertFileRelativePath( $img_row["image"] ) );
       }
 
     }

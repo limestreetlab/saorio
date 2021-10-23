@@ -86,6 +86,51 @@ if ($_REQUEST["type"] == "image" && $_REQUEST["action"] == "send") {
 }
 
 /*
+script to perform pagination
+@return string of paginated contents
+*/
+if ($_REQUEST["action"] == "pagination" && isset($_REQUEST["page"])) {
+
+  $page = $_REQUEST["page"]; //page requested
+
+  extract($userObj->getProfile(false)->getData()); //obtain firstname lastname pictureURL variables of user
+  
+  try {
+
+    $pm = new PostManager($user);
+    $posts = $pm->getPage($page); //data of posts
+    $postView = "";
+    //get view of individual post and concatenate them
+    foreach ($posts as $post) {
+
+      $text = $post["text"];
+      $images = $post["images"];
+      $timestamp = intval($post["timestamp"]);
+      $date = (new DateTime("@$timestamp"))->format("M d, Y");
+      $configs = is_null($images) ? null : $pm::getImageCssClasses($images);
+
+      $postData = ["profile-picture" => "$profilePictureURL", "firstname" => "$firstname", "lastname" => "$lastname", "date" => $date, "text" => $text, "images" => $images, "configs"=> $configs, "likes-stat" => 38, "dislikes-stat" => 12];
+      $postView .= $viewLoader->load("./../templates/profile_post.html")->bind($postData)->getView();
+    
+    }
+    //get view of updated pagination and concatenate
+    $pagination = $pm->paginate($page);
+    $paginationView = $viewLoader->load("./../templates/profile_posts_pagination.html")->bind(["pages" => $pagination, "activePage" => $page])->getView();
+  
+    $success = true;
+
+  } catch (Exception $ex) {
+
+    $success = false;
+
+  }
+
+  echo json_encode(["success" => $success, "errors" => [-1], "postView" => $postView, "paginationView" => $paginationView]);
+  exit();
+
+}
+
+/*
 default PHP has a rather strange and difficult-to-use arrangement for array of Files
 instead of [ [0] => ["name", "type", "tmp_name", "error", "size"],  [1] => ["name", "type", "tmp_name", "error", "size"], ... ], it is arranged as
 [ ["name"] => [0, 1, 2, ...],  ["type"] => [0, 1, 2, ...], ["tmp_name"] => [0, 1, 2, ...], ["error"] => [0, 1, 2, ...], ... ]

@@ -2,18 +2,18 @@
 <!--link to more photos, clicked photos shown using lightbox-->
 
 
-<main class="card mt-4 border-0 shadow profile-leftside">
+<main class="card mt-4 border-0 shadow">
   <div class="card-header fw-bold">Photos</div>
 
   <section class="card-body">
-    <!--how many photos shown per row-->
-    <section class="row row-cols-2 g-2" id="profile-photos">
+    <!--how many photos shown per row, which fixes the width of each img-->
+    <section class="row row-cols-3 g-2">
 
       <!--loop through data to show each photo-->
       {{FOREACH {{photos}} AS photo}}
       <div class="col">
-      <div class="card">
-        <img src='{{photo}}' class="card-img border border-3 border-white rounded shadow-sm" draggable="false">
+      <div class="card photo-container"><!--container of each photo-->
+        <img src='{{photo}}' class="photo card-img border border-3 border-white rounded shadow-sm" draggable="false">
       </div>
       </div>
       {{ENDFOREACH}}

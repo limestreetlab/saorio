@@ -1,19 +1,19 @@
 <!--a summary of his friends-->
 <!--link to all his friends when clicked-->
 
-<main class="card mt-4 border-0 shadow profile-leftside">
+<main class="card mt-4 border-0 shadow">
   <div class="card-header fw-bold">Friends</div>
 
   <section class="card-body">
     <!--how many friends to show per row-->
-    <section class="row row-cols-3 g-2" id="profile-friends">
+    <section class="row row-cols-3 g-2">
 
     {{IF !empty('{{friends}}')}}
     <!--template to display each friend-->
     {{FOREACH {{friends}} AS friend {{photos}} AS photo}}<!--loop through a friend list-->
-    <div class="col"><div class="card border-0">
+    <div class="col"><div class="card border-0 friend-photo-container">
 
-      <img src="{{photo}}" class="card-img" draggable="false">
+      <img src="{{photo}}" class="card-img friend-photo" draggable="false">
 
     <div class="card-body p-1">
       <div class="card-title fw-bold profile-friend-name">{{friend}}</div>

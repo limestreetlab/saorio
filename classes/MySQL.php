@@ -288,8 +288,8 @@ final class MySQL {
   public $readImagePostQuery = " SELECT images.*, text_posts.content AS text FROM 
                                 (SELECT posts.id, UNIX_TIMESTAMP(posts.timestamp) AS timestamp, image_posts.imageURL AS image, image_posts.imageMIME AS mime, image_posts.description FROM posts INNER JOIN image_posts ON posts.id = image_posts.post_id WHERE posts.id = :id) AS images 
                                 LEFT JOIN text_posts ON images.id = text_posts.text_for";
-  //read the ids of image posts in a range 
-  public $readImagePostIdQuery = "SELECT posts.id FROM posts INNER JOIN image_posts ON posts.id = image_posts.post_id WHERE posts.user = :user ORDER BY posts.timestamp DESC LIMIT :offset, :count";
+  //read the ids of a specific number of images
+  public $readImagePostIdQuery = "SELECT DISTINCT * FROM (SELECT posts.id FROM posts INNER JOIN image_posts ON posts.id = image_posts.post_id WHERE posts.user = :user ORDER BY posts.timestamp DESC LIMIT :count) AS image_ids";
   public $readImagePostImageQuery = "SELECT imageURL AS image from image_posts WHERE post_id = :id";
   public $readImagePostMaximumIdQuery = "SELECT MAX(id) AS max_id from image_posts"; //retrieve the max id used, used for knowing the next id to use in codes
   public $updateImagePostImageQuery = "UPDATE image_posts SET imageURL = :imageURL, imageMIME = :imageMIME WHERE id = :id"; //recall image belongs to a post, so a post must exist before an image can be persisted

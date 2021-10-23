@@ -2,7 +2,7 @@
     
 <section class="card mt-3 border-0 shadow post">
 
-
+  <!--post header for name, photo, etc-->
   <section class="card-header d-flex flex-row justify-content-start align-items-center bg-white border-0">
       <img src="{{profile-picture}}" class="rounded-circle post-profile-picture" draggable="false">
     <div class="d-flex flex-column ms-2">  
@@ -11,8 +11,7 @@
     </div>
   </section>
 
-
-  <!--INCOMPLETE, pending work-->
+  <!--post body-->
   <section class="card-body pt-1">
 
     {{IF !empty('{{text}}')}}<div class="post-text mb-2">{{text}}</div>{{ENDIF}}
@@ -26,8 +25,7 @@
     
   </section>
 
-
-
+  <!--post footer for comments-->
   <section class="card-footer bg-white border-top border-0">
     <div class="mt-1 d-flex align-items-center">
 

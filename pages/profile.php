@@ -8,17 +8,17 @@ if (!$isLoggedIn) {
 }
 
 //route script to load based on request string (viewing one's homepage, viewing one's profile, viewing own homepage, viewing own editable profile)
-if ( isset($_REQUEST["viewUser"]) ) { //viewing another user's home page (summary, photos, posts, with link to his profile)
+IF ( isset($_REQUEST["viewUser"]) ) { //viewing another user's home page (summary, photos, posts, with link to his profile)
 
   
-} elseif ( isset($_REQUEST["viewProfile"]) ) { //viewing another user's profile 
+} ELSEIF ( isset($_REQUEST["viewProfile"]) ) { //viewing another user's profile 
 
   $viewProfile = (new User($_REQUEST["viewProfile"]))->getProfile(false); //retrieve profile data of the view user
   extract($viewProfile->getData()); //use key names as variable names
   $profileData = ["picture" => $profilePictureURL, "wallpaper" => $wallpaper, "firstname" => $firstname, "lastname" => $lastname, "city" => $city, "country" => $country, "gender" => $gender, "age" => $age, "dob" => is_null($dob) ? null : (new DateTime("@$dob"))->format("m-d-Y"), "job" => $job, "company" => $company, "major" => $major, "school" => $school, "about" => $about, "interests" => $interests, "quote" => $quote, "email" => $email, "website" => $website, "socialmedia" => $socialmedia];
   $viewLoader->load("profile_view.html")->bind($profileData)->render(); //load profile view
   
-} elseif ( isset($_REQUEST["editProfile"]) ) {  //edit own profile
+} ELSEIF ( isset($_REQUEST["editProfile"]) ) {  //edit own profile
   
   $profile = $userObj->getProfile(false);
   extract($profile->getData()); //use key names as variable names
@@ -27,10 +27,10 @@ if ( isset($_REQUEST["viewUser"]) ) { //viewing another user's home page (summar
   $viewLoader->load("error_toast.html")->render(); //toast for errors
   $viewLoader->load("profile_edit.html")->bind($profileData)->render(); //load data into profile edit view
   
-} else { //no request, self viewing own profile
+} ELSE { //no request, self viewing own profile
 
-  //UI consists of different views, collecting data and loading them into views, 1 by 1
-
+  //UI consists of different views, collecting required data and binding them to each view 1 by 1
+  
   //extract current user's data
   $profile = $userObj->getProfile(false);
   extract($profile->getData()); //use key names as variable names
@@ -44,7 +44,8 @@ if ( isset($_REQUEST["viewUser"]) ) { //viewing another user's home page (summar
   $viewLoader->load("profile_summary.html")->bind($summaryData)->render();
 
   //photos summary view
-  $photosData = [ "photos" => ["https://mdbcdn.b-cdn.net/img/new/standard/city/041.jpg", "https://mdbcdn.b-cdn.net/img/new/standard/city/042.jpg", "https://mdbcdn.b-cdn.net/img/new/standard/city/043.jpg", "https://mdbcdn.b-cdn.net/img/new/standard/city/044.jpg"] ];
+  $postManager = new PostManager($user);
+  $photosData = ["photos" => $postManager->getPostedImages(9)];
   
   $viewLoader->load("profile_photos.html")->bind($photosData)->render();
 
@@ -68,24 +69,28 @@ if ( isset($_REQUEST["viewUser"]) ) { //viewing another user's home page (summar
   $viewLoader->load("profile_post_form.html")->bind($formData)->render();
 
   //old posts view
+  $viewLoader->load("profile_posts_start.html")->render();
+
   $page = isset($_REQUEST["pagination"]) ? $_REQUEST["pagination"] : 1; //paginated number assigned if requested else starting with 1
-  $pm = new PostManager($user);
-  $posts = $pm->getPage($page);
+  $posts = $postManager->getPage($page);
+  
   foreach ($posts as $post) {
 
     $text = $post["text"];
     $images = $post["images"];
     $timestamp = intval($post["timestamp"]);
     $date = (new DateTime("@$timestamp"))->format("M d, Y");
-    $configs = is_null($images) ? null : $pm::getImageCssClasses($images);
+    $configs = is_null($images) ? null : $postManager::getImageCssClasses($images);
 
     $postData = ["profile-picture" => "$profilePictureURL", "firstname" => "$firstname", "lastname" => "$lastname", "date" => $date, "text" => $text, "images" => $images, "configs"=> $configs, "likes-stat" => 38, "dislikes-stat" => 12];
     $viewLoader->load("profile_post.html")->bind($postData)->render();
   
   }
+  
+  $viewLoader->load("profile_posts_end.html")->render();
 
   //pagination view
-  $pagination = $pm->paginate($page);
+  $pagination = $postManager->paginate($page);
   $viewLoader->load("profile_posts_pagination.html")->bind(["pages" => $pagination, "activePage" => $page])->render();
   
 

@@ -15,10 +15,46 @@ $("document").ready(function(){
   $("#post-content").on("input DOMSubtreeModified", enablePostBtn);
   //send the form data to backend
   $("#new-post-submit").on("click", post);
+  //upload photo and display img previews before submission  
   $("#new-post-photo").on("click", upload);
+  //show a modal 
   $("#new-post-poll").on("click", () => { new bootstrap.Modal($("#feature-unavailable-modal")).show()} );
-  
+  //frontend pagination post load, click event delegated to parent of pagination section which can be dynamically created and erased 
+  $("#main-menu").on("click", "#pagination .pagination .page-item .page-link", paginate);
+
 });
+
+
+/*
+function for pagination, which loads post pages
+*/
+function paginate(event) {
+
+  event.preventDefault(); //prevent defaulted backend pagination re-load, do it frontend instead
+  event.stopPropagation();
+
+  let page = $(this).text(); //page number
+  let dataSend = {action: "pagination", page: page};
+
+  $.get("ajax/posts_ajax.php", dataSend, function(data) {
+
+    if(!data.success) {
+
+      callbackError(data.errors);
+
+    } else { //receiving a postView for posts and a paginationView for pagination
+
+      $("#posts").empty(); //clear all existing posts
+      $("#pagination").remove(); //deleting current pagination      
+      $("#posts").prepend(data.postView); //add posts received
+      $("#posts").after(data.paginationView); //add pagination received
+      $("html, body").animate({scrollTop: 0}); //scroll to top
+
+    }
+
+  }, "json");
+
+}
 
 /*
 function to send post data
@@ -37,7 +73,7 @@ function post() {
     let dataSend = {action: "send", type: "text", text: text};
     
     //ajax call to send post data to backend
-    $.post("ajax/posts_ajax.php", dataSend, function(data){
+    $.post("ajax/posts_ajax.php", dataSend, function(data) {
       
       if(!data.success) {
 
@@ -97,7 +133,8 @@ function post() {
   */
   function callbackSuccess(post) {
 
-    $(post).hide().prependTo("#posts").fadeIn(2000); //add the received render-ready post view
+    $(".pagination .page-link").eq(0).trigger("click"); //click on first pagination item to go to first page (in case post made when in older pages)
+    $("#post").prepend(post); //add the received render-ready post view
 
   }
 

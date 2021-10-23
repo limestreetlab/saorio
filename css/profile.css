@@ -1,6 +1,10 @@
 /*leftside col/part of the profile page*/
-.profile-leftside {
-  max-width: 320px; /*leftside width is dependent on col-*, but no need to be larger than this*/
+#side-menu {
+  max-width: 400px; /*leftside menu width is dependent on col-*, but no need to be larger than this*/
+}
+
+#main-menu {
+  max-width: 800px;
 }
 
 #wallpaper {
@@ -20,8 +24,26 @@
   clear: both; /*clear float*/
 }
 
-#profile-friends .card-img {
-  height: 100px; /*same as profile picture, width is driven by row-cols-* */
+/*container for select photos shown. each photo displayed at square size using css*/
+.photo-container, .friend-photo-container {
+  position: relative;
+  width: 100%;
+}
+/*important trick to square the container whose width is variable*/
+.photo-container:after, .friend-photo-container:after {
+  content: ""; /*empty content placeholder*/
+  padding-bottom: 100%; /*padding % is depends width, so padding bottom 100% gives a square container*/
+}
+
+/*select posted photos display on profile page*/
+.photo, .friend-photo {
+  position: absolute; /*taking out of the flow*/
+  width: 100%; /*make the photo cover the now squared container*/
+  height: 100%; 
+  top: 0;
+  left: 0;
+  object-fit: cover; 
+  object-position: center;
 }
 
 /*name shown in each friend item*/
