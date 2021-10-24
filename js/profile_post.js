@@ -133,8 +133,14 @@ function post() {
   */
   function callbackSuccess(post) {
 
-    $(".pagination .page-link").eq(0).trigger("click"); //click on first pagination item to go to first page (in case post made when in older pages)
-    $("#post").prepend(post); //add the received render-ready post view
+    $(post).hide().prependTo("#posts").fadeIn(2000, "linear"); //add the received render-ready post view
+    
+    //when there is pagination (1+ pages), and page 1 not currently active, move back to the first page
+    if ( $("#main-menu").children("#pagination") && !$("#main-menu").find("#pagination .page-item").eq(0).hasClass("active") ) {
+
+      $(".pagination .page-item .page-link").eq(0).trigger("click"); //click on the first pagination item to go there
+
+    }
 
   }
 

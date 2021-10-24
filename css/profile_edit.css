@@ -60,6 +60,11 @@ textarea::-webkit-scrollbar {
   border-radius: 4px;
 }
 
+/*toast for displaying errors should always come on top*/
+#toast-container {
+  z-index: 9999; 
+}
+
  
 
 
