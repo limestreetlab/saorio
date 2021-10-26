@@ -99,17 +99,15 @@ if ($_REQUEST["action"] == "pagination" && isset($_REQUEST["page"])) {
 
     $pm = new PostManager($user);
     $posts = $pm->getPage($page); //data of posts
-    $postView = "";
+    $postView = ""; //string to accumulate HTML for each post
     //get view of individual post and concatenate them
     foreach ($posts as $post) {
 
-      $text = $post["text"];
-      $images = $post["images"];
-      $timestamp = intval($post["timestamp"]);
-      $date = (new DateTime("@$timestamp"))->format("M d, Y");
+      extract($post); //get data about this post
+      $date = (new DateTime("@$timestamp"))->format("M d, Y"); //format timestamp to a date
       $configs = is_null($images) ? null : $pm::getImageCssClasses($images);
 
-      $postData = ["profile-picture" => "$profilePictureURL", "firstname" => "$firstname", "lastname" => "$lastname", "date" => $date, "text" => $text, "images" => $images, "configs"=> $configs, "likes-stat" => 38, "dislikes-stat" => 12];
+      $postData = ["id" => $id, "profile-picture" => "$profilePictureURL", "firstname" => "$firstname", "lastname" => "$lastname", "date" => $date, "text" => $text, "images" => $images, "configs"=> $configs, "likes-stat" => $likes, "dislikes-stat" => $dislikes, "haveAlreadyLiked" => $haveAlreadyLiked, "haveAlreadyDisliked" => $haveAlreadyDisliked];
       $postView .= $viewLoader->load("./../templates/profile_post.html")->bind($postData)->getView();
     
     }
@@ -126,6 +124,24 @@ if ($_REQUEST["action"] == "pagination" && isset($_REQUEST["page"])) {
   }
 
   echo json_encode(["success" => $success, "errors" => [-1], "postView" => $postView, "paginationView" => $paginationView]);
+  exit();
+
+}
+
+/*
+script to perform post liking/disliking
+*/
+if ($_REQUEST["id"] && $_REQUEST["vote"]) {
+
+  $id = $_REQUEST["id"];
+  $vote = $_REQUEST["vote"];
+
+  $pm = new PostManager($user);
+  $result = $pm->vote($id, $vote);
+  $success = $result[0]; //true false
+  $message = $result[1]; //arbitrarily defined, -1 system err, 1 same user, 2 like, 3 dislike, 4 unlike, 5 undislike, 6 undislike then like, 7 unlike then dislike
+
+  echo json_encode(["success" =>$success, "message" => $message]);
   exit();
 
 }

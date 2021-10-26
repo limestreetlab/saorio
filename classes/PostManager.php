@@ -1,5 +1,5 @@
 <?php
-
+//used to aggregate data across types of posts and handle post liking/disliking and commenting
 class PostManager {
 
   protected $mysql;
@@ -33,7 +33,7 @@ class PostManager {
   @param int skip, number of posts to skip from 1 being most recent 
   @return array of post data [id, type, timestamp, text, [image rel paths], [image descriptions]]
   */
-  public function getPosts(int $number = null, int $skip = null): ?array {
+  protected function getPosts(int $number = null, int $skip = null): ?array {
 
     //switch SQL query on input params
     if ( !is_null($skip) && !is_null($number) ) { //from a given number for a certain number of posts
@@ -62,19 +62,25 @@ class PostManager {
 
       if ($type == 1) {
 
-        $textPost = $this->mysql->request($this->mysql->readTextPostQuery, [":id" => $id]);
-        array_push($data, [ "id" => $id, "type" => $type, "timestamp" => $textPost[0]["timestamp"], "text" => $textPost[0]["post"], "images" => null, "descriptions" => null ]);
+        $textPost = new PostOfText(null, $id);
+        extract( $textPost->getData() );
+        $haveAlreadyLiked = $textPost->haveAlreadyLiked($_SESSION["user"]);
+        $haveAlreadyDisliked = $textPost->haveAlreadyDisliked($_SESSION["user"]);
+        array_push($data, [ "id" => $id, "type" => $type, "timestamp" => $timestamp, "text" => $content, "images" => null, "descriptions" => null, "likes" => $likes, "dislikes" => $dislikes, "haveAlreadyLiked" => $haveAlreadyLiked, "haveAlreadyDisliked" => $haveAlreadyDisliked, "comments" => $comments]);
 
       } elseif ($type == 2) {
 
-        $imagePost = $this->mysql->request($this->mysql->readImagePostQuery, [":id" => $id]);
+        $imagePost = new PostOfImage(null, $id); 
+        extract( $imagePost->getData() );
+        $haveAlreadyLiked = $imagePost->haveAlreadyLiked($_SESSION["user"]);
+        $haveAlreadyDisliked = $imagePost->haveAlreadyDisliked($_SESSION["user"]);
         $images = []; //rel path
         $descriptions = []; //caption
-        foreach ($imagePost as $row) {
-          array_push($images, UploadedPostImageFile::convertFileRelativePath($row["image"]));
-          array_push($descriptions, $row["description"]);
+        foreach ($content as $row) {
+          array_push($images, ($row[0])->getFileRelativePath());
+          array_push($descriptions, $row[1]);
         }
-        array_push($data, [ "id" => $id, "type" => $type, "timestamp" => $imagePost[0]["timestamp"], "text" => $imagePost[0]["text"], "images" => $images, "descriptions" => $descriptions ]);
+        array_push($data, [ "id" => $id, "type" => $type, "timestamp" => $timestamp, "text" => $text->getContent(), "images" => $images, "descriptions" => $descriptions, "likes" => $likes, "dislikes" => $dislikes, "haveAlreadyLiked" => $haveAlreadyLiked, "haveAlreadyDisliked" => $haveAlreadyDisliked, "comments" => $comments ]);
 
       } else {
 
@@ -290,6 +296,96 @@ class PostManager {
   public function getNumberOfPostedImages(): int {
 
     return $this->mysql->request($this->mysql->readImagesNumber, [":user" => $this->user]);
+
+  }
+
+  /*
+  function to record voting (liking/disliking) of a post
+  @param id, the id of the post to cast a vote 
+  @vote, whether the vote is up or down, used position int for up, negative for down
+  @return array, [bool success, int message] where message is a number indicating why vote not recorded or what vote actually took place
+    -1 system err, 1 user on own post, 2 like, 3 dislike, 4 unlike, 5 undislike, 6 undislike then like, 7 unlike then dislike
+  */
+  public function vote(string $id, int $vote): array {
+    
+    $posting = $this->mysql->request($this->mysql->readPostQuery, [":id" => $id]);
+    $poster = $posting[0]["user"];
+    $type = $posting[0]["type"];
+    switch ($type) {
+      case 1: 
+        $post = new PostOfText(null, $id);
+        break;
+      case 2:
+        $post = new PostOfImage(null, $id);
+        break;
+    }
+    
+    if (!$posting) {
+
+      throw new Exception("the provided post id " . $id . "cannot be found.");
+
+    } elseif ($this->user == $poster) { //disabling user from voting on own posts
+
+      return [false, 1];
+
+    } else {
+      
+      try { 
+
+        $liked = $post->haveAlreadyLiked($this->user);
+        $disliked = $post->haveAlreadyDisliked($this->user);
+
+        if ($vote > 0) { //positive number for liking
+
+          if ($liked) { //clicking on like when he has already liked, so unliking
+
+            $post->unlike($this->user);
+            $message = 4;
+
+          } elseif ($disliked) { //clicking on like when has already disliked, so undislike then like
+            
+            $post->undislike($this->user)->like($this->user);
+            $message = 6;
+            
+          } else { //clicking on like when he has not liked ir disliked, just like
+
+            $post->like($this->user);
+            $message = 2;
+
+          }
+
+        } else { //disliking
+
+          if ($disliked) { //clicking on dislike when he has already disliked, so undisliking
+
+            $post->undislike($this->user);
+            $message = 5;
+
+          } elseif ($liked) { //clicking on dislike when he has already liked, so unlike then dislike
+            
+            $post->unlike($this->user)->dislike($this->user);
+            $message = 7;
+            
+          } else { //clicking on like when he has not yet liked
+
+            $post->dislike($this->user);
+            $message = 3;
+
+          }
+
+          return [true, $message];
+
+        }
+
+        $success = true;
+        
+      } catch (Exception $ex) {
+
+        return [false, -1];
+
+      } 
+
+    } //close outer else
 
   }
 

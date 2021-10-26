@@ -83,6 +83,7 @@
 .btn:active, .btn:focus {
   outline: none;
   border: none;
+  border-color: transparent;
   box-shadow: none;
 }
 

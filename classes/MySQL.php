@@ -48,9 +48,10 @@ final class MySQL {
   key function to access database, for all CRUD operations
   @param $query: SQL query string, can be either a straight query (without any inputs) or a prepared statement using either named parameters (:param) or positional params (?)
   @param $params: values, in array, to bind to a prepared statement, [value1, value2, ...] or ["name1" => value1, "name2" => value2, ...] for positional or named params
+  @param $fetchByColumn, a flag indicating to fetch the first column (index 0) of the resultset into an array
   @return array resultset if one exists or null if there is no resultset (not a Select query)
   */
-  public function request(string $query, array $params=null): ?array {
+  public function request(string $query, array $params = null, bool $fetchByColumn = false): ?array {
 
     try {
 
@@ -92,7 +93,16 @@ final class MySQL {
 
       //using fetch() or fetchAll() when there is no resultset will result in an exception
       //before fetching, use columnCount() to check if a resultset exists, it returns 0 if no resultset
-      $resultset = $stmt->columnCount() > 0 ? $stmt->fetchAll() : null;
+      if ($fetchByColumn) {
+
+        $resultset = $stmt->fetchAll(PDO::FETCH_COLUMN, 0);
+
+      } else {
+        
+        $resultset = $stmt->columnCount() > 0 ? $stmt->fetchAll() : null;
+      
+      }
+
       return $resultset;
 
     } catch (PDOException $ex) {
@@ -210,17 +220,23 @@ final class MySQL {
   public $readChattedWithQuery = "SELECT MAX(timestamp) AS lastTime, chatWith FROM ( SELECT sender AS chatWith, timestamp FROM messages WHERE recipient = :me UNION SELECT recipient AS chatWith, timestamp FROM messages WHERE sender = :me) AS m GROUP BY chatWith ORDER BY lastTime DESC";
   public $createMessageQuery = "INSERT INTO messages VALUES (NULL, :time, :from, :to, :message)";
 
-  //for post comments and likes
-  public $createPostCommentQuery = "INSERT INTO post_comments (post_id, user, comment) VALUES (:post_id, :user, :comment)";
-  public $updatePostCommentQuery = "UPDATE post_comments SET comment = :comment WHERE comment_id = :comment_id";
-  public $deletePostCommentQuery = "DELETE FROM post_comments WHERE comment_id = :comment_id";
-  public $readPostCommentsQuery = "SELECT * FROM post_comments WHERE post_id = :post_id";
+  //for post likes
   public $createPostLikeQuery = "INSERT INTO post_reactions VALUES (:post_id, :user, 1)";
   public $createPostDislikeQuery = "INSERT INTO post_reactions VALUES (:post_id, :user, -1)";
-  public $deletePostLikeQuery = "DELETE FROM post_reactions WHERE post_id = :post_id AND user = :user";
-  public $deletePostDislikeQuery = "DELETE FROM post_reactions WHERE post_id = :post_id AND user = :user";
   public $readPostLikedByQuery = "SELECT user FROM post_reactions WHERE post_id = :post_id AND reaction > 0";
   public $readPostDislikedByQuery = "SELECT user FROM post_reactions WHERE post_id = :post_id AND reaction < 0";
+  public $deletePostLikeQuery = "DELETE FROM post_reactions WHERE post_id = :post_id AND user = :user";
+  public $deletePostDislikeQuery = "DELETE FROM post_reactions WHERE post_id = :post_id AND user = :user";
+ 
+
+  /*
+  for post comments
+  */
+  public $createPostCommentQuery = "INSERT INTO post_comments (post_id, user, comment) VALUES (:post_id, :user, :comment)";
+  public $readPostCommentsQuery = "SELECT * FROM post_comments WHERE post_id = :post_id";
+  public $updatePostCommentQuery = "UPDATE post_comments SET comment = :comment WHERE comment_id = :comment_id";
+  public $deletePostCommentQuery = "DELETE FROM post_comments WHERE comment_id = :comment_id";
+
 
   /*
   for posts statistics
@@ -234,7 +250,7 @@ final class MySQL {
   for post contents
   */
   //for all posts
-  public $readPostTypeQuery = "SELECT post_type AS type FROM posts WHERE id = :id";
+  public $readPostQuery = "SELECT user, UNIX_TIMESTAMP(timestamp) AS timestamp, post_type AS type FROM posts WHERE id = :id";
   //retrieve [id timestamp, type] for every post created by user
   public $readPostsQuery = "SELECT id, UNIX_TIMESTAMP(timestamp) AS timestamp, post_type AS type FROM posts WHERE post_type = 2 AND user = :user /*the image posts*/
                             UNION
@@ -286,11 +302,12 @@ final class MySQL {
                                 ON images.id = texts.text_for";  
   //read one image post by id
   public $readImagePostQuery = " SELECT images.*, text_posts.content AS text FROM 
-                                (SELECT posts.id, UNIX_TIMESTAMP(posts.timestamp) AS timestamp, image_posts.imageURL AS image, image_posts.imageMIME AS mime, image_posts.description FROM posts INNER JOIN image_posts ON posts.id = image_posts.post_id WHERE posts.id = :id) AS images 
+                                (SELECT posts.id, UNIX_TIMESTAMP(posts.timestamp) AS timestamp, image_posts.id AS image_id ,image_posts.imageURL AS image, image_posts.imageMIME AS mime, image_posts.description FROM posts INNER JOIN image_posts ON posts.id = image_posts.post_id WHERE posts.id = :id) AS images 
                                 LEFT JOIN text_posts ON images.id = text_posts.text_for";
-  //read the ids of a specific number of images
+  //read the ids of a certain number of images
   public $readImagePostIdQuery = "SELECT DISTINCT * FROM (SELECT posts.id FROM posts INNER JOIN image_posts ON posts.id = image_posts.post_id WHERE posts.user = :user ORDER BY posts.timestamp DESC LIMIT :count) AS image_ids";
-  public $readImagePostImageQuery = "SELECT imageURL AS image from image_posts WHERE post_id = :id";
+  //read the one sngle image inside image posts table
+  public $readImagePostImageQuery = "SELECT imageURL AS image from image_posts WHERE id = :id";
   public $readImagePostMaximumIdQuery = "SELECT MAX(id) AS max_id from image_posts"; //retrieve the max id used, used for knowing the next id to use in codes
   public $updateImagePostImageQuery = "UPDATE image_posts SET imageURL = :imageURL, imageMIME = :imageMIME WHERE id = :id"; //recall image belongs to a post, so a post must exist before an image can be persisted
   public $updateImagePostDescriptionQuery = "UPDATE image_posts SET description = :description WHERE id = :id";

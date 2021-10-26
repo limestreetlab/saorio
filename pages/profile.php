@@ -76,13 +76,11 @@ IF ( isset($_REQUEST["viewUser"]) ) { //viewing another user's home page (summar
   
   foreach ($posts as $post) {
 
-    $text = $post["text"];
-    $images = $post["images"];
-    $timestamp = intval($post["timestamp"]);
-    $date = (new DateTime("@$timestamp"))->format("M d, Y");
+    extract($post); //get data about this post
+    $date = (new DateTime("@$timestamp"))->format("M d, Y"); //format timestamp to date
     $configs = is_null($images) ? null : $postManager::getImageCssClasses($images);
 
-    $postData = ["profile-picture" => "$profilePictureURL", "firstname" => "$firstname", "lastname" => "$lastname", "date" => $date, "text" => $text, "images" => $images, "configs"=> $configs, "likes-stat" => 38, "dislikes-stat" => 12];
+    $postData = ["id" => $id, "profile-picture" => "$profilePictureURL", "firstname" => "$firstname", "lastname" => "$lastname", "date" => $date, "text" => $text, "images" => $images, "configs"=> $configs, "likes-stat" => $likes, "dislikes-stat" => $dislikes, "haveAlreadyLiked" => $haveAlreadyLiked, "haveAlreadyDisliked" => $haveAlreadyDisliked];
     $viewLoader->load("profile_post.html")->bind($postData)->render();
   
   }

@@ -1,6 +1,6 @@
 <!--template for each individual post shown in the profile page-->
     
-<section class="card mt-3 border-0 shadow post">
+<section class="card mt-3 border-0 shadow post" data-id="{{id}}">
 
   <!--post header for name, photo, etc-->
   <section class="card-header d-flex flex-row justify-content-start align-items-center bg-white border-0">
@@ -29,15 +29,17 @@
   <section class="card-footer bg-white border-top border-0">
     <div class="mt-1 d-flex align-items-center">
 
-    <button type="button" class="btn fs-5 text-secondary ps-1 pe-0">
-      <i class="bi bi-hand-thumbs-up"></i>
+    <button type="button" class="vote-btn up-btn btn fs-5 text-secondary ps-1 pe-0">
+      {{IF !'{{haveAlreadyLiked}}' }}<i class="bi bi-hand-thumbs-up"></i>{{ENDIF}}
+      {{IF '{{haveAlreadyLiked}}' }}<i class="bi bi-hand-thumbs-up-fill text-primary"></i>{{ENDIF}}
     </button>
-    <span class="fs-6 text-muted">{{likes-stat}}</span>
+    <span class="fs-6 text-muted up-stat">{{likes-stat}}</span>
 
-    <button type="button" class="btn fs-5 text-secondary ps-2 pe-0">
-      <i class="bi bi-hand-thumbs-down"></i>
+    <button type="button" class="vote-btn down-btn btn fs-5 text-secondary ms-2 ps-2 pe-0">
+      {{IF !'{{haveAlreadyDisliked}}' }}<i class="bi bi-hand-thumbs-down"></i>{{ENDIF}}
+      {{IF '{{haveAlreadyDisliked}}' }}<i class="bi bi-hand-thumbs-down-fill text-primary"></i>{{ENDIF}}
     </button>
-    <span class="fs-6 text-muted">{{dislikes-stat}}</span>
+    <span class="fs-6 text-muted down-stat">{{dislikes-stat}}</span>
 
     <div class="form-control py-1 px-3 ms-3 rounded-pill flex-grow-1 flex-shrink-1 bg-light d-flex align-items-center">
       <input type="text" class="bg-transparent flex-grow-1 flex-shrink-1 text-secondary border-0 small post-comment-form" placeholder="Write a comment...">

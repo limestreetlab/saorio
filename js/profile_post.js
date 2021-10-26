@@ -21,8 +21,92 @@ $("document").ready(function(){
   $("#new-post-poll").on("click", () => { new bootstrap.Modal($("#feature-unavailable-modal")).show()} );
   //frontend pagination post load, click event delegated to parent of pagination section which can be dynamically created and erased 
   $("#main-menu").on("click", "#pagination .pagination .page-item .page-link", paginate);
+  //users liking or disliking (voting) on a post
+  $("#main-menu").on("click", ".vote-btn", postReact);
 
 });
+
+/*
+
+*/
+function postReact(event) {
+
+  event.preventDefault(); 
+  event.stopPropagation();
+  
+  let vote = $(this).hasClass("up-btn") ? 1 : -1; //specify if the vote is for up or down, each .vote-btn also has .up-btn or .down-btn
+  let id = $(this).closest("[data-id]").data("id"); //get the data-id embedded in each post
+  
+  let dataSend = {id: id, vote: vote};
+
+  $.get("ajax/posts_ajax.php", dataSend, function(result) {
+    
+    if (!result.success) {
+
+      let reason = result.message;
+      if (reason == 1) {
+        showToast("Self-voting is disabled", "We do not let you vote on your own posts.");
+      } else {
+        showToast();
+      }
+
+    } else {
+      //Jquery selector of the clicked post
+      let postElement = $('.post[data-id=' + id + ']');
+      //button icons used in frontend, direct mirroring
+      let likeBtn = "<i class='bi bi-hand-thumbs-up'></i>";
+      let likedBtn = "<i class='bi bi-hand-thumbs-up-fill text-primary'></i>";
+      let dislikeBtn = "<i class='bi bi-hand-thumbs-down'></i>";
+      let dislikedBtn = "<i class='bi bi-hand-thumbs-down-fill text-primary'></i>";
+      //current like/dislike numbers
+      let numberOfLiked = parseInt( postElement.find(".up-stat").text() ); //read the current liked number (casted to int)
+      let numberOfDisliked = parseInt( postElement.find(".down-stat").text() ); //read the current disliked number (casted to int)
+      
+      //defined in like/dislike function, 2-7 for what liking/disliking took place, so can be reflected in frontend
+      switch (result.message) {
+
+        case 2: //liking a post
+          postElement.find(".up-btn").empty().html(likedBtn); //change the btn from like to liked
+          postElement.find(".up-stat").text(numberOfLiked + 1); //replace with incremented liked number
+          break;
+
+        case 3: //disliking a post
+          postElement.find(".down-btn").empty().html(dislikedBtn); //change the btn from dislike to disliked
+          postElement.find(".down-stat").text(numberOfDisliked + 1); //replace with incremented disliked number
+          break;
+
+        case 4: //unliking a liked post
+          postElement.find(".up-btn").empty().html(likeBtn); //change the btn from liked to like
+          postElement.find(".up-stat").text(numberOfLiked - 1); //replace with decremented liked number
+          break;
+
+        case 5: //undisliking a disliked post
+          postElement.find(".down-btn").empty().html(dislikeBtn); //change the btn from disliked to dislike
+          postElement.find(".down-stat").text(numberOfDisliked - 1); //replace with decremented disliked number
+          break;
+
+        case 6: //liking a disliked post
+          postElement.find(".down-btn").empty().html(dislikeBtn); //change the btn from disliked to dislike
+          postElement.find(".down-stat").text(numberOfDisliked - 1); //replace with decremented disliked number
+          postElement.find(".up-btn").empty().html(likedBtn); //change the btn from like to liked
+          postElement.find(".up-stat").text(numberOfLiked + 1); //replace with incremented liked number
+          break;
+
+        case 7: //disliking a liked post
+          postElement.find(".up-btn").empty().html(likeBtn); //change the btn from liked to like
+          postElement.find(".up-stat").text(numberOfLiked - 1); //replace with decremented liked number
+          postElement.find(".down-btn").empty().html(dislikedBtn); //change the btn from dislike to disliked
+          postElement.find(".down-stat").text(numberOfDisliked + 1); //replace with incremented disliked number
+          break;
+
+      }
+
+    }
+
+  } //close callback
+  , "json");
+
+}
 
 
 /*

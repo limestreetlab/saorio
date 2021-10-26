@@ -139,7 +139,7 @@ $tablename = "post_reactions";
 $columns = "post_id VARCHAR(30) NOT NULL COMMENT 'id of the post reacting to',
 user VARCHAR(20) NOT NULL COMMENT 'user making the reaction, once per post',
 reaction TINYINT(1) NOT NULL COMMENT 'boolean flag, use negative and positive numbers for negative and position reactions',
-PRIMARY KEY (post_id, user),
+PRIMARY KEY (post_id, user) COMMENT 'each user can only react once to each post',
 FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
 FOREIGN KEY (user) REFERENCES members(user) ON DELETE CASCADE ON UPDATE CASCADE";
 $tables["$tablename"] = $columns;

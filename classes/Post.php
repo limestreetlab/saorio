@@ -45,12 +45,13 @@ abstract class Post {
       $this->id = $id;
       $this->content = $this->getContent();
       $this->comments = $this->mysql->request($this->mysql->readPostCommentsQuery, [":post_id" => $id]);
-      $this->likedBy = $this->mysql->request($this->mysql->readPostLikedByQuery, [":post_id" => $id]);
-      $this->dislikedBy = $this->mysql->request($this->mysql->readPostDislikedByQuery, [":post_id" => $id]);;
+      $this->likedBy = $this->mysql->request($this->mysql->readPostLikedByQuery, [":post_id" => $id], true);
+      $this->dislikedBy = $this->mysql->request($this->mysql->readPostDislikedByQuery, [":post_id" => $id], true);;
       $this->likes = count($this->likedBy);
       $this->dislikes = count($this->dislikedBy);
 
     }
+    
   }
 
   /*
@@ -74,12 +75,12 @@ abstract class Post {
   abstract public function getContent();
 
   /*
-  liking a post
+  initialize a liking of a post
   @param username, user doing the liking of this post
   */
   public function like(string $username): self {
-
-    if ( !$this->haveAlreadyLiked($username) ) {
+    //proceed only if user has not already liked and it is not own post
+    if ( !$this->haveAlreadyLiked($username) && $this->user != $username ) {
 
       try {
 
@@ -101,12 +102,12 @@ abstract class Post {
   }
   
   /*
-  disliking a post
+  initialzie disliking of a post
   @param username, user doing the disliking of this post
   */
   public function dislike(string $username): self {
-
-    if ( !$this->haveAlreadyDisliked($username) ) {
+    //proceed only if user has not already disliked and it is not own post
+    if ( !$this->haveAlreadyDisliked($username) && $this->user != $username ) {
       
       try {
 
@@ -128,7 +129,7 @@ abstract class Post {
   }
 
   /*
-  undo a given like
+  undo an expressed like
   @param username, user doing the unliking of the post
   */
   public function unlike(string $username): self {
@@ -155,7 +156,7 @@ abstract class Post {
   }
 
   /*
-  undo a given dislike
+  undo an expressed dislike
   @param username, user doing the undisliking of this post
   */
   public function undislike(string $username): self {

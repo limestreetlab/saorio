@@ -92,8 +92,8 @@ class PostOfImage extends Post {
       }
 
     } else { //content not provided, so referencing an old post
-
-      $postData = $this->mysql->request($this->mysql->readImagePostQuery, [":id" => $id]);
+      
+      $postData = $this->mysql->request($this->mysql->readImagePostQuery, [":id" => $this->id]);
 
       if (!$postData) {
         array_push($this->errorCodes, 1);
@@ -407,6 +407,18 @@ class PostOfImage extends Post {
     
     }
     
+  }
+
+  /*
+  @Override
+  add a text data field
+  */
+  public function getData(): array {
+
+    $data = parent::getData(); //super's instance method
+    $data["text"] = $this->text; //adding a field
+    return $data;
+
   }
 
   /*
