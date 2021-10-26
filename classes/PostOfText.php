@@ -27,7 +27,7 @@ class PostOfText extends Post {
 
     } else { //no content, so reference to an old post
 
-      $postData = $this->mysql->request($this->mysql->readTextPostQuery, [":id" => $id]);
+      $postData = $this->mysql->request(MySQL::readTextPostQuery, [":id" => $id]);
 
       if (!$postData) {
         array_push($this->errorCodes, 1);
@@ -59,8 +59,8 @@ class PostOfText extends Post {
 
         $this->mysql->beginTransaction();
 
-        $this->mysql->request($this->mysql->createTextPostQuery, [":id" => $this->id, ":user" => $this->user]); //id can potentially clash 
-        $this->mysql->request($this->mysql->createTextPostContentQuery, [":post_id" => $this->id, ":content" => $this->content]);
+        $this->mysql->request(MySQL::createTextPostQuery, [":id" => $this->id, ":user" => $this->user]); //id can potentially clash 
+        $this->mysql->request(MySQL::createTextPostContentQuery, [":post_id" => $this->id, ":content" => $this->content]);
 
         return $this->mysql->commit();
 
@@ -75,8 +75,8 @@ class PostOfText extends Post {
             
             $this->mysql->beginTransaction(); //start again
 
-            $this->mysql->request($this->mysql->createTextPostQuery, [":id" => $this->id, ":user" => $this->user]); 
-            $this->mysql->request($this->mysql->createTextPostContentQuery, [":post_id" => $this->id, ":content" => $this->content]);
+            $this->mysql->request(MySQL::createTextPostQuery, [":id" => $this->id, ":user" => $this->user]); 
+            $this->mysql->request(MySQL::createTextPostContentQuery, [":post_id" => $this->id, ":content" => $this->content]);
 
             $this->mysql->commit(); 
             return true; //succeeding this time
@@ -119,7 +119,7 @@ class PostOfText extends Post {
 
       try {
 
-        $this->mysql->request($this->mysql->updateTextPostQuery, [":content" => $newContent, ":post_id" => $this->id]); //update db
+        $this->mysql->request(MySQL::updateTextPostQuery, [":content" => $newContent, ":post_id" => $this->id]); //update db
         $this->content = $newContent; //update object
 
       } catch (Exception $ex) {
@@ -142,7 +142,7 @@ class PostOfText extends Post {
 
     try {
 
-      $this->mysql->request( $this->mysql->deletePostQuery, [":id" => $this->id] );
+      $this->mysql->request( MySQL::deletePostQuery, [":id" => $this->id] );
       unset($this->id); //cannot unset the object itself, merely unset its key instance handle variable
 
     } catch (Exception $ex) {
@@ -164,7 +164,7 @@ class PostOfText extends Post {
 
       try {
         
-        return $this->mysql->request( $this->mysql->readTextPostQuery, [":id" => $this->id] )[0]["post"];
+        return $this->mysql->request( MySQL::readTextPostQuery, [":id" => $this->id] )[0]["post"];
       
       } catch (Exception $ex) {
 

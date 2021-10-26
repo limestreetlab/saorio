@@ -24,7 +24,7 @@ if ($_REQUEST["type"] == "text" && $_REQUEST["action"] == "send") {
     $date = (new DateTime("@$now"))->format("M d, Y");
 
     //organize view data for binding
-    $postData = ["profile-picture" => $profilePictureURL, "firstname" => $firstname, "lastname" => $lastname, "date" => $date, "text" => $post->getContent(), "images" => null, "configs" => null, "likes-stat" => 0, "dislikes-stat" => 0];
+    $postData = ["id" => $post->id, "profile-picture" => $profilePictureURL, "firstname" => $firstname, "lastname" => $lastname, "date" => $date, "text" => $post->getContent(), "images" => null, "configs" => null, "likes-stat" => 0, "dislikes-stat" => 0, "haveAlreadyLiked" => false, "haveAlreadyDisliked" => false];
     $postView = $viewLoader->load("./../templates/profile_post.html")->bind($postData)->getView(); //get view string
 
   }
@@ -64,7 +64,6 @@ if ($_REQUEST["type"] == "image" && $_REQUEST["action"] == "send") {
     //image data
     $content = $post->getContent();
     $images = []; //array of image file relative paths
-    $imagesAbsPaths = []; //array of image rile absolute paths
     $descriptions = []; //array of image captions
     
     foreach ($content as $el) {
@@ -75,7 +74,7 @@ if ($_REQUEST["type"] == "image" && $_REQUEST["action"] == "send") {
     $configs = PostManager::getImageCssClasses($images);
 
     //organize view data for binding
-    $postData = ["profile-picture" => $profilePictureURL, "firstname" => $firstname, "lastname" => $lastname, "date" => $date, "text" => $text, "images" => $images, "configs" => $configs, "likes-stat" => 0, "dislikes-stat" => 0];
+    $postData = ["id" => $post->id, "profile-picture" => $profilePictureURL, "firstname" => $firstname, "lastname" => $lastname, "date" => $date, "text" => $text, "images" => $images, "configs" => $configs, "likes-stat" => 0, "dislikes-stat" => 0, "haveAlreadyLiked" => false, "haveAlreadyDisliked" => false];
     $postView = $viewLoader->load("./../templates/profile_post.html")->bind($postData)->getView(); //get view string
 
   }

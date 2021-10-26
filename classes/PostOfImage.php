@@ -70,7 +70,7 @@ class PostOfImage extends Post {
       } 
 
       //note that id instance variable refers to the id of posts table, image id refers to id of image posts table 
-      $image_id_available = $this->mysql->request($this->mysql->readImagePostMaximumIdQuery)[0]["max_id"] + 1; //next available id to use in the image post table
+      $image_id_available = $this->mysql->request(MySQL::readImagePostMaximumIdQuery)[0]["max_id"] + 1; //next available id to use in the image post table
 
       //convert image files into Image File objects and clean strings for the content variable
       for($i = 0; $i < $this->numberOfImages; $i++) {
@@ -93,7 +93,7 @@ class PostOfImage extends Post {
 
     } else { //content not provided, so referencing an old post
       
-      $postData = $this->mysql->request($this->mysql->readImagePostQuery, [":id" => $this->id]);
+      $postData = $this->mysql->request(MySQL::readImagePostQuery, [":id" => $this->id]);
 
       if (!$postData) {
         array_push($this->errorCodes, 1);
@@ -121,7 +121,7 @@ class PostOfImage extends Post {
       $this->mysql->beginTransaction();
       $this->mysql->deferForeignKeyChecks();
 
-      $this->mysql->request($this->mysql->createImagePostQuery, [":id" => $this->id, ":user" => $this->user]); //create a post of image type
+      $this->mysql->request(MySQL::createImagePostQuery, [":id" => $this->id, ":user" => $this->user]); //create a post of image type
       
       //create an entry for each image in database
       foreach ($this->content as $el) {
@@ -130,7 +130,7 @@ class PostOfImage extends Post {
         $imageFileObj = $el[0]; //file object of this image
         $id = $imageFileObj->getId(); //image post this image belongs to
         
-        $this->mysql->request($this->mysql->createImagePostContentQuery, [":id" => $id, ":post_id" => $this->id, ":description" => $imageDescription]); //create a image post
+        $this->mysql->request(MySQL::createImagePostContentQuery, [":id" => $id, ":post_id" => $this->id, ":description" => $imageDescription]); //create a image post
         
         if ( !$imageFileObj->upload() ) {
 
@@ -161,7 +161,7 @@ class PostOfImage extends Post {
         $this->text->post(); //post the text post, which creates a post of text type and a text post
         //a text post needs to be explicity linked to an image post to declare belonging
         $text_post_id = $this->text->getData()["id"]; //retrieve the id of the contained text post
-        $this->mysql->request($this->mysql->updateTextPostForQuery, [":for" => $this->id, ":post_id" => $text_post_id]); //declaring the text post belongs to this image post
+        $this->mysql->request(MySQL::updateTextPostForQuery, [":for" => $this->id, ":post_id" => $text_post_id]); //declaring the text post belongs to this image post
       
       }
 
@@ -281,7 +281,7 @@ class PostOfImage extends Post {
 
     try {
 
-      $this->mysql->request($this->mysql->updateImagePostDescriptionQuery, $params); //update database
+      $this->mysql->request(MySQL::updateImagePostDescriptionQuery, $params); //update database
       return true;
 
     } catch (Exception $ex) {
@@ -305,7 +305,7 @@ class PostOfImage extends Post {
     
     try { //update database
       
-      $this->mysql->request($this->mysql->deleteImagePostQuery, [":id" => $imageFileObj->getId()]); 
+      $this->mysql->request(MySQL::deleteImagePostQuery, [":id" => $imageFileObj->getId()]); 
       return true;
 
     } catch (Exception $ex) {
@@ -324,7 +324,7 @@ class PostOfImage extends Post {
   */
   protected function addImage($file, string $description): bool {
 
-    $image_id_available = $this->mysql->request($this->mysql->readImagePostMaximumIdQuery)[0]["max_id"] + 1; //next available id to use in the image post table
+    $image_id_available = $this->mysql->request(MySQL::readImagePostMaximumIdQuery)[0]["max_id"] + 1; //next available id to use in the image post table
     $description = self::cleanString($description);
     $imageFileObj = new UploadedPostImageFile($image_id_available, $file);
 
@@ -350,7 +350,7 @@ class PostOfImage extends Post {
       
       $this->mysql->beginTransanction();
 
-      $this->mysql->request($this->mysql->createImagePostContentQuery, [":id" => $image_id_available, ":post_id" => $this->id, ":description" => $description]);
+      $this->mysql->request(MySQL::createImagePostContentQuery, [":id" => $image_id_available, ":post_id" => $this->id, ":description" => $description]);
       
       if ( !$imageFileObj->upload() ) { //upload failed
 
@@ -397,7 +397,7 @@ class PostOfImage extends Post {
 
     try {
 
-      $this->mysql->request( $this->mysql->deletePostQuery, [":id" => $this->id] ); //remove post from database
+      $this->mysql->request( MySQL::deletePostQuery, [":id" => $this->id] ); //remove post from database
       unset($this->id); //cannot unset the object itself, merely unset its key instance handle variable
 
     } catch (Exception $ex) {
@@ -431,7 +431,7 @@ class PostOfImage extends Post {
 
       try {
 
-        $postData = $this->mysql->request($this->mysql->readImagePostQuery, [":id" => $this->id]);
+        $postData = $this->mysql->request(MySQL::readImagePostQuery, [":id" => $this->id]);
         
         foreach ($postData as $row) {
           

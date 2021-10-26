@@ -32,7 +32,7 @@ class FullProfile extends BasicProfile {
 
     try {
 
-      $profileData = $this->mysql->request($this->mysql->readProfileQuery, [":user" => $this->user])[0];
+      $profileData = $this->mysql->request(MySQL::readProfileQuery, [":user" => $this->user])[0];
     
     } catch (Exception $ex) {
       
@@ -56,7 +56,7 @@ class FullProfile extends BasicProfile {
     $this->quote = $profileData["quote"];
     $this->website = $profileData["website"];    
     $this->socialmedia = $profileData["socialmedia"];  
-    $this->email = $this->mysql->request($this->mysql->readEmailQuery, [":user" => $this->user])[0]["email"];
+    $this->email = $this->mysql->request(MySQL::readEmailQuery, [":user" => $this->user])[0]["email"];
 
   }
 
@@ -91,7 +91,7 @@ class FullProfile extends BasicProfile {
       $newAbout = self::cleanString($newAbout);
 
       if ($this->about != $newAbout) { //changed, so update
-        $this->mysql->request($this->mysql->updateProfileAboutQuery, [":about" => $newAbout, ":user" => $this->user]);
+        $this->mysql->request(MySQL::updateProfileAboutQuery, [":about" => $newAbout, ":user" => $this->user]);
       }
 
       return true;
@@ -113,7 +113,7 @@ class FullProfile extends BasicProfile {
       $newGender = self::cleanString($newGender);
 
       if ($this->gender != $newGender) {
-        $this->mysql->request($this->mysql->updateProfileGenderQuery, [":gender" => $newGender, ":user" => $this->user]);
+        $this->mysql->request(MySQL::updateProfileGenderQuery, [":gender" => $newGender, ":user" => $this->user]);
       }
       return true;
 
@@ -147,7 +147,7 @@ class FullProfile extends BasicProfile {
       }
       
       if ($this->dob != $newDob) {
-        $this->mysql->request($this->mysql->updateProfileDobQuery, [":dob" => $newDob, ":user" => $this->user]);
+        $this->mysql->request(MySQL::updateProfileDobQuery, [":dob" => $newDob, ":user" => $this->user]);
       }
 
       return true;
@@ -190,7 +190,7 @@ class FullProfile extends BasicProfile {
       $newInterests = self::cleanString($newInterests);
 
       if ($this->interests != $newInterests) {
-        $this->mysql->request($this->mysql->updateProfileInterestsQuery, [":interests" => $newInterests, ":user" => $this->user]);
+        $this->mysql->request(MySQL::updateProfileInterestsQuery, [":interests" => $newInterests, ":user" => $this->user]);
       }
       return true;
     } catch (Exception $ex) {
@@ -210,7 +210,7 @@ class FullProfile extends BasicProfile {
       $newQuote = self::cleanString($newQuote);
 
       if ($this->quote != $newQuote) {
-        $this->mysql->request($this->mysql->updateProfileQuoteQuery, [":quote" => $newQuote, ":user" => $this->user]);
+        $this->mysql->request(MySQL::updateProfileQuoteQuery, [":quote" => $newQuote, ":user" => $this->user]);
       }
       return true;
     } catch (Exception $ex) {
@@ -230,7 +230,7 @@ class FullProfile extends BasicProfile {
       $newCity = self::cleanString($newCity); //if null will become an empty string
       
       if ($this->city != $newCity) {
-        $this->mysql->request($this->mysql->updateProfileCityQuery, [":city" => $newCity, ":user" => $this->user]); 
+        $this->mysql->request(MySQL::updateProfileCityQuery, [":city" => $newCity, ":user" => $this->user]); 
       }
       return true;
     } catch (Exception $ex) {
@@ -250,7 +250,7 @@ class FullProfile extends BasicProfile {
       $newCountry = self::cleanString($newCountry); //if null will become an empty string
 
       if ($this->country != $newCountry) {
-        $this->mysql->request($this->mysql->updateProfileCountryQuery, [":country" => $newCountry, ":user" => $this->user]); 
+        $this->mysql->request(MySQL::updateProfileCountryQuery, [":country" => $newCountry, ":user" => $this->user]); 
       }
       return true;
     } catch (Exception $ex) {
@@ -270,7 +270,7 @@ class FullProfile extends BasicProfile {
       $newJob = self::cleanString($newJob); //if null will become an empty string
 
       if ($this->job != $newJob) {
-        $this->mysql->request($this->mysql->updateProfileJobQuery, [":job" => $newJob, ":user" => $this->user]); 
+        $this->mysql->request(MySQL::updateProfileJobQuery, [":job" => $newJob, ":user" => $this->user]); 
       }
       return true;
     } catch (Exception $ex) {
@@ -290,7 +290,7 @@ class FullProfile extends BasicProfile {
       $newCompany = self::cleanString($newCompany); //if null will become an empty string
 
       if ($this->company != $newCompany) {
-        $this->mysql->request($this->mysql->updateProfileCompanyQuery, [":company" => $newCompany, ":user" => $this->user]); 
+        $this->mysql->request(MySQL::updateProfileCompanyQuery, [":company" => $newCompany, ":user" => $this->user]); 
       }
         return true;
     } catch (Exception $ex) {
@@ -310,7 +310,7 @@ class FullProfile extends BasicProfile {
       $newMajor = self::cleanString($newMajor); //if null will become an empty string
 
       if ($this->major != $newMajor) {
-        $this->mysql->request($this->mysql->updateProfileMajorQuery, [":major" => $newMajor, ":user" => $this->user]); 
+        $this->mysql->request(MySQL::updateProfileMajorQuery, [":major" => $newMajor, ":user" => $this->user]); 
       }
       return true;
     } catch (Exception $ex) {
@@ -330,7 +330,7 @@ class FullProfile extends BasicProfile {
       $newSchool = self::cleanString($newSchool); //if null will become an empty string
 
       if ($this->school != $newSchool) {
-        $this->mysql->request($this->mysql->updateProfileSchoolQuery, [":school" => $newSchool, ":user" => $this->user]); 
+        $this->mysql->request(MySQL::updateProfileSchoolQuery, [":school" => $newSchool, ":user" => $this->user]); 
       }
       return true;
     } catch (Exception $ex) {
@@ -350,7 +350,7 @@ class FullProfile extends BasicProfile {
       $newEmail = self::cleanString($newEmail); //if null will become an empty string
 
       if ($this->email != $newEmail) {
-        $this->mysql->request($this->mysql->updateMembersEmailQuery, [":email" => $newEmail, ":user" => $this->user]); 
+        $this->mysql->request(MySQL::updateMembersEmailQuery, [":email" => $newEmail, ":user" => $this->user]); 
       }
       return true;
     } catch (Exception $ex) {
@@ -370,7 +370,7 @@ class FullProfile extends BasicProfile {
       $newWebsite = self::cleanString($newWebsite); //if null will become an empty string
 
       if ($this->website != $newWebsite) {
-        $this->mysql->request($this->mysql->updateProfileWebsiteQuery, [":website" => $newWebsite, ":user" => $this->user]); 
+        $this->mysql->request(MySQL::updateProfileWebsiteQuery, [":website" => $newWebsite, ":user" => $this->user]); 
       }
       return true;
     } catch (Exception $ex) {
@@ -390,7 +390,7 @@ class FullProfile extends BasicProfile {
       $newSocialMedia = self::cleanString($newSocialMedia); //if null will become an empty string
 
       if ($this->socialmedia != $newSocialMedia) {
-        $this->mysql->request($this->mysql->updateProfileSocialMediaQuery, [":socialmedia" => $newSocialMedia, ":user" => $this->user]); 
+        $this->mysql->request(MySQL::updateProfileSocialMediaQuery, [":socialmedia" => $newSocialMedia, ":user" => $this->user]); 
       }
       return true;
     } catch (Exception $ex) {

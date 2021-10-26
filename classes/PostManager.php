@@ -15,14 +15,14 @@ class PostManager {
     $this->mysql = MySQL::getInstance(); //database accessor instance
 
     //check username entered exists
-    $usernameExists = $this->mysql->request($this->mysql->readMembersTableQuery, [":user" => $user]);
+    $usernameExists = $this->mysql->request(MySQL::readMembersTableQuery, [":user" => $user]);
     if (!$usernameExists) {
       throw new Exception("username is invalid");
     } else {
       $this->user = $user;
     }
 
-    $this->numberOfPosts = $this->mysql->request($this->mysql->readPostNumberQuery, [":user" => $this->user])[0]["number"];
+    $this->numberOfPosts = $this->mysql->request(MySQL::readPostNumberQuery, [":user" => $this->user])[0]["number"];
     $this->numberOfPages = MAX(ceil( $this->numberOfPosts / self::POSTS_PER_PAGE ), 1); //total post number divided by posts per page, rounded up
 
   }
@@ -38,19 +38,19 @@ class PostManager {
     //switch SQL query on input params
     if ( !is_null($skip) && !is_null($number) ) { //from a given number for a certain number of posts
 
-      $posts = $this->mysql->request($this->mysql->readPostsQuery, [":user" => $this->user, ":offset" => $skip, ":count" => $number]);
+      $posts = $this->mysql->request(MySQL::readPostsQuery, [":user" => $this->user, ":offset" => $skip, ":count" => $number]);
 
     } elseif ( !is_null($skip) && is_null($number)  ) { //from a given number til the end
 
-      $posts = $this->mysql->request($this->mysql->readPostsQuery, [":user" => $this->user, ":offset" => $skip, ":count" => 99]);
+      $posts = $this->mysql->request(MySQL::readPostsQuery, [":user" => $this->user, ":offset" => $skip, ":count" => 99]);
 
     } elseif ( is_null($skip) && !is_null($number) ) { //for a certain number of posts from most recent
       
-      $posts = $this->mysql->request($this->mysql->readPostsQuery, [":user" => $this->user, ":offset" => 0, ":count" => $number]);
+      $posts = $this->mysql->request(MySQL::readPostsQuery, [":user" => $this->user, ":offset" => 0, ":count" => $number]);
       
     } else { //get all posts
 
-      $posts = $this->mysql->request($this->mysql->readPostsQuery, [":user" => $this->user, ":offset" => 0, ":count" => 99]);
+      $posts = $this->mysql->request(MySQL::readPostsQuery, [":user" => $this->user, ":offset" => 0, ":count" => 99]);
 
     }
 
@@ -80,7 +80,7 @@ class PostManager {
           array_push($images, ($row[0])->getFileRelativePath());
           array_push($descriptions, $row[1]);
         }
-        array_push($data, [ "id" => $id, "type" => $type, "timestamp" => $timestamp, "text" => $text->getContent(), "images" => $images, "descriptions" => $descriptions, "likes" => $likes, "dislikes" => $dislikes, "haveAlreadyLiked" => $haveAlreadyLiked, "haveAlreadyDisliked" => $haveAlreadyDisliked, "comments" => $comments ]);
+        array_push($data, [ "id" => $id, "type" => $type, "timestamp" => $timestamp, "text" => is_null($text) ? null : $text->getContent(), "images" => $images, "descriptions" => $descriptions, "likes" => $likes, "dislikes" => $dislikes, "haveAlreadyLiked" => $haveAlreadyLiked, "haveAlreadyDisliked" => $haveAlreadyDisliked, "comments" => $comments ]);
 
       } else {
 
@@ -121,19 +121,19 @@ class PostManager {
     //switch SQL query on input params
     if ( !is_null($skip) && !is_null($number) ) { //from a given number for a certain number of posts
 
-      $rows = $this->mysql->request($this->mysql->readImagePostsQuery, [":user" => $this->user, ":offset" => $skip, ":count" => $number]);
+      $rows = $this->mysql->request(MySQL::readImagePostsQuery, [":user" => $this->user, ":offset" => $skip, ":count" => $number]);
 
     } elseif ( !is_null($skip) && is_null($number)  ) { //from a given number til the end
 
-      $rows = $this->mysql->request($this->mysql->readImagePostsQuery, [":user" => $this->user, ":offset" => $skip, ":count" => 99]);
+      $rows = $this->mysql->request(MySQL::readImagePostsQuery, [":user" => $this->user, ":offset" => $skip, ":count" => 99]);
 
     } elseif ( is_null($skip) && !is_null($number) ) { //for a certain number of posts from most recent
       
-      $rows = $this->mysql->request($this->mysql->readImagePostsQuery, [":user" => $this->user, ":offset" => 0, ":count" => $number]);
+      $rows = $this->mysql->request(MySQL::readImagePostsQuery, [":user" => $this->user, ":offset" => 0, ":count" => $number]);
       
     } else { //get all posts
 
-      $rows = $this->mysql->request($this->mysql->readImagePostsQuery, [":user" => $this->user, ":offset" => 0, ":count" => 99]);
+      $rows = $this->mysql->request(MySQL::readImagePostsQuery, [":user" => $this->user, ":offset" => 0, ":count" => 99]);
 
     }
 
@@ -160,19 +160,19 @@ class PostManager {
     //switch SQL query on input params
     if ( !is_null($skip) && !is_null($number) ) { //from a given number for a certain number of posts
 
-      return $this->mysql->request($this->mysql->readTextPostsQuery, [":user" => $this->user, ":offset" => $skip, ":count" => $number]);
+      return $this->mysql->request(MySQL::readTextPostsQuery, [":user" => $this->user, ":offset" => $skip, ":count" => $number]);
 
     } elseif ( !is_null($skip) && is_null($number)  ) { //from a given number til the end
 
-      return $this->mysql->request($this->mysql->readTextPostsQuery, [":user" => $this->user, ":offset" => $skip, ":count" => 99]);
+      return $this->mysql->request(MySQL::readTextPostsQuery, [":user" => $this->user, ":offset" => $skip, ":count" => 99]);
 
     } elseif ( is_null($skip) && !is_null($number) ) { //for a certain number of posts from most recent
       
-      return $this->mysql->request($this->mysql->readTextPostsQuery, [":user" => $this->user, ":offset" => 0, ":count" => $number]);
+      return $this->mysql->request(MySQL::readTextPostsQuery, [":user" => $this->user, ":offset" => 0, ":count" => $number]);
       
     } else { //get all posts
 
-      return $this->mysql->request($this->mysql->readTextPostsQuery, [":user" => $this->user, ":offset" => 0, ":count" => 99]);
+      return $this->mysql->request(MySQL::readTextPostsQuery, [":user" => $this->user, ":offset" => 0, ":count" => 99]);
 
     }
 
@@ -186,12 +186,12 @@ class PostManager {
   public function getPostedImages(int $number = null): ?array {
 
     $number = is_null($number) ? 99 : $number; //set number to all if isn't already set
-    $id_rows = $this->mysql->request($this->mysql->readImagePostIdQuery, [":user" => $this->user, ":count" => $number]);
+    $id_rows = $this->mysql->request(MySQL::readImagePostIdQuery, [":user" => $this->user, ":count" => $number]);
     
     $paths = [];
     foreach($id_rows as $id_row) {
 
-      $img_rows = $this->mysql->request($this->mysql->readImagePostImageQuery, [":id" => $id_row[0]]);
+      $img_rows = $this->mysql->request(MySQL::readImagePostImageQuery, [":id" => $id_row[0]]);
 
       foreach($img_rows as $img_row) {
         array_push($paths, UploadedPostImageFile::convertFileRelativePath( $img_row["image"] ) );
@@ -285,7 +285,7 @@ class PostManager {
   */
   public function getNumberOfImagePosts(): int {
 
-    return $this->mysql->request($this->mysql->readImagePostNumberQuery, [":user" => $this->user]);
+    return $this->mysql->request(MySQL::readImagePostNumberQuery, [":user" => $this->user]);
 
   }
 
@@ -295,7 +295,7 @@ class PostManager {
   */
   public function getNumberOfPostedImages(): int {
 
-    return $this->mysql->request($this->mysql->readImagesNumber, [":user" => $this->user]);
+    return $this->mysql->request(MySQL::readImagesNumber, [":user" => $this->user]);
 
   }
 
@@ -308,7 +308,7 @@ class PostManager {
   */
   public function vote(string $id, int $vote): array {
     
-    $posting = $this->mysql->request($this->mysql->readPostQuery, [":id" => $id]);
+    $posting = $this->mysql->request(MySQL::readPostQuery, [":id" => $id]);
     $poster = $posting[0]["user"];
     $type = $posting[0]["type"];
     switch ($type) {

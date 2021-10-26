@@ -58,7 +58,7 @@ class UploadedWallpaperImageFile extends UploadedImageFile {
       
       if ($deleteExisting) { //if existing file should be removed, get the existing path, delete it after successful persistance
                   
-        $oldFilePath = $this->mysql->request($this->mysql->readProfileQuery, [":user" => $_SESSION["user"]])[0]["wallpaper"]; //abs path to existing file
+        $oldFilePath = $this->mysql->request(MySQL::readProfileQuery, [":user" => $_SESSION["user"]])[0]["wallpaper"]; //abs path to existing file
         
         $this->persist();
 
@@ -92,7 +92,7 @@ class UploadedWallpaperImageFile extends UploadedImageFile {
 
     try {
 
-        $this->mysql->request($this->mysql->updateProfileWallpaperQuery, $params);
+        $this->mysql->request(MySQL::updateProfileWallpaperQuery, $params);
         return $this;
 
     } catch (Exception $ex) {
@@ -112,7 +112,7 @@ class UploadedWallpaperImageFile extends UploadedImageFile {
 
     try {
 
-      $this->mysql->request($this->mysql->updateProfileWallpaperToNullQuery, [":user" => $_SESSION["user"]]); //remove from db
+      $this->mysql->request(MySQL::updateProfileWallpaperToNullQuery, [":user" => $_SESSION["user"]]); //remove from db
 
     } catch (Exception $ex) {
       

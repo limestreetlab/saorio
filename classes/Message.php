@@ -32,7 +32,7 @@ class Message {
     $params = [":time" => $this->timestamp, ":from" => $this->sender, ":to" => $this->recipient, ":message" => $this->message];
 
     try {
-      $this->mysql->request($this->mysql->createMessageQuery, $params);
+      $this->mysql->request(MySQL::createMessageQuery, $params);
       $success = true;
     } catch (Exception $ex) {
       $success = false;

@@ -89,7 +89,7 @@ class Conversation {
 
     $messages = [];
     $params = [":chatWith" => "$this->chatWith", ":me" => "$this->user"];
-    $resultset = $this->mysql->request($this->mysql->readConversationWithQuery, $params); //get the conversation from database
+    $resultset = $this->mysql->request(MySQL::readConversationWithQuery, $params); //get the conversation from database
 
     foreach ($resultset as $row) {
 
@@ -110,7 +110,7 @@ class Conversation {
 
     $out = [];
     $params = [":chatWith" => $this->chatWith, ":me" => $this->user, ":since" => $since];
-    $resultset = $this->mysql->request($this->mysql->readConversationWithSinceQuery, $params); //get message data since last timestamp 
+    $resultset = $this->mysql->request(MySQL::readConversationWithSinceQuery, $params); //get message data since last timestamp 
 
     if ($resultset) { //if there are messages since the timestamp
 

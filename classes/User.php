@@ -19,7 +19,7 @@ class User {
     $this->mysql = MySQL::getInstance(); 
     $this->user = $username; 
 
-    if (!$this->mysql->request($this->mysql->readMembersTableQuery, [":user" => $this->user])) {
+    if (!$this->mysql->request(MySQL::readMembersTableQuery, [":user" => $this->user])) {
       throw new Exception("Nonexistent username provided.");
     }
     
@@ -43,7 +43,7 @@ class User {
   */
   public function getFriends(int $number = null): array {
     
-    $friends = $this->mysql->request($this->mysql->readAllFriendsQuery, [":user" => $this->user]); //data of all friends' usernames
+    $friends = $this->mysql->request(MySQL::readAllFriendsQuery, [":user" => $this->user]); //data of all friends' usernames
 
     $n = isset($number) ? min( $number, count($friends) ) : count($friends); //loop limit, set to input param when set, but ensure it doesn't exceed friends number
     
@@ -64,7 +64,7 @@ class User {
   */
   public function getNumberOfFriends(): int {
 
-    $friends = $this->mysql->request($this->mysql->readAllFriendsQuery, [":user" => $this->user]); //data of friends' usernames
+    $friends = $this->mysql->request(MySQL::readAllFriendsQuery, [":user" => $this->user]); //data of friends' usernames
 
     $this->numberOfFriends = count($friends);
 
@@ -102,7 +102,7 @@ class User {
   */
   public function getChatWith(): array {
 
-    $resultset = $this->mysql->request($this->mysql->readChattedWithQuery, [":me" => $this->user]);
+    $resultset = $this->mysql->request(MySQL::readChattedWithQuery, [":me" => $this->user]);
 
     foreach ($resultset as $row) {
 

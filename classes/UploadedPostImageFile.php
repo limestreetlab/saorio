@@ -31,12 +31,12 @@ class UploadedPostImageFile extends UploadedImageFile {
 
     } else { //existing reference
 
-      if ( !$this->mysql->request($this->mysql->readImagePostImageQuery, [":id" => "$this->id"]) ) { //id defined is database table primary key, existence checked by database query
+      if ( !$this->mysql->request(MySQL::readImagePostImageQuery, [":id" => "$this->id"]) ) { //id defined is database table primary key, existence checked by database query
         array_push($this->errorCodes, 4);
         throw new Exception("the provided id " . $this->id . " cannot be found.");
       }
 
-      $this->permFilePath = $this->mysql->request($this->mysql->readImagePostImageQuery, [":id" => "$this->id"])[0]["image"];
+      $this->permFilePath = $this->mysql->request(MySQL::readImagePostImageQuery, [":id" => "$this->id"])[0]["image"];
       $this->fileExtension = strtolower(pathinfo($this->permFilePath, PATHINFO_EXTENSION)); 
       $this->fileSize = filesize($this->permFilePath); //bytes 
       $sizeInfo = getimagesize($this->permFilePath);        
@@ -60,7 +60,7 @@ class UploadedPostImageFile extends UploadedImageFile {
 
     try {
 
-      $this->mysql->request($this->mysql->updateImagePostImageQuery, $params);
+      $this->mysql->request(MySQL::updateImagePostImageQuery, $params);
       return true;
 
     } catch (Exception $ex) {
@@ -100,7 +100,7 @@ class UploadedPostImageFile extends UploadedImageFile {
 
     try {
 
-      $this->mysql->request($this->mysql->deleteImagePostQuery, [":id" => "$this->id"]);
+      $this->mysql->request(MySQL::deleteImagePostQuery, [":id" => "$this->id"]);
 
     } catch (Exception $ex) {
 

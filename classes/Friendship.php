@@ -26,11 +26,11 @@ class Friendship {
         $this->thatuser = $thatuser;
         $this->mysql = MySQL::getInstance();
         
-        $data = $this->mysql->request($this->mysql->readFriendsDataQuery, [":user1" => $this->thisuser, ":user2" => $this->thatuser])[0];
+        $data = $this->mysql->request(MySQL::readFriendsDataQuery, [":user1" => $this->thisuser, ":user2" => $this->thatuser])[0];
         $this->isFollowing = $data["following"];
         $this->notesAbout = $data["notes"];
 
-        if ( !$this->mysql->request($this->mysql->readMembersTableQuery, [":user" => $this->thisuser]) || !$this->mysql->request($this->mysql->readMembersTableQuery, [":user" => $this->thatuser]) ) {
+        if ( !$this->mysql->request(MySQL::readMembersTableQuery, [":user" => $this->thisuser]) || !$this->mysql->request(MySQL::readMembersTableQuery, [":user" => $this->thatuser]) ) {
             throw new Exception("Nonexistent username provided.");
         }
         
@@ -50,7 +50,7 @@ class Friendship {
 
             //database call
             $params = [":requestSender" => "$this->thisuser", ":requestRecipient" => "$this->thatuser"];
-            $this->mysql->request($this->mysql->createFriendRequestQuery, $params);
+            $this->mysql->request(MySQL::createFriendRequestQuery, $params);
 
             //send a message to the other user
             $contents = "Hello, I would like to add you as a friend and sent you a request. ";
@@ -80,9 +80,9 @@ class Friendship {
 
             //database call
             $params = [":a" => "$this->thisuser", ":b" => "$this->thatuser"];    
-            $this->mysql->request($this->mysql->deleteFriendshipQuery, $params);
+            $this->mysql->request(MySQL::deleteFriendshipQuery, $params);
 
-            $this->mysql->request($this->mysql->deleteFriendsDataQuery, $params);
+            $this->mysql->request(MySQL::deleteFriendsDataQuery, $params);
 
             $this->status = 0;
             return true;
@@ -106,10 +106,10 @@ class Friendship {
 
             //database call
             $params = [":requestSender" => "$this->thatuser", ":requestRecipient" => "$this->thisuser"];
-            $this->mysql->request($this->mysql->updateFriendRequestQuery, $params);
+            $this->mysql->request(MySQL::updateFriendRequestQuery, $params);
 
-            $this->mysql->request($this->mysql->createFriendsDataQuery, [":user1" => $this->thisuser, ":user2" => $this->thatuser]);
-            $this->mysql->request($this->mysql->createFriendsDataQuery, [":user1" => $this->thatuser, ":user2" => $this->thisuser]);
+            $this->mysql->request(MySQL::createFriendsDataQuery, [":user1" => $this->thisuser, ":user2" => $this->thatuser]);
+            $this->mysql->request(MySQL::createFriendsDataQuery, [":user1" => $this->thatuser, ":user2" => $this->thisuser]);
 
             $this->status = 1;
             return true;
@@ -133,7 +133,7 @@ class Friendship {
             }
 
             $params = [":requestSender" => "$this->thatuser", ":requestRecipient" => "$this->thisuser"];
-            $this->mysql->request($this->mysql->deleteFriendRequestQuery, $params);
+            $this->mysql->request(MySQL::deleteFriendRequestQuery, $params);
 
             $this->status = 0;
             return true;
@@ -157,7 +157,7 @@ class Friendship {
             }
 
             $params = [":user1" => "$this->thisuser", ":user2" => "$this->thatuser", ":notes" => $notes];
-            $this->mysql->request($this->mysql->updateFriendNotesQuery, $params);
+            $this->mysql->request(MySQL::updateFriendNotesQuery, $params);
 
             $this->notesAbout = $notes;
 
@@ -192,7 +192,7 @@ class Friendship {
             }
 
             $params = [":user1" => "$this->thisuser", ":user2" => "$this->thatuser"];
-            $this->mysql->request($this->mysql->updateFollowingQuery, $params);
+            $this->mysql->request(MySQL::updateFollowingQuery, $params);
 
             $this->isFollowing = $this->isFollowing ? 0 : 1;
 
@@ -229,7 +229,7 @@ class Friendship {
 
             return 0; //no relationship
 
-        } elseif ($this->mysql->request($this->mysql->readFriendshipQuery, [":a" => "$this->thisuser", ":b" => "$this->thatuser"])) { //existing friends
+        } elseif ($this->mysql->request(MySQL::readFriendshipQuery, [":a" => "$this->thisuser", ":b" => "$this->thatuser"])) { //existing friends
 
             return 1;
 
@@ -257,7 +257,7 @@ class Friendship {
             
         }
 
-        return intval( $this->mysql->request($this->mysql->readFriendshipQuery, [":a" => "$this->thisuser", ":b" => "$this->thatuser"])[0]["timestamp"] );
+        return intval( $this->mysql->request(MySQL::readFriendshipQuery, [":a" => "$this->thisuser", ":b" => "$this->thatuser"])[0]["timestamp"] );
 
     }
 

@@ -14,11 +14,11 @@ class BasicProfile {
     $this->user = $user;
     $this->mysql = MySQL::getInstance();
 
-    if (!$this->mysql->request($this->mysql->readMembersTableQuery, [":user" => $this->user])) {
+    if (!$this->mysql->request(MySQL::readMembersTableQuery, [":user" => $this->user])) {
       throw new Exception("Nonexistent username provided.");
     }
     
-    $profileData = $this->mysql->request($this->mysql->readBasicProfileQuery, [":user" => "$this->user"])[0]; //grab fname, lname, picture of this user
+    $profileData = $this->mysql->request(MySQL::readBasicProfileQuery, [":user" => "$this->user"])[0]; //grab fname, lname, picture of this user
     $this->firstname = $profileData["firstname"];
     $this->lastname = $profileData["lastname"];
     $this->profilePictureURL = self::convertPicturePathAbs2Rel( $profileData["profilePictureURL"] ); //get the abs-path from db and convert it to root-rel path

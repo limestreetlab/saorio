@@ -62,7 +62,7 @@ class UploadedProfileImageFile extends UploadedImageFile {
             
             if ($deleteExisting) { //if existing file should be removed, get the existing path, delete it after successful persistance
                         
-                $oldFilePath = $this->mysql->request($this->mysql->readBasicProfileQuery, [":user" => $_SESSION["user"]])[0]["profilePictureURL"]; //abs path to existing file
+                $oldFilePath = $this->mysql->request(MySQL::readBasicProfileQuery, [":user" => $_SESSION["user"]])[0]["profilePictureURL"]; //abs path to existing file
                 $oldFileName = basename($oldFilePath); //filename including ext
                 $noDeleteFiles = ["avatar0.png", "avatar1.png", "avatar2.png", "avatar3.png", "avatar4.png", "avatar5.png", "avatar6.png", "avatar7.png", "avatar8.png"]; //files that should not be deleted
                 
@@ -102,7 +102,7 @@ class UploadedProfileImageFile extends UploadedImageFile {
 
         try {
 
-            $this->mysql->request($this->mysql->updateProfilePictureQuery, $params);
+            $this->mysql->request(MySQL::updateProfilePictureQuery, $params);
             return $this;
 
         } catch (Exception $ex) {
@@ -225,7 +225,7 @@ class UploadedProfileImageFile extends UploadedImageFile {
 
         try {
 
-            $this->mysql->request($this->mysql->updateProfilePictureToDefaultQuery, [":user" => $_SESSION["user"]]); //remove from db
+            $this->mysql->request(MySQL::updateProfilePictureToDefaultQuery, [":user" => $_SESSION["user"]]); //remove from db
 
         } catch (Exception $ex) {
             

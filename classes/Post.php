@@ -6,7 +6,7 @@ abstract class encapsulating a user's posts
 
 abstract class Post {
 
-  protected $id; //an id to identify each post
+  public $id; //an id to identify each post
   protected $user; //user of the post
   protected $timestamp; //unix epoch timestamp of the post
   protected $content; //contents of the post, varies depending on concrete classes
@@ -44,9 +44,9 @@ abstract class Post {
 
       $this->id = $id;
       $this->content = $this->getContent();
-      $this->comments = $this->mysql->request($this->mysql->readPostCommentsQuery, [":post_id" => $id]);
-      $this->likedBy = $this->mysql->request($this->mysql->readPostLikedByQuery, [":post_id" => $id], true);
-      $this->dislikedBy = $this->mysql->request($this->mysql->readPostDislikedByQuery, [":post_id" => $id], true);;
+      $this->comments = $this->mysql->request(MySQL::readPostCommentsQuery, [":post_id" => $id]);
+      $this->likedBy = $this->mysql->request(MySQL::readPostLikedByQuery, [":post_id" => $id], true);
+      $this->dislikedBy = $this->mysql->request(MySQL::readPostDislikedByQuery, [":post_id" => $id], true);;
       $this->likes = count($this->likedBy);
       $this->dislikes = count($this->dislikedBy);
 
@@ -84,7 +84,7 @@ abstract class Post {
 
       try {
 
-        $this->mysql->request($this->mysql->createPostLikeQuery, [":post_id" => "$this->id", ":user" => $username]); //add the like to db
+        $this->mysql->request(MySQL::createPostLikeQuery, [":post_id" => "$this->id", ":user" => $username]); //add the like to db
         array_push($this->likedBy, $username); //add username to array
         $this->likes++;
 
@@ -111,7 +111,7 @@ abstract class Post {
       
       try {
 
-        $this->mysql->request($this->mysql->createPostDislikeQuery, [":post_id" => "$this->id", ":user" => $username]); //add the dislike to db
+        $this->mysql->request(MySQL::createPostDislikeQuery, [":post_id" => "$this->id", ":user" => $username]); //add the dislike to db
         array_push($this->dislikedBy, $username); //add username to array
         $this->dislikes++;
 
@@ -138,7 +138,7 @@ abstract class Post {
 
       try {
 
-        $this->mysql->request($this->mysql->deletePostLikeQuery, [":post_id" => "$this->id", ":user" => $username]); //remove the like from db
+        $this->mysql->request(MySQL::deletePostLikeQuery, [":post_id" => "$this->id", ":user" => $username]); //remove the like from db
         unset($this->likedBy[array_search($username, $this->likedBy)]); //remove username from array
         $this->likes--;
 
@@ -165,7 +165,7 @@ abstract class Post {
 
       try {
 
-        $this->mysql->request($this->mysql->deletePostDislikeQuery, [":post_id" => "$this->id", ":user" => $username]); //remove the dislike from db
+        $this->mysql->request(MySQL::deletePostDislikeQuery, [":post_id" => "$this->id", ":user" => $username]); //remove the dislike from db
         unset($this->dislikedBy[array_search($username, $this->dislikedBy)]); //remove username from array
         $this->dislikes--;
 
@@ -223,7 +223,7 @@ abstract class Post {
     try {
 
       $params = [":post_id" => "$this->id", ":user" => $username, ":comment" => $comment];
-      $this->mysql->request($this->mysql->createPostCommentQuery, $params);
+      $this->mysql->request(MySQL::createPostCommentQuery, $params);
 
     } catch (Exception $ex) {
 
@@ -248,7 +248,7 @@ abstract class Post {
     try {
 
       $params = [":comment_id" => $comment_id, ":comment" => $newComment];
-      $this->mysql->request($this->mysql->updatePostCommentQuery, $params);
+      $this->mysql->request(MySQL::updatePostCommentQuery, $params);
 
     } catch (Exception $ex) {
 
@@ -269,7 +269,7 @@ abstract class Post {
 
     try {
 
-      $this->mysql->request($this->mysql->deletePostCommentQuery, [":comment_id" => $comment_id]);
+      $this->mysql->request(MySQL::deletePostCommentQuery, [":comment_id" => $comment_id]);
 
     } catch (Exception $ex) {
 

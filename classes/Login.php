@@ -27,7 +27,7 @@ class Login {
     */
     public function verifyPassword(): self {
 
-        $this->passwordHash = $this->mysql->request($this->mysql->readPasswordQuery, [":user" => $this->user])[0][0]; //retrieve hashed password from database for this username
+        $this->passwordHash = $this->mysql->request(MySQL::readPasswordQuery, [":user" => $this->user])[0][0]; //retrieve hashed password from database for this username
         
         if ( password_verify( $this->password, $this->passwordHash ) ) { //compare entered pass with hashed pass 
             
@@ -47,7 +47,7 @@ class Login {
     */
     public function checkUsername(): self {
 
-        $usernameExists = $this->mysql->request($this->mysql->readMembersTableQuery, [":user" => $this->user]);
+        $usernameExists = $this->mysql->request(MySQL::readMembersTableQuery, [":user" => $this->user]);
 
         if (!$usernameExists) {
             $this->error = 1;

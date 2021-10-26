@@ -7,7 +7,7 @@
   
   //data retrieval
   $mysql = MySQL::getInstance(); //object for mysql database access
-  $members = $mysql->request($mysql->readAllUsersQuery); //get the entire set of usernames from database 
+  $members = $mysql->request(MySQL::readAllUsersQuery); //get the entire set of usernames from database 
   $numberOfMembers = count($members); 
 
   $viewLoader->load("members_list_start.html")->bind(["appName" => $appName, "numberOfUsers" => $numberOfMembers])->render(); //page open html

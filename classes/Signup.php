@@ -86,7 +86,7 @@ class Signup {
         $this->user = strtolower(filter_var(trim($this->user), FILTER_SANITIZE_STRING)); //sanitize, trim, lowercase
 
         //check for username duplicate
-        $usernameExists = $this->mysql->request($this->mysql->readMembersTableQuery, [":user" => "$this->user"]);
+        $usernameExists = $this->mysql->request(MySQL::readMembersTableQuery, [":user" => "$this->user"]);
         if ($usernameExists) { 
             $success = false;
             array_push($this->errorCodes, 0);
@@ -246,7 +246,7 @@ class Signup {
         try {
             $passwordHash = password_hash($this->password, PASSWORD_DEFAULT); //hashed password
             $params = [":user" => "$this->user", ":password" => $passwordHash, ":email" => "$this->email"];
-            $this->mysql->request($this->mysql->createMemberQuery, $params);
+            $this->mysql->request(MySQL::createMemberQuery, $params);
             $success = true;
         } catch (Exception $ex) {
             $success = false;
@@ -264,7 +264,7 @@ class Signup {
 
         try {
             $params = [":user" => "$this->user", ":firstname" => "$this->firstname", ":lastname" => "$this->lastname"];
-            $this->mysql->request($this->mysql->createBasicProfileQuery, $params);
+            $this->mysql->request(MySQL::createBasicProfileQuery, $params);
             $success = true;
           } catch (Exception $ex) {
             $success = false;
