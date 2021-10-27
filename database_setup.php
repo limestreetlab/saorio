@@ -20,6 +20,7 @@ $tablename = "members";
 $columns = "user VARCHAR(20), 
 password VARCHAR(100),
 email VARCHAR(50) UNIQUE,
+timestamp TIMESTAMP DEFAULT NOW(),
 PRIMARY KEY(user),
 INDEX(user(5))";
 $tables["$tablename"] = $columns;

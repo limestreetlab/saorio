@@ -35,16 +35,17 @@ IF ( isset($_REQUEST["viewUser"]) ) { //viewing another user's home page (summar
   $profile = $userObj->getProfile(false);
   extract($profile->getData()); //use key names as variable names
 
+  $postManager = new PostManager($user);
+
   //opening view
   $viewLoader->load("profile_start.html")->render();
 
   //profile snapshot view
-  $summaryData = ["wallpaper" => $wallpaper, "profile-picture" => $profilePictureURL, "firstname" => $firstname, "lastname" => $lastname, "summary" => strlen($about) > 100 ? substr( $about, 0, strpos(wordwrap($about, 100), "\n") ) . '...' : $about, "posts-stat" => 51, "photos-stat" => 11, "comments-stat" => 12, "likes-stat" => 188, "profile-link" => $_SERVER["PHP_SELF"] . '?' . $_SERVER["QUERY_STRING"] . '&editProfile=true'];
+  $summaryData = ["wallpaper" => $wallpaper, "profile-picture" => $profilePictureURL, "firstname" => $firstname, "lastname" => $lastname, "summary" => strlen($about) > 100 ? substr( $about, 0, strpos(wordwrap($about, 100), "\n") ) . '...' : $about, "posts-stat" => $postManager->getNumberOfPosts(), "photos-stat" => $postManager->getNumberOfPostedImages(), "comments-stat" => 12, "likes-stat" => ($postManager->getNumberOfLikes() - $postManager->getNumberOfDislikes()), "profile-link" => $_SERVER["PHP_SELF"] . '?' . $_SERVER["QUERY_STRING"] . '&editProfile=true'];
   
   $viewLoader->load("profile_summary.html")->bind($summaryData)->render();
 
   //photos summary view
-  $postManager = new PostManager($user);
   $photosData = ["photos" => $postManager->getPostedImages(9)];
   
   $viewLoader->load("profile_photos.html")->bind($photosData)->render();
@@ -80,7 +81,7 @@ IF ( isset($_REQUEST["viewUser"]) ) { //viewing another user's home page (summar
     $date = (new DateTime("@$timestamp"))->format("M d, Y"); //format timestamp to date
     $configs = is_null($images) ? null : $postManager::getImageCssClasses($images);
 
-    $postData = ["id" => $id, "profile-picture" => "$profilePictureURL", "firstname" => "$firstname", "lastname" => "$lastname", "date" => $date, "text" => $text, "images" => $images, "configs"=> $configs, "likes-stat" => $likes, "dislikes-stat" => $dislikes, "haveAlreadyLiked" => $haveAlreadyLiked, "haveAlreadyDisliked" => $haveAlreadyDisliked];
+    $postData = ["id" => $id, "profile-picture" => "$profilePictureURL", "firstname" => "$firstname", "lastname" => "$lastname", "date" => $date, "options" => ["Edit post", "Delete post"], "text" => $text, "images" => $images, "configs"=> $configs, "likes-stat" => $likes, "dislikes-stat" => $dislikes, "haveAlreadyLiked" => $haveAlreadyLiked, "haveAlreadyDisliked" => $haveAlreadyDisliked];
     $viewLoader->load("profile_post.html")->bind($postData)->render();
   
   }

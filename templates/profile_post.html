@@ -2,13 +2,30 @@
     
 <section class="card mt-3 border-0 shadow post" data-id="{{id}}">
 
-  <!--post header for name, photo, etc-->
+  <!--post header for name, photo, date, options-->
   <section class="card-header d-flex flex-row justify-content-start align-items-center bg-white border-0">
-      <img src="{{profile-picture}}" class="rounded-circle post-profile-picture" draggable="false">
+    <!--poster's photo-->
+    <img src="{{profile-picture}}" class="rounded-circle post-profile-picture" draggable="false">
+    <!--poster's name and post date-->
     <div class="d-flex flex-column ms-2">  
       <div class="h6 my-0">{{firstname}} {{lastname}}</div>
       <div class="text-muted small">{{date}}</div>
     </div>
+    <!--post options-->
+    {{IF !empty('{{options}}')}}
+    <div class="dropdown ms-auto">
+      <button type="button" class="post-option-btn btn text-secondary" data-bs-toggle="dropdown">
+        <i class="h5 bi bi-three-dots"></i>
+      </button>
+      <ul class="dropdown-menu">
+        {{FOREACH {{options}} AS option}}
+          <li><button class="dropdown-item" type="button">{{option}}</button></li>
+        {{ENDFOREACH}}
+      </ul>
+    </div>
+    {{ENDIF}}
+    
+
   </section>
 
   <!--post body-->
@@ -25,7 +42,7 @@
     
   </section>
 
-  <!--post footer for comments-->
+  <!--post footer for like buttons, comments, emoji-->
   <section class="card-footer bg-white border-top border-0">
     <div class="mt-1 d-flex align-items-center">
 

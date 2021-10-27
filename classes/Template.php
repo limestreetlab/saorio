@@ -4,6 +4,7 @@ Class to bind PHP variables to placeholders in a given HTML template.
 Placeholder variables are defined as {{var}}.
 Conditional html can be included using {{If <condition>}} html...{{ENDIF}}, <condition> must be PHP-valid and no-nesting allowed
 Iterative html can be included using {{FOREACH <array1> AS <var1> <array2> AS <var2>...}} html...{{ENDFOREACH}}
+Any HTML codes passed will be treated as strings
 */
 class Template {
 

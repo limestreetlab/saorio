@@ -22,7 +22,7 @@ class PostManager {
       $this->user = $user;
     }
 
-    $this->numberOfPosts = $this->mysql->request(MySQL::readPostNumberQuery, [":user" => $this->user])[0]["number"];
+    $this->numberOfPosts = $this->mysql->request(MySQL::readPostNumberQuery, [":user" => $this->user])[0][0];
     $this->numberOfPages = MAX(ceil( $this->numberOfPosts / self::POSTS_PER_PAGE ), 1); //total post number divided by posts per page, rounded up
 
   }
@@ -191,25 +191,15 @@ class PostManager {
     $paths = [];
     foreach($id_rows as $id_row) {
 
-      $img_rows = $this->mysql->request(MySQL::readImagePostImageQuery, [":id" => $id_row[0]]);
+      $img_rows = $this->mysql->request(MySQL::readImagePostImagesQuery, [":id" => $id_row[0]]);
 
       foreach($img_rows as $img_row) {
         array_push($paths, UploadedPostImageFile::convertFileRelativePath( $img_row["image"] ) );
       }
 
-    }
+    } //here, the array has at least 9 image paths but can be over
 
-    return $paths;
-
-  }
-
-  /*
-  get the number of posts made by user
-  @return number of posts
-  */
-  public function getNumberOfPosts(): int {
-
-    return $this->numberOfPosts;
+    return array_slice($paths, 0, 9);
 
   }
 
@@ -280,12 +270,22 @@ class PostManager {
   }
 
   /*
+  get the number of posts made by user
+  @return number of posts
+  */
+  public function getNumberOfPosts(): int {
+
+    return $this->numberOfPosts;
+
+  }
+
+  /*
   get the number of image posts made by user
   @return number of images posts
   */
   public function getNumberOfImagePosts(): int {
 
-    return $this->mysql->request(MySQL::readImagePostNumberQuery, [":user" => $this->user]);
+    return $this->mysql->request(MySQL::readImagePostNumberQuery, [":user" => $this->user])[0][0];
 
   }
 
@@ -295,7 +295,7 @@ class PostManager {
   */
   public function getNumberOfPostedImages(): int {
 
-    return $this->mysql->request(MySQL::readImagesNumber, [":user" => $this->user]);
+    return $this->mysql->request(MySQL::readImagesNumber, [":user" => $this->user])[0][0];
 
   }
 
@@ -303,7 +303,7 @@ class PostManager {
   function to record voting (liking/disliking) of a post
   @param id, the id of the post to cast a vote 
   @vote, whether the vote is up or down, used position int for up, negative for down
-  @return array, [bool success, int message] where message is a number indicating why vote not recorded or what vote actually took place
+  @return array, [bool success, int message] where message is a number indicating why vote not recorded or what vote actually took place (based on if he already has disliked/liked it)
     -1 system err, 1 user on own post, 2 like, 3 dislike, 4 unlike, 5 undislike, 6 undislike then like, 7 unlike then dislike
   */
   public function vote(string $id, int $vote): array {
@@ -386,6 +386,26 @@ class PostManager {
       } 
 
     } //close outer else
+
+  }
+
+  /*
+  get number of likes received by user
+  @return number of likes
+  */
+  public function getNumberOfLikes(): int {
+
+    return $this->mysql->request(MySQL::readNumberOfLikesQuery, [":user" => $this->user])[0][0];
+
+  }
+
+  /*
+  get number of dislikes received by user
+  @return number of dislikes
+  */
+  public function getNumberOfDislikes(): int {
+
+    return $this->mysql->request(MySQL::readNumberOfDislikesQuery, [":user" => $this->user])[0][0];
 
   }
 

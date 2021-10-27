@@ -166,19 +166,21 @@ final class MySQL {
   */
 
   //for members
-  public const readAllUsersQuery = "SELECT user FROM members";
+  public const readAllUsersQuery = "SELECT user FROM members ORDER BY timestamp DESC";
+  //select * number of latest users
+  public const readNewUsersQuery = "SELECT user FROM members ORDER BY timestamp DESC LIMIT :number";
 
   //for account logging
-  public const readPasswordQuery = "SELECT password FROM members WHERE user = :user";
-  public const readMembersTableQuery = "SELECT * FROM members WHERE user = :user";
   public const createMemberQuery = "INSERT INTO members (user, password, email) VALUES (:user, :password, :email)"; //create a new record of members
   public const createBasicProfileQuery = "INSERT INTO profiles (user, firstname, lastname) VALUES (:user, :firstname, :lastname)"; //create a default profile
+  public const readPasswordQuery = "SELECT password FROM members WHERE user = :user";
+  public const readMembersTableQuery = "SELECT * FROM members WHERE user = :user";
   public const readEmailQuery = "SELECT email FROM members where user = :user";
 
   //for profile
-  public const updateProfileQuery = "UPDATE profiles SET about = :about, gender = :gender, ageGroup = :ageGroup, location = :location, job = :job, company = :company, major = :major, school = :school, interests = :interests, quote = :quote WHERE user = :user"; 
   public const readProfileQuery = "SELECT * FROM profiles WHERE user = :user";
   public const readBasicProfileQuery = "SELECT firstname, lastname, profilePictureURL FROM profiles WHERE user = :user";
+  public const updateProfileQuery = "UPDATE profiles SET about = :about, gender = :gender, ageGroup = :ageGroup, location = :location, job = :job, company = :company, major = :major, school = :school, interests = :interests, quote = :quote WHERE user = :user"; 
   
   //for profile edits (atomic: one statement for each updatable field, inefficient and redundant but simple)
   public const updateProfilePictureQuery = "UPDATE profiles SET profilePictureURL = :url, profilePictureMIME = :mime WHERE user = :user"; 
@@ -202,23 +204,47 @@ final class MySQL {
 
 
   //for friends
-  public const readAllFriendsQuery = "SELECT f.user FROM (SELECT user2 AS user FROM friends WHERE user1 = :user AND status = 1 UNION SELECT user1 AS user FROM friends WHERE user2 = :user AND status = 1) AS f";
-  public const readFriendshipQuery = "SELECT user1, user2, unix_timestamp(timestamp) AS timestamp FROM friends WHERE user1 = :a AND user2 = :b AND status = 1 UNION SELECT user1, user2, unix_timestamp(timestamp) AS timestamp FROM friends WHERE user1 = :b AND user2 = :a AND status = 1"; //null if a and b are not confirmed friends
-  public const updateFriendRequestQuery = "UPDATE friends SET status = 1 WHERE user1 = :requestSender AND user2 = :requestRecipient";
-  public const deleteFriendRequestQuery = "DELETE FROM friends WHERE user1 = :requestSender AND user2 = :requestRecipient";
-  public const createFriendRequestQuery = "INSERT INTO friends (user1, user2, status) VALUES (:requestSender, :requestRecipient, 2)";
-  public const deleteFriendshipQuery = "DELETE FROM friends WHERE (user1 = :a AND user2 = :b) OR (user1 = :b AND user2 = :a)";
   public const createFriendsDataQuery = "INSERT INTO friends_data (user1, user2) VALUES (:user1, :user2)";
-  public const deleteFriendsDataQuery = "DELETE FROM friends_data WHERE (user1 = :a AND user2 = :b) OR (user1 = :b AND user2 = :a)";
+  public const createFriendRequestQuery = "INSERT INTO friends (user1, user2, status) VALUES (:requestSender, :requestRecipient, 2)";
+  //get all users who are friends of a certain user
+  public const readAllFriendsQuery = "SELECT friend.user FROM (SELECT user2 AS user FROM friends WHERE user1 = :user AND status = 1 UNION SELECT user1 AS user FROM friends WHERE user2 = :user AND status = 1) AS friend";
+  public const readFriendshipQuery = "SELECT user1, user2, unix_timestamp(timestamp) AS timestamp FROM friends WHERE user1 = :a AND user2 = :b AND status = 1 UNION SELECT user1, user2, unix_timestamp(timestamp) AS timestamp FROM friends WHERE user1 = :b AND user2 = :a AND status = 1"; //null if a and b are not confirmed friends
+  public const readFriendsDataQuery = "SELECT * from friends_data WHERE user1 = :user1 AND user2 = :user2";
+  //get all users who are not friends of a certain user
+  public const readAllNotFriendsQuery = "SELECT members.user FROM 
+                                      members 
+                                      LEFT JOIN 
+                                      (SELECT user2 AS user FROM friends WHERE user1 = :user AND status = 1 UNION SELECT user1 AS user FROM friends WHERE user2 = :user AND status = 1) AS friends 
+                                      ON members.user = friends.user WHERE friends.user IS NULL AND members.user != :user";
+  //get a certain number of users who are not friends of a certain user, chosen at random
+  public const readSomeNotFriendsQuery = "SELECT members.user FROM 
+                                      members 
+                                      LEFT JOIN 
+                                      (SELECT user2 AS user FROM friends WHERE user1 = :user AND status = 1 UNION SELECT user1 AS user FROM friends WHERE user2 = :user AND status = 1) AS friends 
+                                      ON members.user = friends.user WHERE friends.user IS NULL AND members.user != :user ORDER BY RAND() LIMIT :number";
   public const updateFriendNotesQuery = "UPDATE friends_data SET notes = :notes WHERE user1 = :user1 AND user2 = :user2";
   public const updateFollowingQuery = "UPDATE friends_data SET following = IF(following = 1, 0, 1) WHERE user1 = :user1 AND user2 = :user2"; //toggle following, if initially 0 update to 1, if initially 1 update to 0
-  public const readFriendsDataQuery = "SELECT * from friends_data WHERE user1 = :user1 AND user2 = :user2";
-
+  public const updateFriendRequestQuery = "UPDATE friends SET status = 1 WHERE user1 = :requestSender AND user2 = :requestRecipient";
+  public const deleteFriendRequestQuery = "DELETE FROM friends WHERE user1 = :requestSender AND user2 = :requestRecipient";
+  public const deleteFriendshipQuery = "DELETE FROM friends WHERE (user1 = :a AND user2 = :b) OR (user1 = :b AND user2 = :a)";
+  public const deleteFriendsDataQuery = "DELETE FROM friends_data WHERE (user1 = :a AND user2 = :b) OR (user1 = :b AND user2 = :a)";
+  
   //for messages
+  public const createMessageQuery = "INSERT INTO messages VALUES (NULL, :time, :from, :to, :message)";
   public const readConversationWithQuery = "SELECT * FROM (SELECT * FROM messages WHERE sender = :me AND recipient = :chatWith UNION SELECT * FROM messages WHERE sender = :chatWith AND recipient = :me) AS conversation ORDER BY timestamp ASC";
   public const readConversationWithSinceQuery = "SELECT * FROM (SELECT * FROM messages WHERE sender = :me AND recipient = :chatWith AND timestamp >= :since UNION SELECT * FROM messages WHERE sender = :chatWith AND recipient = :me AND timestamp >= :since) AS conversation ORDER BY timestamp ASC";
   public const readChattedWithQuery = "SELECT MAX(timestamp) AS lastTime, chatWith FROM ( SELECT sender AS chatWith, timestamp FROM messages WHERE recipient = :me UNION SELECT recipient AS chatWith, timestamp FROM messages WHERE sender = :me) AS m GROUP BY chatWith ORDER BY lastTime DESC";
-  public const createMessageQuery = "INSERT INTO messages VALUES (NULL, :time, :from, :to, :message)";
+
+  
+  /*
+  for posts statistics
+  */
+  public const readPostNumberQuery = "SELECT COUNT(posts.id) AS number FROM posts LEFT JOIN text_posts ON posts.id = text_posts.post_id WHERE text_posts.text_for IS NULL AND posts.user = :user";
+  public const readImagePostNumberQuery = "SELECT COUNT(*) FROM posts WHERE post_type = 2 AND user = :user";  
+  public const readImagesNumber = "SELECT COUNT(*) FROM posts INNER JOIN image_posts ON posts.id = image_posts.post_id WHERE posts.user = :user";
+  public const readTextPostNumberQuery = "SELECT COUNT(*) FROM posts INNER JOIN text_posts ON posts.id = text_posts.post_id WHERE text_posts.text_for IS NULL AND posts.user = :user";
+  public const readNumberOfLikesQuery = "SELECT COUNT(*) AS likes FROM (SELECT id FROM posts WHERE user = :user) AS posts INNER JOIN post_reactions ON posts.id = post_reactions.post_id WHERE post_reactions.reaction > 0";
+  public const readNumberOfDislikesQuery = "SELECT COUNT(*) AS dislikes FROM (SELECT id FROM posts WHERE user = :user) AS posts INNER JOIN post_reactions ON posts.id = post_reactions.post_id WHERE post_reactions.reaction < 0";
 
   //for post likes
   public const createPostLikeQuery = "INSERT INTO post_reactions VALUES (:post_id, :user, 1)";
@@ -236,15 +262,6 @@ final class MySQL {
   public const readPostCommentsQuery = "SELECT * FROM post_comments WHERE post_id = :post_id";
   public const updatePostCommentQuery = "UPDATE post_comments SET comment = :comment WHERE comment_id = :comment_id";
   public const deletePostCommentQuery = "DELETE FROM post_comments WHERE comment_id = :comment_id";
-
-
-  /*
-  for posts statistics
-  */
-  public const readPostNumberQuery = "SELECT COUNT(posts.id) AS number FROM posts LEFT JOIN text_posts ON posts.id = text_posts.post_id WHERE text_posts.text_for IS NULL AND posts.user = :user";
-  public const readImagePostNumberQuery = "SELECT COUNT(*) FROM posts WHERE post_type = 2 AND user = :user";  
-  public const readImagesNumber = "SELECT COUNT(*) FROM posts INNER JOIN image_posts ON posts.id = image_posts.post_id WHERE posts.user = :user";
-  public const readTextPostNumberQuery = "SELECT COUNT(*) FROM posts INNER JOIN text_posts ON posts.id = text_posts.post_id WHERE text_posts.text_for IS NULL AND posts.user = :user";
 
   /*
   for post contents
@@ -306,8 +323,10 @@ final class MySQL {
                                 LEFT JOIN text_posts ON images.id = text_posts.text_for";
   //read the ids of a certain number of images
   public const readImagePostIdQuery = "SELECT DISTINCT * FROM (SELECT posts.id FROM posts INNER JOIN image_posts ON posts.id = image_posts.post_id WHERE posts.user = :user ORDER BY posts.timestamp DESC LIMIT :count) AS image_ids";
-  //read the one sngle image inside image posts table
+  //read the one single specific image inside image posts table using the table primary key
   public const readImagePostImageQuery = "SELECT imageURL AS image from image_posts WHERE id = :id";
+  //read possibly multiple images belonging to an image post using the image post id
+  public const readImagePostImagesQuery = "SELECT imageURL AS image from image_posts WHERE post_id = :id";
   public const readImagePostMaximumIdQuery = "SELECT MAX(id) AS max_id from image_posts"; //retrieve the max id used, used for knowing the next id to use in codes
   public const updateImagePostImageQuery = "UPDATE image_posts SET imageURL = :imageURL, imageMIME = :imageMIME WHERE id = :id"; //recall image belongs to a post, so a post must exist before an image can be persisted
   public const updateImagePostDescriptionQuery = "UPDATE image_posts SET description = :description WHERE id = :id";
