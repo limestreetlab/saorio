@@ -57,6 +57,26 @@ class User {
     return $this->friends;
 
   }
+
+  /*
+  function to get this User's strangers (members who are not friends) list
+  @param $number, optional, number of strangers to get
+  @return array of User objects
+  */
+  public function getStrangers(int $number = null): array {
+
+    $strangers = isset($number) ? $this->mysql->request(MySQL::readSomeNotFriendsQuery, [":user" => $this->user, ":number" => $number], true) : $this->mysql->request(MySQL::readAllNotFriendsQuery, [":user" => $this->user], true); 
+
+    $strangerObjs = [];
+    foreach ($strangers as $stranger) {
+
+      array_push($strangerObjs, new User($stranger));
+
+    }
+
+    return $strangerObjs;
+
+  }
   
   /*
   getter for this user's friends number
@@ -75,13 +95,21 @@ class User {
   /*
   function to get the existing defined relationship between this user and another user
   @param the other user's username
-  @return defined relationship code, 0 for stranger, 1 for existing friend, 2 for friend request sent, 3 for friend request received
+  @return defined relationship code, -1 for yourself, 0 for stranger, 1 for existing friend, 2 for friend request sent, 3 for friend request received
   */
   public function getRelationshipWith (string $thatuser): int {
 
-    $friendship = new Friendship($this->user, $thatuser);
+    if ($this->user == $thatuser) {
 
-    return $friendship->getFriendship();
+      return -1;
+
+    } else {
+
+      $friendship = new Friendship($this->user, $thatuser);
+
+      return $friendship->getFriendship();
+
+    }
 
   }
 

@@ -65,6 +65,8 @@ IF ( isset($_REQUEST["viewUser"]) ) { //viewing another user's home page (summar
   
   $viewLoader->load("profile_friends.html")->bind($friendsData)->render();
 
+  $viewLoader->load("profile_sidemenu_end.html")->render();
+
   //new post form view
   $formData = ["profile-picture" => $profilePictureURL, "firstname" => $firstname, "lastname" => $lastname];
   $viewLoader->load("profile_post_form.html")->bind($formData)->render();
@@ -81,7 +83,7 @@ IF ( isset($_REQUEST["viewUser"]) ) { //viewing another user's home page (summar
     $date = (new DateTime("@$timestamp"))->format("M d, Y"); //format timestamp to date
     $configs = is_null($images) ? null : $postManager::getImageCssClasses($images);
 
-    $postData = ["id" => $id, "profile-picture" => "$profilePictureURL", "firstname" => "$firstname", "lastname" => "$lastname", "date" => $date, "options" => ["Edit post", "Delete post"], "text" => $text, "images" => $images, "configs"=> $configs, "likes-stat" => $likes, "dislikes-stat" => $dislikes, "haveAlreadyLiked" => $haveAlreadyLiked, "haveAlreadyDisliked" => $haveAlreadyDisliked];
+    $postData = ["id" => $id, "profile-picture" => "$profilePictureURL", "firstname" => "$firstname", "lastname" => "$lastname", "date" => $date, "options" => ["<i class='bi bi-pencil'></i> Edit post", "<i class='bi bi-trash'></i> Delete post"], "text" => $text, "images" => $images, "configs"=> $configs, "likes-stat" => $likes, "dislikes-stat" => $dislikes, "haveAlreadyLiked" => $haveAlreadyLiked, "haveAlreadyDisliked" => $haveAlreadyDisliked];
     $viewLoader->load("profile_post.html")->bind($postData)->render();
   
   }

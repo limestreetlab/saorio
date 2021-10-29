@@ -6,31 +6,24 @@
   }
   
   //data retrieval
-  $mysql = MySQL::getInstance(); //object for mysql database access
-  $members = $mysql->request(MySQL::readAllUsersQuery); //get the entire set of usernames from database 
-  $numberOfMembers = count($members); 
+  $memberManager = new MemberManager();
+  $members = $memberManager->getMembers();
+  $numberOfMembers = $memberManager->getNumberOfMembers(); 
 
   $viewLoader->load("members_list_start.html")->bind(["appName" => $appName, "numberOfUsers" => $numberOfMembers])->render(); //page open html
     
   //loop block for each user
   foreach ($members as $member) { 
-    
-    //skip the current user himself
-    if ( $user == $member["user"] ) { 
-      continue; 
-    }
 
-    //variables assignment
-    $hisUsername = $member["user"];
-    $memberObj = new User($hisUsername); //instantiate a User obj for this member
+    //getting data of this member
+    $profileData = $member->getProfile(true)->getData();
+    $hisUsername = $profileData["user"];
+    $hisFullname = $profileData["firstname"] . ' ' . $profileData["lastname"];
+    $hisPicture = $profileData["profilePictureURL"];
     $relationship = $userObj->getRelationshipWith($hisUsername); //get this member's relationship code with me
-    
-    //profile data of this user
-    $profileData = $memberObj->getProfile(true)->getData(); 
-    
-    //apply this member's data in a view
-    $viewData = ["hisPicture" => $profileData["profilePictureURL"], "hisFullname" => $profileData["firstname"] . ' ' . $profileData["lastname"], "hisUsername" => $hisUsername, "relationship" => $relationship];
-    
+  
+    //apply the data in view
+    $viewData = compact("hisUsername", "hisPicture", "hisFullname", "relationship");
     $viewLoader->load("members_card.html")->bind($viewData)->render(); //include each member's card view
     
   } //end for-loop

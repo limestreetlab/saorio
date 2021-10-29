@@ -1,0 +1,30 @@
+<!--showing other users this user might know, chosen at random actually-->
+
+<main class="card mt-2 border-0 shadow">
+  <div class="card-header fw-bold">People you might know</div>
+
+  <section class="card-body">
+    
+
+    {{IF !empty('{{users}}')}}
+    <!--template to display each potential friend-->
+    {{FOREACH {{users}} AS user {{photos}} AS photo {{names}} AS name}}
+
+    <div class="d-flex align-items-center mb-3" data-user="{{user}}">
+
+      <div class="potential-friend-photo-container">
+        <img src="{{photo}}" class="potential-friend-photo rounded-circle">
+      </div>
+    
+      <div class="potential-friend-name h6 ms-3">{{name}}</div>
+   
+      <div class="h5 ms-auto btn user-add-btn"><i class="bi bi-plus-lg"></i></div>
+
+    </div>
+
+    {{ENDFOREACH}}<!--end loop-->
+    {{ENDIF}}
+
+
+  </section>
+</main>

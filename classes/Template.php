@@ -151,7 +151,7 @@ class Template {
       $iterativeExpression = trim($match[1]); //whatever inside {{FOREACH}} after FOREACH, so var1,var2,... AS varname
       $iterativeContents = trim($match[2]); //contents between {{FOREACH...}}...{{ENDFOREACH}}
 
-      $loopExpressionPattern = '/(.*?)\s*AS\s*?(\w+)\s*/si'; //used to capture the varibles before AS, and variable name after AS
+      $loopExpressionPattern = '/(.*?)\s*AS\s*?(\w+)\s*/s'; //used to capture the varibles before AS, and variable name after AS
       preg_match_all($loopExpressionPattern, $iterativeExpression, $matches); //capturing variables and names into $matches
       $variablesAsStrings = $matches[1]; //array of strings, each string element being elements of an array parameter values separated by comma like "x1, x2, x3, ...", "y1, y2, y3, ...", ...
       $variables = array_map(function (string $s): array {return explode(",", $s);}, $variablesAsStrings); //go from array of strings to array of arrays, each parameter value as array array element

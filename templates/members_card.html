@@ -9,6 +9,10 @@
     
       <div class='relationshipBtn row justify-content-center' id='relationshipWith{{hisUsername}}'> 
 
+        {{IF {{relationship}} == -1}}
+          <button type='button' class='col-10 mt-3 btn btn-primary btn-sm' disabled>You</button> 
+        {{ENDIF}}
+
         {{IF {{relationship}} == 0}}
           <button type='button' class='col-10 mt-3 btn btn-primary btn-sm friendRequestBtn' data-send-request-to='{{hisUsername}}'>Add Friend</button> 
         {{ENDIF}}

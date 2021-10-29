@@ -1,0 +1,30 @@
+<!--a summary of new members-->
+
+<main class="card mt-4 border-0 shadow">
+  <div class="card-header fw-bold">New members</div>
+
+  <section class="card-body">
+    <!--how many members to show per row-->
+    <section class="row row-cols-2 ms-2 me-2 gx-4">
+
+    {{IF !empty('{{members}}')}}
+    <!--template to display each new member-->
+    {{FOREACH {{members}} AS member {{photos}} AS photo}}
+    <div class="col d-flex flex-column align-items-center">
+
+    <div class="card border-0 member-photo-container w-100 position-relative">
+      <img src="{{photo}}" class="card-img rounded member-photo position-absolute w-100 h-100" draggable="false">
+    </div>
+
+    <div class="card-body p-1">
+      <div class="h6">{{member}}</div>
+    </div>
+
+    </div>
+    {{ENDFOREACH}}
+    {{ENDIF}}
+
+    </section>
+
+  </section>
+</main>

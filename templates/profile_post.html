@@ -12,7 +12,6 @@
       <div class="text-muted small">{{date}}</div>
     </div>
     <!--post options-->
-    {{IF !empty('{{options}}')}}
     <div class="dropdown ms-auto">
       <button type="button" class="post-option-btn btn text-secondary" data-bs-toggle="dropdown">
         <i class="h5 bi bi-three-dots"></i>
@@ -22,9 +21,7 @@
           <li><button class="dropdown-item" type="button">{{option}}</button></li>
         {{ENDFOREACH}}
       </ul>
-    </div>
-    {{ENDIF}}
-    
+    </div>    
 
   </section>
 

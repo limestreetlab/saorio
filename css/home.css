@@ -1,0 +1,29 @@
+@import url("profile.css");
+
+.potential-friend-photo-container {
+  position: relative;
+  width: 70px;
+  height: 70px;
+}
+
+.potential-friend-photo {
+  position: absolute; /*taking out of the flow*/
+  width: 100%; 
+  height: 100%; 
+  object-fit: cover; 
+  object-position: center;
+}
+
+.member-photo-container {
+  max-width: 90px;
+}
+
+.member-photo-container:after {
+  content: "";
+  padding-bottom: 100%;
+}
+
+.member-photo {
+  object-fit: cover; 
+  object-position: center;
+}

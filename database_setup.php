@@ -18,9 +18,9 @@ $numberOfTablesCreated = 0;
 //the members table
 $tablename = "members";
 $columns = "user VARCHAR(20), 
-password VARCHAR(100),
+password VARCHAR(100) NOT NULL,
 email VARCHAR(50) UNIQUE,
-timestamp TIMESTAMP DEFAULT NOW(),
+timestamp TIMESTAMP DEFAULT NOW() NOT NULL,
 PRIMARY KEY(user),
 INDEX(user(5))";
 $tables["$tablename"] = $columns;
@@ -99,7 +99,8 @@ user VARCHAR(20) NOT NULL COMMENT 'user making the post',
 timestamp TIMESTAMP DEFAULT NOW() COMMENT 'epoch timestamp to now whenever a post is made or modified',
 post_type TINYINT(1) NOT NULL COMMENT 'different types of posts can have different contents and post-to-content relationships so put into own tables',
 PRIMARY KEY (id),
-FOREIGN KEY (user) REFERENCES members(user) ON DELETE CASCADE ON UPDATE CASCADE";
+FOREIGN KEY (user) REFERENCES members(user) ON DELETE CASCADE ON UPDATE CASCADE,
+INDEX(id(10))";
 $tables["$tablename"] = $columns;
 
 //post contents for simple text-based posts, one-to-one. post_type = 1
@@ -121,7 +122,8 @@ imageURL VARCHAR(300) COMMENT 'absolute path to the image',
 imageMIME VARCHAR(30) COMMENT 'full mime of image/xxx',
 description VARCHAR(200) COMMENT 'text accompanying an image',
 PRIMARY KEY (id),
-FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE";
+FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
+INDEX(post_id(10))";
 $tables["$tablename"] = $columns;
 
 //post comments, one-to-many (one post, many comments)
