@@ -14,6 +14,10 @@
   object-position: center;
 }
 
+.potential-friend-name, .new-member-name {
+  font-size: 12px;
+}
+
 .member-photo-container {
   max-width: 90px;
 }

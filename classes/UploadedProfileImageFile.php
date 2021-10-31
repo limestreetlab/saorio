@@ -72,8 +72,10 @@ class UploadedProfileImageFile extends UploadedImageFile {
                     return true;
                 }
 
-                if (!unlink($oldFilePath)) {
-                    error_log("Failed to delete a profile photo: " . $oldFilePath);
+                if (!empty($oldFilePath)) {
+                    if (!unlink($oldFilePath)) {
+                        error_log("Failed to delete a profile photo: " . $oldFilePath);
+                    }
                 }
 
             } else {

@@ -147,6 +147,14 @@ FOREIGN KEY (post_id) REFERENCES posts(id) ON DELETE CASCADE,
 FOREIGN KEY (user) REFERENCES members(user) ON DELETE CASCADE ON UPDATE CASCADE";
 $tables["$tablename"] = $columns;
 
+//post feed for each user
+$tablename = "post_feeds";
+$columns = "user VARCHAR(20),
+feed VARCHAR(500) NOT NULL COMMENT 'json string containing the ids of posts',
+PRIMARY KEY (user),
+FOREIGN KEY (user) REFERENCES members(user) ON DELETE CASCADE ON UPDATE CASCADE";
+$tables["$tablename"] = $columns;
+
 //create table for every member of $tables
 $mysql = MySQL::getInstance();
 foreach ($tables as $table => $columns) {

@@ -1,6 +1,6 @@
 <?php 
 
-class User {
+class User implements FollowerManager, Follower {
  
   //variables declaration
   protected $user; //username
@@ -9,6 +9,9 @@ class User {
   protected $numberOfFriends; //number of his friends, length of the friends array
   protected $chatWith = []; //list of users he has had a conversation with, array of user objects
   protected $mysql; //object for mysql database access
+  protected $followers = []; //followers, string array of followers' usernames
+  public $postFeed = []; //post feed from his following, array of post Ids
+  
   
   /*
   constructor
@@ -24,6 +27,85 @@ class User {
     }
     
     $this->profile = new FullProfile($this->user); //instantiate a Profile obj  
+    
+    $this->followers = $this->mysql->request(MySQL::readFollowersQuery, [":user" => $this->user], true); //array of username strings
+    $this->postFeed = json_decode($this->mysql->request(MySQL::readPostFeedQuery, [":user" => $this->user])[0]["feed"], true); 
+
+  }
+
+  /*
+  @Override
+  */
+  public function addFollower(string $follower): void {
+    
+    $this->followers[] = $follower; //update to instance
+
+    //update to database
+    /*
+    do nothing to database, because unlike a typical observer pattern, 
+    in here subject/observer relation is reflected in a 2-way Friendship, so instead of 
+    the subject responsible for keeping a list of his observers, the observers
+    already keep a record of whom they follow (observe), negating the need of Subject to keep a list.
+    */
+
+  }
+
+  /*
+  @Override
+  */
+  public function removeFollower(string $follower): void {
+    
+    //update to instance
+    if ( $index = array_search($follower, $this->followers) !== false ) {
+      unset($this->followers[$index]);
+    }
+
+    //update to database
+    /*
+    do nothing to database, because unlike a typical observer pattern, 
+    in here subject/observer relation is reflected in a 2-way Friendship, so instead of 
+    the subject responsible for keeping a list of his observers, the observers
+    already keep a record of whom they follow (observe), negating the need of Subject to keep a list.
+    */
+
+  }
+
+  /*
+  @Override
+  */
+  public function notifyFollowers(string $postId): void {
+    
+    //for each of the usernames stored in this User's followers array
+    foreach($this->followers as $follower) {
+
+      //create a User obj (Follower type) and call the common method
+      (new User($follower))->receivePost($postId);
+
+    }
+
+  }
+
+  /*
+  @Override
+  */
+  public function receivePost(string $postId): void {
+
+    //update the post feed whilst keeping its current size (FIFO)
+    array_pop($this->postFeed); //remove last element
+    array_unshift($this->postFeed, $postId); //prepend element
+
+    //update to database
+    $feed = json_encode($this->postFeed);
+    $this->mysql->request(MySQL::updatePostFeedQuery, [":user" => $this->user, ":feed" => $feed]);
+    
+  }
+
+  /*
+  getter of this User's post feed
+  */
+  public function getPostFeed(): array {
+
+    return $this->postFeed;
 
   }
 

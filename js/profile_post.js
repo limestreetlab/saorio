@@ -27,7 +27,7 @@ $("document").ready(function(){
 });
 
 /*
-
+function to 
 */
 function postReact(event) {
 
@@ -38,7 +38,7 @@ function postReact(event) {
   let id = $(this).closest("[data-id]").data("id"); //get the data-id embedded in each post
   
   let dataSend = {id: id, vote: vote};
-
+  
   $.get("ajax/posts_ajax.php", dataSend, function(result) {
     
     if (!result.success) {
@@ -201,9 +201,9 @@ function post() {
           callbackError(data.errors);
 
         } else { //upload succeeded
-          callbackSuccess(data.postView);
-          //alert(JSON.stringify(data));
           
+          callbackSuccess(data.postView);
+            
         }
 
       }//end callback

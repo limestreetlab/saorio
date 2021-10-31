@@ -50,7 +50,7 @@ Edit inline:
           </div>
         </div><!--close inner row-->
 
-        <div class='card-header bg-secondary border-0 position-relative' id='profile-wallpaper' style="background-image: url({{wallpaper}});"> 
+        <div class='card-header bg-secondary border-0 position-relative' id='profile-wallpaper' {{IF !empty('{{wallpaper}}')}}style="background-image: url({{wallpaper}});"{{ENDIF}}> 
             <!--wallpaper edit button-->
             <span class='btn btn-light btn rounded-circle position-absolute end-0 top-50 translate-middle d-none' id='wallpaper-upload-btn-container'><i class='bi bi-camera-fill' id='wallpaper-upload-btn'></i></span>
         </div>

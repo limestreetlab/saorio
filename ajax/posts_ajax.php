@@ -14,8 +14,11 @@ if ($_REQUEST["type"] == "text" && $_REQUEST["action"] == "send") {
 
   $post = new PostOfText($_REQUEST["text"], null); //create post obj
   $success = $post->post(); //post it
+  $postId = $post->getData()["id"];
 
-  if ($success) { //successfully posted to database, display frontend
+  $userObj->notifyFollowers($postId);
+
+  if ($success) { //successfully posted to database, now display in frontend
 
     //collect data for front-end view
     $profile = $userObj->getProfile(true);
@@ -24,7 +27,7 @@ if ($_REQUEST["type"] == "text" && $_REQUEST["action"] == "send") {
     $date = (new DateTime("@$now"))->format("M d, Y");
 
     //organize view data for binding
-    $postData = ["id" => $post->id, "profile-picture" => $profilePictureURL, "firstname" => $firstname, "lastname" => $lastname, "date" => $date, "text" => $post->getContent(), "images" => null, "configs" => null, "likes-stat" => 0, "dislikes-stat" => 0, "haveAlreadyLiked" => false, "haveAlreadyDisliked" => false];
+    $postData = ["id" => $postId, "profile-picture" => $profilePictureURL, "firstname" => $firstname, "lastname" => $lastname, "date" => $date, "text" => $post->getContent(), "images" => null, "configs" => null, "likes-stat" => 0, "dislikes-stat" => 0, "haveAlreadyLiked" => false, "haveAlreadyDisliked" => false];
     $postView = $viewLoader->load("./../templates/profile_post.html")->bind($postData)->getView(); //get view string
 
   }
@@ -53,8 +56,11 @@ if ($_REQUEST["type"] == "image" && $_REQUEST["action"] == "send") {
   
   $post = new PostOfImage($content, null); //create post obj
   $success = $post->post(); //post it
+  $postId = $post->getData()["id"];
 
-  if ($success) { //successfully posted to database, display frontend
+  $userObj->notifyFollowers($postId);
+
+  if ($success) { //successfully posted to database, now display in frontend
     
     //collect data for front-end view
     $profile = $userObj->getProfile(true);
@@ -74,7 +80,7 @@ if ($_REQUEST["type"] == "image" && $_REQUEST["action"] == "send") {
     $configs = PostManager::getImageCssClasses($images);
 
     //organize view data for binding
-    $postData = ["id" => $post->id, "profile-picture" => $profilePictureURL, "firstname" => $firstname, "lastname" => $lastname, "date" => $date, "text" => $text, "images" => $images, "configs" => $configs, "likes-stat" => 0, "dislikes-stat" => 0, "haveAlreadyLiked" => false, "haveAlreadyDisliked" => false];
+    $postData = ["id" => $postId, "profile-picture" => $profilePictureURL, "firstname" => $firstname, "lastname" => $lastname, "date" => $date, "text" => $text, "images" => $images, "configs" => $configs, "likes-stat" => 0, "dislikes-stat" => 0, "haveAlreadyLiked" => false, "haveAlreadyDisliked" => false];
     $postView = $viewLoader->load("./../templates/profile_post.html")->bind($postData)->getView(); //get view string
 
   }
@@ -133,14 +139,14 @@ script to perform post liking/disliking
 if ($_REQUEST["id"] && $_REQUEST["vote"]) {
 
   $id = $_REQUEST["id"];
-  $vote = $_REQUEST["vote"];
+  $vote = intval($_REQUEST["vote"]);
 
   $pm = new PostManager($user);
   $result = $pm->vote($id, $vote);
   $success = $result[0]; //true false
   $message = $result[1]; //arbitrarily defined, -1 system err, 1 same user, 2 like, 3 dislike, 4 unlike, 5 undislike, 6 undislike then like, 7 unlike then dislike
 
-  echo json_encode(["success" =>$success, "message" => $message]);
+  echo json_encode(["success" => $success, "message" => $message]);
   exit();
 
 }

@@ -62,8 +62,10 @@ class UploadedWallpaperImageFile extends UploadedImageFile {
         
         $this->persist();
 
-        if (!unlink($oldFilePath)) {
-            error_log("Failed to delete a wallpaper file: " . $oldFilePath);
+        if (!empty($oldFilePath)) {
+          if (!unlink($oldFilePath)) {
+              error_log("Failed to delete a wallpaper file: " . $oldFilePath);
+          }
         }
 
       } else {

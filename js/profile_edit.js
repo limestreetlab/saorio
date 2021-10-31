@@ -93,14 +93,14 @@ function uploadPhoto(imageType) {
         } else { //upload succeeded
           
           let newPhoto = result.newData[0]; //new rel path
-
+          
           switch (imageType) {
             
             case 1:
               $("#profile-picture").attr("src", newPhoto);
               break;
             case 2:
-              $("#profile-wallpaper").css( "background-image", 'url(' + newPhoto + ')' );
+              $("#profile-wallpaper").css("background-image", "url(" + newPhoto + ")");
               break;
 
           }

@@ -309,6 +309,9 @@ class PostManager {
   public function vote(string $id, int $vote): array {
     
     $posting = $this->mysql->request(MySQL::readPostQuery, [":id" => $id]);
+    if (!$posting) {
+      throw new Exception("the provided post id " . $id . "cannot be found.");
+    }
     $poster = $posting[0]["user"];
     $type = $posting[0]["type"];
     switch ($type) {
@@ -320,11 +323,7 @@ class PostManager {
         break;
     }
     
-    if (!$posting) {
-
-      throw new Exception("the provided post id " . $id . "cannot be found.");
-
-    } elseif ($this->user == $poster) { //disabling user from voting on own posts
+    if ($this->user == $poster) { //disabling user from voting on own posts
 
       return [false, 1];
 
@@ -373,11 +372,9 @@ class PostManager {
 
           }
 
-          return [true, $message];
-
         }
 
-        $success = true;
+        return [true, $message];
         
       } catch (Exception $ex) {
 

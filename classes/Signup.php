@@ -265,6 +265,8 @@ class Signup {
         try {
             $params = [":user" => "$this->user", ":firstname" => "$this->firstname", ":lastname" => "$this->lastname"];
             $this->mysql->request(MySQL::createBasicProfileQuery, $params);
+            $emptyFeed = json_encode(array_fill(0, 10, null));
+            $this->mysql->request(MySQL::createPostFeedQuery, [":user" => $this->user, ":feed" => $emptyFeed]);
             $success = true;
           } catch (Exception $ex) {
             $success = false;

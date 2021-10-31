@@ -5,7 +5,7 @@
 
   <section class="card-body">
     <!--how many members to show per row-->
-    <section class="row row-cols-2 ms-2 me-2 gx-4">
+    <section class="row row-cols-2 ms-2 me-2 gx-4 gy-2">
 
     {{IF !empty('{{members}}')}}
     <!--template to display each new member-->
@@ -17,7 +17,7 @@
     </div>
 
     <div class="card-body p-1">
-      <div class="h6">{{member}}</div>
+      <div class="new-member-name fw-bold">{{member}}</div>
     </div>
 
     </div>

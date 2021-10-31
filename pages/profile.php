@@ -24,8 +24,8 @@ IF ( isset($_REQUEST["viewUser"]) ) { //viewing another user's home page (summar
   extract($profile->getData()); //use key names as variable names
   $profileData = ["picture" => $profilePictureURL, "wallpaper" => $wallpaper, "firstname" => $firstname, "lastname" => $lastname, "city" => $city, "country" => $country, "gender" => $gender, "age" => $age, "dob" => is_null($dob) ? null : (new DateTime("@$dob"))->format("m-d-Y"), "job" => $job, "company" => $company, "major" => $major, "school" => $school, "about" => $about, "interests" => $interests, "quote" => $quote, "email" => $email, "website" => $website, "socialmedia" => $socialmedia];
   
-  $viewLoader->load("error_toast.html")->render(); //toast for errors
   $viewLoader->load("profile_edit.html")->bind($profileData)->render(); //load data into profile edit view
+  $viewLoader->load("error_toast.html")->render(); //toast for errors
   
 } ELSE { //no request, self viewing own profile
 
@@ -83,7 +83,7 @@ IF ( isset($_REQUEST["viewUser"]) ) { //viewing another user's home page (summar
     $date = (new DateTime("@$timestamp"))->format("M d, Y"); //format timestamp to date
     $configs = is_null($images) ? null : $postManager::getImageCssClasses($images);
 
-    $postData = ["id" => $id, "profile-picture" => "$profilePictureURL", "firstname" => "$firstname", "lastname" => "$lastname", "date" => $date, "options" => ["<i class='bi bi-pencil'></i> Edit post", "<i class='bi bi-trash'></i> Delete post"], "text" => $text, "images" => $images, "configs"=> $configs, "likes-stat" => $likes, "dislikes-stat" => $dislikes, "haveAlreadyLiked" => $haveAlreadyLiked, "haveAlreadyDisliked" => $haveAlreadyDisliked];
+    $postData = ["id" => $id, "profile-picture" => $profilePictureURL, "firstname" => $firstname, "lastname" => $lastname, "date" => $date, "options" => ["<i class='bi bi-pencil'></i> Edit post", "<i class='bi bi-trash'></i> Delete post"], "text" => $text, "images" => $images, "configs"=> $configs, "likes-stat" => $likes, "dislikes-stat" => $dislikes, "haveAlreadyLiked" => $haveAlreadyLiked, "haveAlreadyDisliked" => $haveAlreadyDisliked];
     $viewLoader->load("profile_post.html")->bind($postData)->render();
   
   }

@@ -6,7 +6,7 @@ abstract class encapsulating a user's posts
 
 abstract class Post {
 
-  public $id; //an id to identify each post
+  protected $id; //an id to identify each post
   protected $user; //user of the post
   protected $timestamp; //unix epoch timestamp of the post
   protected $content; //contents of the post, varies depending on concrete classes

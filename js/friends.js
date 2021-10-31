@@ -54,7 +54,7 @@ function to toggle following a friend
 */
 function toggleFollowing() {
 
-  let follow = $(this).parents(".card").data("username");
+  let follow = $(this).closest(".card[data-username]").data("username"); //traverse up to read the username data attribute
   dataSend = {follow: follow};
 
   $.post("ajax/friends_ajax.php", dataSend, function(result) {

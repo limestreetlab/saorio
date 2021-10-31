@@ -222,6 +222,7 @@ final class MySQL {
                                       LEFT JOIN 
                                       (SELECT user2 AS user FROM friends WHERE user1 = :user AND status = 1 UNION SELECT user1 AS user FROM friends WHERE user2 = :user AND status = 1) AS friends 
                                       ON members.user = friends.user WHERE friends.user IS NULL AND members.user != :user ORDER BY RAND() LIMIT :number";
+  public const readFollowersQuery = "SELECT user1 AS follower FROM friends_data WHERE user2 = :user AND following = 1";
   public const updateFriendNotesQuery = "UPDATE friends_data SET notes = :notes WHERE user1 = :user1 AND user2 = :user2";
   public const updateFollowingQuery = "UPDATE friends_data SET following = IF(following = 1, 0, 1) WHERE user1 = :user1 AND user2 = :user2"; //toggle following, if initially 0 update to 1, if initially 1 update to 0
   public const updateFriendRequestQuery = "UPDATE friends SET status = 1 WHERE user1 = :requestSender AND user2 = :requestRecipient";
@@ -332,6 +333,10 @@ final class MySQL {
   public const updateImagePostDescriptionQuery = "UPDATE image_posts SET description = :description WHERE id = :id";
   public const deleteImagePostQuery = "DELETE FROM image_posts WHERE id = :id";
   
+  //for post feed
+  public const createPostFeedQuery = "INSERT INTO post_feeds VALUES (:user, :feed)";
+  public const readPostFeedQuery = "SELECT feed FROM post_feeds WHERE user = :user";
+  public const updatePostFeedQuery = "UPDATE post_feeds SET feed = :feed WHERE user = :user";
   
   
   

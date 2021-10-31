@@ -191,10 +191,23 @@ class Friendship {
                 throw new Exception("Can only follow an existing friend.");
             }
 
-            $params = [":user1" => "$this->thisuser", ":user2" => "$this->thatuser"];
+            //toggle following status
+            $this->isFollowing = $this->isFollowing ? 0 : 1; //flip to 1 if 0 or 0 if 1
+
+            //toggle following status in database
+            $params = [":user1" => $this->thisuser, ":user2" => $this->thatuser];
             $this->mysql->request(MySQL::updateFollowingQuery, $params);
 
-            $this->isFollowing = $this->isFollowing ? 0 : 1;
+            //A (observer) following B (subject) status is also recorded by the subject (B)
+            if ($this->isFollowing) {
+                //reflect following in subject
+                (new User($this->thatuser))->addFollower($this->thisuser);
+
+            } else {
+                //reflect not-following in subject
+                (new User($this->thatuser))->removeFollower($this->thisuser);
+
+            }
 
             return true;
 
