@@ -4,7 +4,7 @@ if (isset($_SESSION["user"])) {
 
   session_unset();
   session_destroy();
-  header( "Location: " .  REL_SITE_ROOT);
+  header( "Location: " .  SITE_ROOT_URL);
   exit;
 
 } else {

@@ -70,7 +70,7 @@ class BasicProfile {
     if (isset($absolutePath)) {
 
       $filename = basename($absolutePath); //the filename with ext
-      return REL_PROFILE_UPLOAD_DIR . "$filename"; //root relative path to photo
+      return PROFILE_UPLOAD_DIR_URL . "$filename"; //root relative path to photo
 
     } else {
 

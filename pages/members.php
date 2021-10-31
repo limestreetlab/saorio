@@ -1,7 +1,7 @@
 <?php
 
   if (!$isLoggedIn) {
-    header( "Location: " .  REL_SITE_ROOT);
+    header( "Location: " .  SITE_ROOT_URL);
     exit();
   }
   

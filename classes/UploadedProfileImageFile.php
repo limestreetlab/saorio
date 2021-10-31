@@ -246,7 +246,7 @@ class UploadedProfileImageFile extends UploadedImageFile {
     public function getFileRelativePath(): string {
 
         $filename = basename($this->permFilePath); //filename with ext
-        return REL_PROFILE_UPLOAD_DIR . $filename; //relative path
+        return PROFILE_UPLOAD_DIR_URL . $filename; //relative path
 
     }
 
@@ -256,7 +256,7 @@ class UploadedProfileImageFile extends UploadedImageFile {
     static public function convertFileRelativePath(string $absolutePath): string {
 
         $filename = basename($absolutePath); //filename with ext
-        return REL_PROFILE_UPLOAD_DIR . $filename; //relative path
+        return PROFILE_UPLOAD_DIR_URL . $filename; //relative path
 
     }
 

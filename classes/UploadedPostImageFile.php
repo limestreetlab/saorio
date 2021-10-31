@@ -119,7 +119,7 @@ class UploadedPostImageFile extends UploadedImageFile {
   public function getFileRelativePath(): string {
 
     $filename = basename($this->permFilePath);
-    return REL_POST_UPLOAD_DIR . $filename;
+    return POST_UPLOAD_DIR_URL . $filename;
 
   }
 
@@ -129,7 +129,7 @@ class UploadedPostImageFile extends UploadedImageFile {
   static public function convertFileRelativePath(string $absolutePath): string {
 
     $filename = basename($absolutePath);
-    return REL_POST_UPLOAD_DIR . $filename;
+    return POST_UPLOAD_DIR_URL . $filename;
 
   }
 
