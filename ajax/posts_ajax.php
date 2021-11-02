@@ -27,7 +27,7 @@ if ($_REQUEST["type"] == "text" && $_REQUEST["action"] == "send") {
     $date = (new DateTime("@$now"))->format("M d, Y");
 
     //organize view data for binding
-    $postData = ["id" => $postId, "profile-picture" => $profilePictureURL, "firstname" => $firstname, "lastname" => $lastname, "date" => $date, "text" => $post->getContent(), "images" => null, "configs" => null, "likes-stat" => 0, "dislikes-stat" => 0, "haveAlreadyLiked" => false, "haveAlreadyDisliked" => false];
+    $postData = ["id" => $postId, "profile-picture" => $profilePictureURL, "firstname" => $firstname, "lastname" => $lastname, "date" => $date, "options" => ["<i class='bi bi-pencil'></i> Edit post", "<i class='bi bi-trash'></i> Delete post"], "text" => $post->getContent(), "images" => null, "configs" => null, "likes-stat" => 0, "dislikes-stat" => 0, "haveAlreadyLiked" => false, "haveAlreadyDisliked" => false];
     $postView = $viewLoader->load("./../templates/profile_post.html")->bind($postData)->getView(); //get view string
 
   }
@@ -36,6 +36,48 @@ if ($_REQUEST["type"] == "text" && $_REQUEST["action"] == "send") {
   exit();
 
 }
+
+/*
+script for handling requests of post updates by offering a view for editting a post
+@return [bool success, string view] where view is the render-ready post string
+*/
+if ( $_REQUEST["action"] == "update" && isset($_REQUEST["id"]) ) {
+
+  //collect data to prepare for the view
+  $profile = $userObj->getProfile(true);
+  extract($profile->getData());
+  
+  $pm = new PostManager($user);
+  
+  $postData = $pm->getData($_REQUEST["id"]);
+  
+  $text = $postData["text"];
+  $images = $postData["images"];
+  $descriptions = $postData["descriptions"];
+  $configs = empty($images) ? null : PostManager::getImageCssClasses($images);
+
+  $bind = ["profile-picture" => $profilePictureURL, "firstname" => $firstname, "lastname" => $lastname, "text" => $text, "images" => $images, "configs" => $configs, "descriptions" => $descriptions];
+  $postView = $viewLoader->load("./../templates/profile_post_edit_form.html")->bind($bind)->getView(); //get view string
+
+  echo json_encode(["success" => $success, "postView" => $postView]);
+  exit();
+
+}
+
+/*
+script to delete an existing post
+@return bool success 
+*/
+if ( $_REQUEST["action"] == "delete" && isset($_REQUEST["id"]) ) {
+
+  $pm = new PostManager($user);
+  $success = $pm->remove($_REQUEST["id"]);
+
+  echo json_encode(["success" => $success]);
+  exit();
+
+}
+
 
 /*
 script to send an image post
@@ -73,14 +115,14 @@ if ($_REQUEST["type"] == "image" && $_REQUEST["action"] == "send") {
     $descriptions = []; //array of image captions
     
     foreach ($content as $el) {
-      array_push($images, $el[0]->getFileRelativePath()); //relative paths for data bind
+      array_push($images, $el[0]->getFileWebPath()); //relative paths for data bind
       array_push($descriptions, $el[1]); //photo descriptions for data bind
     }
     
     $configs = PostManager::getImageCssClasses($images);
 
     //organize view data for binding
-    $postData = ["id" => $postId, "profile-picture" => $profilePictureURL, "firstname" => $firstname, "lastname" => $lastname, "date" => $date, "text" => $text, "images" => $images, "configs" => $configs, "likes-stat" => 0, "dislikes-stat" => 0, "haveAlreadyLiked" => false, "haveAlreadyDisliked" => false];
+    $postData = ["id" => $postId, "profile-picture" => $profilePictureURL, "firstname" => $firstname, "lastname" => $lastname, "date" => $date, "options" => ["<i class='bi bi-pencil'></i> Edit post", "<i class='bi bi-trash'></i> Delete post"], "text" => $text, "images" => $images, "configs" => $configs, "likes-stat" => 0, "dislikes-stat" => 0, "haveAlreadyLiked" => false, "haveAlreadyDisliked" => false];
     $postView = $viewLoader->load("./../templates/profile_post.html")->bind($postData)->getView(); //get view string
 
   }

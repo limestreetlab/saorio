@@ -48,7 +48,7 @@ foreach ($ids as $id) {
     $images = []; //rel path
     $descriptions = []; //caption
     foreach ($content as $row) {
-      array_push($images, ($row[0])->getFileRelativePath());
+      array_push($images, ($row[0])->getFileWebPath());
       array_push($descriptions, $row[1]);
     }
     $configs = PostManager::getImageCssClasses($images);

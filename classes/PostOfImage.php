@@ -185,7 +185,7 @@ class PostOfImage extends Post {
   /*
   @Override
   factory method to update parts of an existing post
-  it can update image descriptions, delete images, add images
+  it can update text, image descriptions, delete images, add images
   @param switch, int to switch among update operations, 1 for description, 2 for img delete, 3 for img add, 4 for updating the associated text
   @param data, array containing data to accompany the update, [[img index, new description],...] for 1, [img index, ...] for 2, [[file, description],...] for 3, ["new text"] for 4
   @return success, true if all elements succeed, false if not all succeed
@@ -397,6 +397,12 @@ class PostOfImage extends Post {
 
     try {
 
+      //delete the text post associated if one
+      $textId = $this->mysql->request(MySQL::readImagePostTextIdQuery, [":id" => $this->id])[0]["id"];
+      if ($textId) {
+        (new PostOfText(null, $textId))->delete();
+      }
+      //delete this image post
       $this->mysql->request( MySQL::deletePostQuery, [":id" => $this->id] ); //remove post from database
       unset($this->id); //cannot unset the object itself, merely unset its key instance handle variable
 

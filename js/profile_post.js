@@ -23,11 +23,56 @@ $("document").ready(function(){
   $("#main-menu").on("click", "#pagination .pagination .page-item .page-link", paginate);
   //users liking or disliking (voting) on a post
   $("#main-menu").on("click", ".vote-btn", postReact);
+  //user clicking on one of the post options
+  $("#posts").on("click", ".post-option", postOptions);
 
 });
 
 /*
-function to 
+function to
+*/
+function postOptions(event) {
+
+  let id = $(this).closest("[data-id]").data("id"); //get the data-id embedded in each post
+  let text = $(this).text().toLowerCase(); //the text of the option clicked on
+  
+  //check which potential options has been clicked on, which will show a positive int or else -1
+  let update = text.indexOf("edit"); 
+  let remove = text.indexOf("delete");
+  let save = text.indexOf("save");
+
+  if (remove >= 0) {
+
+    let dataSend = {action: "delete", id: id};
+
+    $.get("ajax/posts_ajax.php", dataSend, function(result) {
+      
+      if(result.success) { 
+
+        $("#posts").find("[data-id=" + id + "]").fadeOut("slow"); //get the post using its data-id attribute
+
+      }
+
+    }, "json");
+
+  } if (update >= 0) {
+    
+    let dataSend = {action: "update", id: id};
+
+    $.post("ajax/posts_ajax.php", dataSend, function(result) {
+      
+      $("#posts").prepend(result.postView); 
+      let editModal = new bootstrap.Modal(document.getElementById('edit-post-modal'));
+      editModal.show();
+
+    }, "json");
+
+  }
+
+} //end function
+
+/*
+function to record user reactions of a post
 */
 function postReact(event) {
 

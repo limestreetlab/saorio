@@ -28,10 +28,53 @@ class PostManager {
   }
 
   /*
+  function to retrieve a post's data using its id
+  @param id of the post to retrieve
+  @return array of post data [id, type, timestamp, text, [image paths], [image descriptions], likes, dislikes, haveAlreadyLiked, haveAlreadyDisliked, [comments]]
+  */
+  public function getData(string $id): ?array {
+
+    $post = $this->mysql->request(MySQL::readPostQuery, [":id" => $id]);
+    $type = $post[0]["type"]; 
+
+    if (!$post) {
+      throw new Exception("the provided post id " . $id . "cannot be found.");
+    }    
+
+    switch ($type) {
+
+      case 1:
+        $textPost = new PostOfText(null, $id);
+        extract( $textPost->getData() );
+        $haveAlreadyLiked = $textPost->haveAlreadyLiked($user);
+        $haveAlreadyDisliked = $textPost->haveAlreadyDisliked($user);
+        $data = [ "id" => $id, "type" => $type, "timestamp" => $timestamp, "text" => $content, "images" => null, "descriptions" => null, "likes" => $likes, "dislikes" => $dislikes, "haveAlreadyLiked" => $haveAlreadyLiked, "haveAlreadyDisliked" => $haveAlreadyDisliked, "comments" => $comments];
+        break;
+      case 2:
+        $imagePost = new PostOfImage(null, $id);
+        extract( $imagePost->getData() );
+        $haveAlreadyLiked = $imagePost->haveAlreadyLiked($user);
+        $haveAlreadyDisliked = $imagePost->haveAlreadyDisliked($user);
+        $images = []; //web paths
+        $descriptions = []; //caption
+        foreach ($content as $row) {
+          array_push($images, ($row[0])->getFileWebPath());
+          array_push($descriptions, $row[1]);
+        }
+        $data = [ "id" => $id, "type" => $type, "timestamp" => $timestamp, "text" => is_null($text) ? null : $text->getContent(), "images" => $images, "descriptions" => $descriptions, "likes" => $likes, "dislikes" => $dislikes, "haveAlreadyLiked" => $haveAlreadyLiked, "haveAlreadyDisliked" => $haveAlreadyDisliked, "comments" => $comments ];
+        break;       
+
+    }
+
+    return $data;
+
+  }
+
+  /*
   get posts created by user, from most recent
   @param int number, number of posts to retrieve
   @param int skip, number of posts to skip from 1 being most recent 
-  @return array of post data [id, type, timestamp, text, [image rel paths], [image descriptions]]
+  @return array of post data [id, type, timestamp, text, [image paths], [image descriptions], likes, dislikes, haveAlreadyLiked, haveAlreadyDisliked, [comments]]
   */
   protected function getPosts(int $number = null, int $skip = null): ?array {
 
@@ -57,36 +100,8 @@ class PostManager {
     $data = [];
     foreach ($posts as $post) {
 
-      $type = $post["type"];
       $id = $post["id"];
-
-      if ($type == 1) {
-
-        $textPost = new PostOfText(null, $id);
-        extract( $textPost->getData() );
-        $haveAlreadyLiked = $textPost->haveAlreadyLiked($_SESSION["user"]);
-        $haveAlreadyDisliked = $textPost->haveAlreadyDisliked($_SESSION["user"]);
-        array_push($data, [ "id" => $id, "type" => $type, "timestamp" => $timestamp, "text" => $content, "images" => null, "descriptions" => null, "likes" => $likes, "dislikes" => $dislikes, "haveAlreadyLiked" => $haveAlreadyLiked, "haveAlreadyDisliked" => $haveAlreadyDisliked, "comments" => $comments]);
-
-      } elseif ($type == 2) {
-
-        $imagePost = new PostOfImage(null, $id); 
-        extract( $imagePost->getData() );
-        $haveAlreadyLiked = $imagePost->haveAlreadyLiked($_SESSION["user"]);
-        $haveAlreadyDisliked = $imagePost->haveAlreadyDisliked($_SESSION["user"]);
-        $images = []; //rel path
-        $descriptions = []; //caption
-        foreach ($content as $row) {
-          array_push($images, ($row[0])->getFileRelativePath());
-          array_push($descriptions, $row[1]);
-        }
-        array_push($data, [ "id" => $id, "type" => $type, "timestamp" => $timestamp, "text" => is_null($text) ? null : $text->getContent(), "images" => $images, "descriptions" => $descriptions, "likes" => $likes, "dislikes" => $dislikes, "haveAlreadyLiked" => $haveAlreadyLiked, "haveAlreadyDisliked" => $haveAlreadyDisliked, "comments" => $comments ]);
-
-      } else {
-
-        throw new Exception("invalid post type code.");
-
-      }
+      array_push($data, $this->getData($id));     
 
     }
 
@@ -97,7 +112,7 @@ class PostManager {
   /*
   get post data for a certain paginated page
   @param page, pagination number
-  @return array of post data [id, type, timestamp, text, [image rel paths], [image descriptions]]
+  @return array of post data [id, type, timestamp, text, [image paths], [image descriptions], likes, dislikes, haveAlreadyLiked, haveAlreadyDisliked, [comments]]
   */
   public function getPage(int $page): ?array {
 
@@ -140,7 +155,7 @@ class PostManager {
     $data = [];
     foreach ($rows as $row) {
 
-      $relPath = UploadedPostImageFile::convertFileRelativePath($row["image"]); //abs to rel path
+      $relPath = UploadedPostImageFile::ConvertFileWebPath($row["image"]); //from file path to URL
       array_push( $data, array_replace($row, ["image" => $relPath]) ); //append array after replacing abs path to rel path
 
     } 
@@ -194,7 +209,7 @@ class PostManager {
       $img_rows = $this->mysql->request(MySQL::readImagePostImagesQuery, [":id" => $id_row[0]]);
 
       foreach($img_rows as $img_row) {
-        array_push($paths, UploadedPostImageFile::convertFileRelativePath( $img_row["image"] ) );
+        array_push($paths, UploadedPostImageFile::ConvertFileWebPath( $img_row["image"] ) );
       }
 
     } //here, the array has at least 9 image paths but can be over
@@ -202,6 +217,52 @@ class PostManager {
     return array_slice($paths, 0, 9);
 
   }
+
+  /*
+  function to remove a created post
+  @param id of the post to be removed
+  @return success boolean
+  */
+  public function remove(string $id): bool {
+  
+    try {
+      
+      $post = $this->mysql->request(MySQL::readPostQuery, [":id" => $id]);
+      $poster = $post[0]["user"]; //creator of the post
+      $type = $post[0]["type"]; 
+
+      if (!$post) {
+        throw new Exception("the provided post id " . $id . "cannot be found.");
+      }    
+
+      if ($this->user != $poster) { //a post can only be removed by its own poster
+        throw new Exception("the post created by " . $poster . "cannot be deleted by " . $this->user);
+      }
+
+      switch ($type) {
+
+        case 1:
+          $post = new PostOfText(null, $id);
+          break;
+        case 2:
+          $post = new PostOfImage(null, $id);
+          break;
+        default:
+          throw new Exception("Unknown post type of " . $type);
+
+      }
+
+      $post->delete();
+      return true;
+
+    } catch (Exception $ex) {
+
+      return false;
+
+    }
+
+  }
+
 
   /*
   function to create a range of page numbers for pagination use
@@ -408,16 +469,20 @@ class PostManager {
 
   /*
   convert image orientations into css configuration classes arbitrarily defined for image display
-  @param array images, array of images each element being an absolute path
+  @param array images, array of images each element being either a filesystem path or a web path (URL)
   @return array of css classes
   */
   static public function getImageCssClasses(array $images): ?array { 
   
+  if (empty($images)) {
+    return null;
+  }
+
   $orientations = []; //array of landscape vs portrait in matching order as images array
   foreach ($images as $image) {
 
-    $image = $_SERVER["DOCUMENT_ROOT"] . $image;
-    list($width, $height) = getimagesize($image); 
+    $image = $image[0] == "/" ? $_SERVER["DOCUMENT_ROOT"] . $image : $image; //if path is URL convert it to system file path as file path is needed for reading
+    list($width, $height) = getimagesize($image); //read width and height of image
     $width >= $height ? array_push($orientations, "landscape") : array_push($orientations, "portrait");  //tag each img as either portrait or landscape
 
   }

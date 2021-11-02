@@ -116,7 +116,7 @@ class UploadedPostImageFile extends UploadedImageFile {
   /*
   @Override
   */
-  public function getFileRelativePath(): string {
+  public function getFileWebPath(): string {
 
     $filename = basename($this->permFilePath);
     return POST_UPLOAD_DIR_URL . $filename;
@@ -126,9 +126,9 @@ class UploadedPostImageFile extends UploadedImageFile {
   /*
   @Override
   */
-  static public function convertFileRelativePath(string $absolutePath): string {
+  static public function ConvertFileWebPath(string $fileSystemPath): string {
 
-    $filename = basename($absolutePath);
+    $filename = basename($fileSystemPath);
     return POST_UPLOAD_DIR_URL . $filename;
 
   }

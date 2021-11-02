@@ -58,12 +58,12 @@
 }
 
 /*post text enter area in modal*/
-#new-post-text {
+#new-post-text, #edit-post-text {
   resize: none;
 }
 
 /*disable default BS form-control blue glow*/
-#new-post-text:focus {
+#new-post-text:focus, #edit-post-text:focus {
   outline: none;
   box-shadow: none;
 }

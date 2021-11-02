@@ -329,6 +329,7 @@ final class MySQL {
   //read possibly multiple images belonging to an image post using the image post id
   public const readImagePostImagesQuery = "SELECT imageURL AS image from image_posts WHERE post_id = :id";
   public const readImagePostMaximumIdQuery = "SELECT MAX(id) AS max_id from image_posts"; //retrieve the max id used, used for knowing the next id to use in codes
+  public const readImagePostTextIdQuery = "SELECT post_id AS id from text_posts WHERE text_for = :id"; //get the post id of the text post associated with an image post
   public const updateImagePostImageQuery = "UPDATE image_posts SET imageURL = :imageURL, imageMIME = :imageMIME WHERE id = :id"; //recall image belongs to a post, so a post must exist before an image can be persisted
   public const updateImagePostDescriptionQuery = "UPDATE image_posts SET description = :description WHERE id = :id";
   public const deleteImagePostQuery = "DELETE FROM image_posts WHERE id = :id";

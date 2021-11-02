@@ -25,7 +25,7 @@ foreach($_POST as $field => $value) {
       $profilePhoto = new UploadedProfileImageFile($file);
       if ($profilePhoto->upload(true)) { //file upload successful
         array_push($success, true);
-        $newRelPath = $profilePhoto->getFileRelativePath(); //get this file's new relative absolute path
+        $newRelPath = $profilePhoto->getFileWebPath(); //get this file's new relative absolute path
         array_push($newData, $newRelPath); //new data to reflect for a photo is its relative path
       } else { //file upload failed
         array_push($success, false);
@@ -39,7 +39,7 @@ foreach($_POST as $field => $value) {
       $wallpaper = new UploadedWallpaperImageFile($file);
       if ($wallpaper->upload(true)) { //file upload successful
         array_push($success, true);
-        $newRelPath = $wallpaper->getFileRelativePath(); //get this file's new relative absolute path
+        $newRelPath = $wallpaper->getFileWebPath(); //get this file's new relative absolute path
         array_push($newData, $newRelPath); //new data to reflect for a photo is its relative path
       } else { //file upload failed
         array_push($success, false);
