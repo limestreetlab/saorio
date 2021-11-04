@@ -31,8 +31,8 @@
     {{IF !empty('{{text}}')}}<div class="post-text mb-2">{{text}}</div>{{ENDIF}}
     {{IF !empty('{{images}}')}}
       <div class="post-attachment w-100 p-0 position-relative">
-      {{FOREACH {{images}} AS image {{configs}} AS config}}
-        <img src='{{image}}' class="{{config}}" draggable="false">
+      {{FOREACH {{images}} AS image {{configs}} AS config {{descriptions}} AS description}}
+        <img src='{{image}}' class="{{config}}" title="{{description}}" data-bs-toggle="tooltip" draggable="false">
       {{ENDFOREACH}}
       </div>
     {{ENDIF}}

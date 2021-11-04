@@ -8,17 +8,18 @@ require_once "./../includes/ini.php"; //rel path to ini.php
 
 /*
 script to send a text post
-@return [bool success, array errors, string post] where post is the render-ready post string
+@return [bool success, array errors, string post, int photosNum] where post is the render-ready post string and photosNum is the number of images involved
 */
 if ($_REQUEST["type"] == "text" && $_REQUEST["action"] == "send") {
 
   $post = new PostOfText($_REQUEST["text"], null); //create post obj
   $success = $post->post(); //post it
-  $postId = $post->getData()["id"];
-
-  $userObj->notifyFollowers($postId);
 
   if ($success) { //successfully posted to database, now display in frontend
+
+    //notify followers
+    $postId = $post->getData()["id"];
+    $userObj->notifyFollowers($postId);
 
     //collect data for front-end view
     $profile = $userObj->getProfile(true);
@@ -32,16 +33,16 @@ if ($_REQUEST["type"] == "text" && $_REQUEST["action"] == "send") {
 
   }
 
-  echo json_encode(["success" => $success, "errors" => $post->getErrors(), "postView" => $postView]);
+  echo json_encode(["success" => $success, "errors" => $post->getErrors(), "postView" => $postView, "photosNum" => countNumberOfImg($postView)]);
   exit();
 
 }
 
 /*
-script for handling requests of post updates by offering a view for editting a post
+script for handling requests of post updates by returning a render-ready edit view
 @return [bool success, string view] where view is the render-ready post string
 */
-if ( $_REQUEST["action"] == "update" && isset($_REQUEST["id"]) ) {
+if ( $_REQUEST["action"] == "update" && isset($_REQUEST["id"]) && !isset($_REQUEST["type"]) ) {
 
   //collect data to prepare for the view
   $profile = $userObj->getProfile(true);
@@ -65,15 +66,35 @@ if ( $_REQUEST["action"] == "update" && isset($_REQUEST["id"]) ) {
 }
 
 /*
+script to handing updating a text post
+@
+*/
+if ( $_REQUEST["action"] == "update" && isset($_REQUEST["id"]) && $_REQUEST["type"] == "text" ) {
+
+  $post = new PostOfText(null, $_REQUEST["id"]); 
+  try {
+    $post->update($_REQUEST["text"]);
+    $success = true;
+  } catch (Exception $ex) {
+    $success = false;
+  }
+  echo json_encode(["success" => $success, "errors" => $post->getErrors()]);
+  exit();
+
+}
+
+
+/*
 script to delete an existing post
-@return bool success 
+@return [bool success, int photosNum] where photosNum is the number of images involved
 */
 if ( $_REQUEST["action"] == "delete" && isset($_REQUEST["id"]) ) {
 
   $pm = new PostManager($user);
+  $images = $pm->getData($_REQUEST["id"])["images"];
   $success = $pm->remove($_REQUEST["id"]);
 
-  echo json_encode(["success" => $success]);
+  echo json_encode(["success" => $success, "photosNum" => count($images)]);
   exit();
 
 }
@@ -81,7 +102,7 @@ if ( $_REQUEST["action"] == "delete" && isset($_REQUEST["id"]) ) {
 
 /*
 script to send an image post
-@return [bool success, array errors, string post] where post is the render-ready post string
+@return [bool success, array errors, string post, int photosNum] where post is the render-ready post string and photosNum is the number of images involved
 */
 if ($_REQUEST["type"] == "image" && $_REQUEST["action"] == "send") {
 
@@ -122,12 +143,12 @@ if ($_REQUEST["type"] == "image" && $_REQUEST["action"] == "send") {
     $configs = PostManager::getImageCssClasses($images);
 
     //organize view data for binding
-    $postData = ["id" => $postId, "profile-picture" => $profilePictureURL, "firstname" => $firstname, "lastname" => $lastname, "date" => $date, "options" => ["<i class='bi bi-pencil'></i> Edit post", "<i class='bi bi-trash'></i> Delete post"], "text" => $text, "images" => $images, "configs" => $configs, "likes-stat" => 0, "dislikes-stat" => 0, "haveAlreadyLiked" => false, "haveAlreadyDisliked" => false];
+    $postData = ["id" => $postId, "profile-picture" => $profilePictureURL, "firstname" => $firstname, "lastname" => $lastname, "date" => $date, "options" => ["<i class='bi bi-pencil'></i> Edit post", "<i class='bi bi-trash'></i> Delete post"], "text" => $text, "images" => $images, "configs" => $configs, "descriptions" => $descriptions, "likes-stat" => 0, "dislikes-stat" => 0, "haveAlreadyLiked" => false, "haveAlreadyDisliked" => false];
     $postView = $viewLoader->load("./../templates/profile_post.html")->bind($postData)->getView(); //get view string
 
   }
    
-  echo json_encode(["success" => $success, "errors" => $post->getErrors(), "postView" => $postView]);
+  echo json_encode(["success" => $success, "errors" => $post->getErrors(), "postView" => $postView, "photosNum" => countNumberOfImg($postView)]);
   exit();
 
 }
@@ -218,6 +239,13 @@ function fixArrayFiles(&$files) {
 
 }
 
+function countNumberOfImg(string $view): int {
+
+  $regex = " /(?:\G(?!^)|\bpost-attachment\b).*?\K\bimg\b /si "; //regex for 'img' occurring after 'post-attachment'
+  preg_match_all($regex, $view, $matches);
+  return count($matches[0]);
+
+}
 
 ?>
 

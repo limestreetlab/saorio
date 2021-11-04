@@ -15,7 +15,7 @@ abstract class Post {
   protected $dislikedBy = []; //users who reacted negatively to the post
   protected $likes; //number of positive reactions
   protected $dislikes; //number of negative reactions
-  protected $errorCodes = []; //array to append errors to. -1 for system errors, 1 for unfound object id, 2 for content above defined maximum size, 3 for content file format issue, 4 for post files over max number
+  protected $errorCodes = []; //array to append errors to. -1 for system errors, 1 for unfound object id, 2 for content above defined maximum size, 3 for content file format issue, 4 for post files over max number, 5 for text over max length
   protected $mysql; 
 
   /*

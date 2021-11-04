@@ -40,7 +40,7 @@ IF ( isset($_REQUEST["viewUser"]) ) { //viewing another user's home page (summar
   //opening view
   $viewLoader->load("profile_start.html")->render();
 
-  //profile snapshot view
+  //profile snapshot view, bio sets to be below 100 characters (of unbroken words) 
   $summaryData = ["wallpaper" => $wallpaper, "profile-picture" => $profilePictureURL, "firstname" => $firstname, "lastname" => $lastname, "summary" => strlen($about) > 100 ? substr( $about, 0, strpos(wordwrap($about, 100), "\n") ) . '...' : $about, "posts-stat" => $postManager->getNumberOfPosts(), "photos-stat" => $postManager->getNumberOfPostedImages(), "comments-stat" => 12, "likes-stat" => ($postManager->getNumberOfLikes() - $postManager->getNumberOfDislikes()), "profile-link" => $_SERVER["PHP_SELF"] . '?' . $_SERVER["QUERY_STRING"] . '&editProfile=true'];
   
   $viewLoader->load("profile_summary.html")->bind($summaryData)->render();
@@ -83,7 +83,7 @@ IF ( isset($_REQUEST["viewUser"]) ) { //viewing another user's home page (summar
     $date = (new DateTime("@$timestamp"))->format("M d, Y"); //format timestamp to date
     $configs = is_null($images) ? null : $postManager::getImageCssClasses($images);
 
-    $postData = ["id" => $id, "profile-picture" => $profilePictureURL, "firstname" => $firstname, "lastname" => $lastname, "date" => $date, "options" => ["<i class='bi bi-pencil'></i> Edit post", "<i class='bi bi-trash'></i> Delete post"], "text" => $text, "images" => $images, "configs"=> $configs, "likes-stat" => $likes, "dislikes-stat" => $dislikes, "haveAlreadyLiked" => $haveAlreadyLiked, "haveAlreadyDisliked" => $haveAlreadyDisliked];
+    $postData = ["id" => $id, "profile-picture" => $profilePictureURL, "firstname" => $firstname, "lastname" => $lastname, "date" => $date, "options" => ["<i class='bi bi-pencil'></i> Edit post", "<i class='bi bi-trash'></i> Delete post"], "text" => $text, "images" => $images, "configs"=> $configs, "descriptions" => $descriptions, "likes-stat" => $likes, "dislikes-stat" => $dislikes, "haveAlreadyLiked" => $haveAlreadyLiked, "haveAlreadyDisliked" => $haveAlreadyDisliked];
     $viewLoader->load("profile_post.html")->bind($postData)->render();
   
   }

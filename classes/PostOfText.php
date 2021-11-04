@@ -19,11 +19,6 @@ class PostOfText extends Post {
     if ( isset($content) ) { //content provided, so a new post creation
 
       $this->content = self::cleanString($content);
-      
-      if (strlen($this->content) > self::MAX_LENGTH) { //check if length below max
-        array_push($this->errorCodes, 2);
-        throw new Exception("entered texts exceed max length of " . self::MAX_LENGTH);
-      }
 
     } else { //no content, so reference to an old post
 
@@ -53,6 +48,11 @@ class PostOfText extends Post {
   */
   public function post(): bool {
 
+    if (strlen($this->content) > self::MAX_LENGTH) { //check if length below max
+      array_push($this->errorCodes, 5);
+      return false;
+    } 
+
     if (!empty($this->content)) { //do nothing if empty content
 
       try { //create a record in the common post table and then one in the text post record, using existing id
@@ -78,8 +78,7 @@ class PostOfText extends Post {
             $this->mysql->request(MySQL::createTextPostQuery, [":id" => $this->id, ":user" => $this->user]); 
             $this->mysql->request(MySQL::createTextPostContentQuery, [":post_id" => $this->id, ":content" => $this->content]);
 
-            $this->mysql->commit(); 
-            return true; //succeeding this time
+            return $this->mysql->commit(); 
 
           } catch (PDOException $ex) { //failed again for whatever reason, giving up
 
@@ -97,7 +96,7 @@ class PostOfText extends Post {
 
         }
 
-      }//end catch 
+      } //end catch 
 
     }//end if
 
@@ -111,7 +110,7 @@ class PostOfText extends Post {
     $newContent = self::cleanString($newContent);
 
     if (strlen($newContent) > self::MAX_LENGTH) { //check if length below max
-      array_push($this->errorCodes, 2);
+      array_push($this->errorCodes, 5);
       throw new Exception("entered texts exceed max length of " . self::MAX_LENGTH);
     }
 

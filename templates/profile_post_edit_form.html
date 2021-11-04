@@ -1,47 +1,47 @@
 <!--when the post edit is clicked, a modal shows up for editing-->
 <!--post edit modal -->
-<section class="modal fade" id="edit-post-modal">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
+<section class='modal fade' id='edit-post-modal'>
+  <div class='modal-dialog modal-dialog-centered'>
+    <div class='modal-content'>
 
-      <div class="modal-header position-relative">
-        <h5 class="modal-title ms-auto me-auto">Edit Post</h5>
-        <button type="button" class="btn-close position-absolute end-0 translate-middle-x" data-bs-dismiss="modal"></button>
+      <div class='modal-header position-relative'>
+        <h5 class='modal-title ms-auto me-auto'>Edit Post</h5>
+        <button type='button' class='btn-close position-absolute end-0 translate-middle-x' data-bs-dismiss='modal'></button>
       </div>
 
-      <section class="modal-body">
-        <img src="{{profile-picture}}" class="rounded-circle" id="post-profile-picture-modal" draggable="false">
-        <span class="h6 ms-1 my-0">{{firstname}} {{lastname}}</span>
+      <section class='modal-body'>
+        <img src='{{profile-picture}}' class='rounded-circle' id='post-profile-picture-modal' draggable='false'>
+        <span class='h6 ms-1 my-0'>{{firstname}} {{lastname}}</span>
 
-        <div id="post-content">
+        <div id='post-content'>
 
-          <textarea id="edit-post-text" class="form-control mt-2 border-0" rows="4">{{IF !empty('{{text}}')}}{{text}}{{ENDIF}}</textarea>
+          <textarea id='edit-post-text' class='form-control mt-2 border-0' rows='4'>{{IF !empty('{{text}}')}}{{text}}{{ENDIF}}</textarea>
           
           {{IF !empty('{{images}}')}}          
-          <section id="post-attachment" class="mt-1 mb-3 p-0 position-relative">  
-            {{FOREACH {{images}} AS image {{configs}} AS config}}
-              <img src='{{image}}' class="{{config}}" draggable="false">
+          <section id='post-attachment' class='mt-1 mb-3 p-0 position-relative'>  
+            {{FOREACH {{images}} AS image {{configs}} AS config {{descriptions}} AS description}}
+              <img src='{{image}}' class='{{config}}' title='{{description}}' data-bs-toggle='tooltip' draggable='false'>
             {{ENDFOREACH}}
             <span class='btn btn-light rounded-circle position-absolute' id='upload-cancel-btn-container'><i class='bi bi-x-lg' id='upload-cancel-btn'></i></span>
           </section>
           {{ENDIF}}
 
-          <span id="new-post-photo"><button type="button" class="btn"><i class="bi bi-camera-fill text-primary"></i><span class="fw-bold text-secondary small">  Photo</span></button></span>
+          <span id='edit-post-photo'><button type='button' class='btn disabled'><i class='bi bi-camera-fill text-primary'></i><span class='fw-bold text-secondary small'>  Photo</span></button></span>
           
  
           <!--2nd modal for adding photo captions-->
-          <section class="modal fade" id="photo-caption-modal">
-            <div class="modal-dialog modal-dialog-centered">
-              <div class="modal-content w-75 mx-auto">
-                <div class="modal-header">
-                  <h6 class="modal-title">Add a photo caption</h6>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          <section class='modal fade' id='photo-caption-modal'>
+            <div class='modal-dialog modal-dialog-centered'>
+              <div class='modal-content w-75 mx-auto'>
+                <div class='modal-header'>
+                  <h6 class='modal-title'>Modify the photo caption</h6>
+                  <button type='button' class='btn-close' data-bs-dismiss='modal'></button>
                 </div>
-                <div class="modal-body">
-                  <textarea class="form-control border-0 small p-1" id="photo-caption" rows="3" placeholder="Write a caption"></textarea>
+                <div class='modal-body'>
+                  <textarea class='form-control border-0 small p-1' id='photo-caption' rows='3'></textarea>
                 </div>
-                <div class="modal-footer border-top-0 pt-0 mt-0">
-                  <button type ="button" class="btn btn-primary btn-sm" data-bs-dismiss="modal" id="photo-caption-save-btn">Save</button>
+                <div class='modal-footer border-top-0 pt-0 mt-0'>
+                  <button type ='button' class='btn btn-primary btn-sm' data-bs-dismiss='modal' id='photo-caption-save-btn'>Save</button>
                 </div>
               </div>
             </div>
@@ -53,14 +53,14 @@
       </section>
       
       <!--hidden upload form for photo-->
-      <form action="ajax/posts_ajax.php" method="post" enctype="multipart/form-data" class="d-none" id="photo-upload-form">
-          <input type="file" name="photo-upload" id="photo-upload" accept="image/jpeg, image/png, image/gif, image/webp">
-          <input type="submit" id="photo-upload-form-submit-btn">
+      <form action='ajax/posts_ajax.php' method='post' enctype='multipart/form-data' class='d-none' id='photo-upload-form'>
+          <input type='file' name='photo-upload' id='photo-upload' accept='image/jpeg, image/png, image/gif, image/webp'>
+          <input type='submit' id='photo-upload-form-submit-btn'>
       </form>
       <!--end of upload form-->
 
-      <div class="modal-footer border-0">
-        <button id="edit-post-submit" type="button" class="w-50 ms-auto me-auto btn btn-primary">Save</button>
+      <div class='modal-footer border-0'>
+        <button id='edit-post-submit' type='button' class='w-50 ms-auto me-auto btn btn-primary'>Save</button>
       </div>
 
     </div>

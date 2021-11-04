@@ -4,12 +4,18 @@ var files = [];
 
 $("document").ready(function(){
   
-  //initialization block, put input text to focus
-  let modal = document.getElementById('new-post-modal')
-  let text = document.getElementById('new-post-text')
+  //initialization block
+  //put input text to focus
+  let modal = document.querySelector('#new-post-modal');
+  let text = document.querySelector('#new-post-text');
   modal.addEventListener('shown.bs.modal', function () {
-    text.focus()
+    text.focus();
   });
+  //initialize tooltips
+  var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+  var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl);
+  })  
 
   //disable or enable post submit btn on input fields change
   $("#post-content").on("input DOMSubtreeModified", enablePostBtn);
@@ -29,7 +35,7 @@ $("document").ready(function(){
 });
 
 /*
-function to
+function to identify which post options is chosen and switch handling codes
 */
 function postOptions(event) {
 
@@ -50,6 +56,7 @@ function postOptions(event) {
       if(result.success) { 
 
         $("#posts").find("[data-id=" + id + "]").fadeOut("slow"); //get the post using its data-id attribute
+        updateStatistics(3, result.photosNum);
 
       }
 
@@ -61,15 +68,75 @@ function postOptions(event) {
 
     $.post("ajax/posts_ajax.php", dataSend, function(result) {
       
-      $("#posts").prepend(result.postView); 
-      let editModal = new bootstrap.Modal(document.getElementById('edit-post-modal'));
-      editModal.show();
+      //display the received edit view and subsequently other operations to work the view function properly
+      //add view to DOM ahead of #new-post-modal so it takes precedence over the overlapping #post-attachment, but it must be removed after edit
+      $("#main-menu").prepend(result.postView); 
+      //initialize tooltip(s)
+      $("#edit-post-modal #post-attachment img").each( function(){new bootstrap.Tooltip($(this));} ) 
+      //add photo upload btn handler
+      $("#edit-post-photo button").on("click", upload);
+      //add attachment cancel btn handler
+      $("#edit-post-modal #upload-cancel-btn-container").on("click", function() {
+        $("#edit-post-modal #post-attachment").addClass("d-none"); //hide the area
+        $("#edit-post-modal #post-attachment img").remove(); //remove all images
+        $("#edit-post-photo button").removeClass("disabled"); //enable the photo upload btn after cancelling all existing photos
+      });      
+      //add click handler for adding photo captions
+      $("#edit-post-modal #post-attachment img").off("click").on("click", addCaption); 
+      $("#edit-post-modal #photo-caption-modal").on('hidden.bs.modal', function(event) { //handler which this nested modal is hidden
+        event.stopPropagation(); //stop this modal-hide event from going to the outer modal as to trigger its modal-hide handler
+      });
+      //display modal and ensure it is purged on hide
+      $("#edit-post-modal").modal("show");
+      $("#edit-post-modal").on('hidden.bs.modal', function () {
+        $("#edit-post-modal").remove(); //remove the modal when it is not active as some modal elements overlap between new-post-modal and edit-post-modal
+      });     
+
+      $("#edit-post-submit").on( "click", () => edit(id) );
 
     }, "json");
 
   }
 
 } //end function
+
+/*
+function to handle updating an existing post's data
+*/
+function edit(id) {
+
+  let text = $("#edit-post-text").val().trim(); //get text data
+  let img = $("#post-attachment img"); //get image data
+  
+  $("#edit-post-modal").modal('hide'); //hide the modal
+
+  //switch JSON data depending on input
+  if (img.length == 0 && text.length > 0) { //text post
+    
+    //send data as an object when no files involved
+    let dataSend = {action: "update", type: "text", id: id, text: text};
+    
+    //ajax call to send update data to backend
+    $.post("ajax/posts_ajax.php", dataSend, function(data) {
+      
+      if(!data.success) {
+        
+        callbackError(data.errors);
+
+      } else { //update recorded, reflect in frontend
+
+        let postElement = $('.post[data-id=' + id + ']');
+        $(postElement).find(".post-text").text(text); //replace old text with new
+
+      }
+
+    }, "json");
+  
+  } else if (img.length > 0) { //image post
+
+  }
+  
+}
 
 /*
 function to record user reactions of a post
@@ -209,8 +276,8 @@ function post() {
         callbackError(data.errors);
 
       } else {
-
-        callbackSuccess(data.postView);
+        
+        callbackSuccess(data.postView, data.photosNum);
 
       }
 
@@ -247,7 +314,7 @@ function post() {
 
         } else { //upload succeeded
           
-          callbackSuccess(data.postView);
+          callbackSuccess(data.postView, data.photosNum);
             
         }
 
@@ -258,11 +325,21 @@ function post() {
   
   /*
   inner function to help display post view
-  @param string view back backend return data
+  @param string view to render
+  @param int photosNum number of images inside the rendered view
   */
-  function callbackSuccess(post) {
+  function callbackSuccess(post, photosNum) {
 
-    $(post).hide().prependTo("#posts").fadeIn(2000, "linear"); //add the received render-ready post view
+    //add the received render-ready post view
+    $(post).hide().prependTo("#posts").fadeIn(2000, "linear"); 
+
+    updateStatistics(1, photosNum);
+
+    //initialize tooltips in new images if any
+    let idRegex = /data-id=["'](.+)["']/i ; //regex pattern to capture the id inside data-id attribute
+    let id = post.match(idRegex)[1]; //1st captured group is id
+    let postSelector = ".post[data-id='" + id + "']" + " " + "[data-bs-toggle='tooltip']"; //selector of the tooltip elements
+    $(postSelector).each( function(){new bootstrap.Tooltip($(this));} ) //initialize tooltip(s)
     
     //when there is pagination (1+ pages), and page 1 not currently active, move back to the first page
     if ( $("#main-menu").children("#pagination") && !$("#main-menu").find("#pagination .page-item").eq(0).hasClass("active") ) {
@@ -273,38 +350,66 @@ function post() {
 
   }
 
-  /*inner function to help display errors
-  @param array errors from backend return data
-  */
-  function callbackError(errors) {
-
-    let err = errors[0]; //read first element of the error array
-
-    let title = "";
-    let msg = "";
-    if (err == 2) {
-      title = "File too large";
-      msg = "Hey, the uploaded file is too big!";
-    } else if (err == 3) {
-      title = "Format file issue";
-      msg = "Sorry, we do not support the uploaded file format.";
-    } else if (err == 4) {
-      title = "Too many files";
-      msg = "Slow down, too many files were attempted per upload."; 
-    } else { //-1 system err
-      title = "Our fault";
-      msg = "Opps. An error occurred on our side. Sorry about that.";
-    }
-    showToast(title, msg); 
-
-  }
-
   //clear all inputs
   $("#new-post-text").val(""); //empty out text input
   hideAttachment(); //empty out any attachments
 
   
 } //end post function
+
+
+/*function to help display errors by using Text class errors
+@param array errors from backend return data
+*/
+function callbackError(errors) {
+  
+  let err = errors[0]; //read first element of the error array
+
+  let title = "";
+  let msg = "";
+  if (err == 2) {
+    title = "File too large";
+    msg = "Hey, the uploaded file is too big!";
+  } else if (err == 3) {
+    title = "Format file issue";
+    msg = "Sorry, we do not support the uploaded file format.";
+  } else if (err == 4) {
+    title = "Too many files";
+    msg = "Slow down, too many files were attempted per upload."; 
+  } else if (err == 5) {
+    title = "Post too long";
+    msg = "The post is too long. Please keep it shorter."; 
+  } else { //-1 system err
+    title = "Our fault";
+    msg = "Opps. An error occurred on our side. Sorry about that.";
+  }
+  showToast(title, msg); 
+
+}
+
+/*
+helper function to update the post statistics in summary view
+@param action where 1 is for a new post, 2 for an updated post, 3 for deleted post
+@param photoNumber is the number of images involved in this post
+*/
+function updateStatistics(action, photosNum = 0) {
+
+  let posts = parseInt($("#posts-stat").text()); //number of posts shown in summary
+  let photos = parseInt($("#photos-stat").text()); //number of posts shown in summary
+
+  switch (action) {
+    case 1: //new post
+      $("#posts-stat").text(++posts); //increment posts by 1
+      $("#photos-stat").text(photos + photosNum); //increment images by number included in the post
+      break;
+    case 3: //delete post
+      $("#posts-stat").text(--posts); //decrement posts by 1
+      $("#photos-stat").text(photos - photosNum); //decrement images by number deleted in the post
+      break;
+
+  }
+
+}
 
 /*
 function to upload a photo
@@ -321,7 +426,7 @@ function upload() {
   $("#photo-upload").trigger("click");
   $("#photo-upload").off("change").on("change", function(event){
     
-    const file = event.target.files[0]; //get file obj, 1st element only as multiple no allowed
+    const file = event.target.files[0]; //get file obj, 1st element only as multiple not allowed
     files.push(file);
     if (!checkPhoto(file)) {
       return;
@@ -340,7 +445,8 @@ function upload() {
 function hideAttachment() {
   
   $("#post-attachment img").each( () => {URL.revokeObjectURL($(this).attr("src"));}); //revoke url
-  $("#post-attachment").addClass("d-none").children("img").remove(); //clear all images and re-hide attachment area
+  $("#post-attachment").addClass("d-none");
+  $("#post-attachment img").remove(); 
   $(".modal-body button.disabled").removeClass("disabled"); //clear any disabled buttons
   files = []; //clear the files array variable
 
@@ -439,15 +545,18 @@ function manageAttachment() {
      
  } 
  
- //add the declared css classes to each img
- $("#post-attachment img").each( function(){
+ //add the declared css classes and tooltips to each img
+ $("#post-attachment img").each( function() {
+
    let cls = config.shift(); //get the first img configuration element off array
-   $(this).addClass(cls); //assign config class
+   $(this).removeClass().addClass(cls); //assign config class
+
    //add BS tooltip and a data-item to newly added img, the tooltip to display caption and data-item to store the caption
    if ($(this).data("caption") == undefined || $(this).data("caption") == false) { //no data-item caption yet, so a new img
     $(this).attr({"data-bs-toggle": "tooltip", "title": "click to add a caption"}).data("caption", ""); //add BS tooltip to img
     new bootstrap.Tooltip($(this)); //initialize the tooltip
    }
+
  });
 
 $("#post-attachment img").off("click").on("click", addCaption); //add a click handler for adding photo captions
@@ -464,7 +573,7 @@ function addCaption(clickEvt) {
  let imgEl = $("#post-attachment img").eq(index); //get the img element clicked on
  let tooltip = bootstrap.Tooltip.getInstance(imgEl); //get the BS tooltip instance of this img element
  tooltip.hide(); //hide tooltip
- let captionModal = new bootstrap.Modal(document.getElementById('photo-caption-modal'));
+ let captionModal = new bootstrap.Modal(document.querySelector('#photo-caption-modal')); //display a higher modal for writing/editing captions
  captionModal.show();
   
  $("#photo-caption-save-btn").off("click").on("click", function() {

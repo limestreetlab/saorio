@@ -397,13 +397,20 @@ class PostOfImage extends Post {
 
     try {
 
-      //delete the text post associated if one
+      //delete the associated text post if there's one
       $textId = $this->mysql->request(MySQL::readImagePostTextIdQuery, [":id" => $this->id])[0]["id"];
       if ($textId) {
         (new PostOfText(null, $textId))->delete();
       }
+      
+      //get the file path of its image file(s) for deletion
+      $imgPaths = $this->mysql->request(MySQL::readImagePostImagesQuery, [":id" => $this->id], true);
       //delete this image post
       $this->mysql->request( MySQL::deletePostQuery, [":id" => $this->id] ); //remove post from database
+  
+      foreach( $imgPaths as $imgPath ) { //remove image file(s) from server
+        unlink($imgPath);
+      }
       unset($this->id); //cannot unset the object itself, merely unset its key instance handle variable
 
     } catch (Exception $ex) {
