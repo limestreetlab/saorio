@@ -92,7 +92,7 @@ function postOptions(event) {
         $("#edit-post-modal").remove(); //remove the modal when it is not active as some modal elements overlap between new-post-modal and edit-post-modal
       });     
 
-      $("#edit-post-submit").on( "click", () => edit(id) );
+      $("#edit-post-submit").on( "click", () => edit(id) ); //invoke another function on edit confirmation
 
     }, "json");
 
@@ -106,11 +106,12 @@ function to handle updating an existing post's data
 function edit(id) {
 
   let text = $("#edit-post-text").val().trim(); //get text data
-  let img = $("#post-attachment img"); //get image data
+  let img = $("#edit-post-modal #post-attachment img"); //get image data
   
   $("#edit-post-modal").modal('hide'); //hide the modal
 
   //switch JSON data depending on input
+  //note that it's possible a text post can add images to become an image post or an image post delete img to become a text post, original post is then deleted and a new post created, giving rise to a new id and substitute old timestamp into new
   if (img.length == 0 && text.length > 0) { //text post
     
     //send data as an object when no files involved
@@ -133,6 +134,46 @@ function edit(id) {
     }, "json");
   
   } else if (img.length > 0) { //image post
+    
+    //send post data to backend as if a new post, backend checks what's changed, persist it, and inform frontend what's changed so it can be updated without changing the whole view
+    var captions = []; //to store photo captions
+    $(img).each( (index, el) => captions.push($(el).attr("data-bs-original-title")) ); //retrieve captions, !NOTE that BS assigns the "title" value into dynamically created "data-bs-original-title", so title becomes empty in runtime
+    var images = []; //to store the paths of images shown, for a newly added img, the path is temporary and is very different from a URL path passed from backend, that will tell if images are new or old
+    $(img).each( (index, el) => images.push($(el).attr("src")) ); //getting all src into array
+    var formData = new FormData(); //potential files so use form to encapsulate the data
+    
+    formData.set("id", id);
+    formData.set("type", "image");
+    formData.set("action", "update");
+    formData.set("text", text);
+    //can't directly add an array as value in FormData, must suffix varname with [] so PHP will see as array and pick up all values assigned to it instead of only last one (JS treats both x[] and x as strings)
+    $.each(files.reverse(), (index, file) => formData.append("files[]", file) ); //new image files from upload form, if any
+    $.each(captions, (index, caption) => formData.append("captions[]", caption) ); //captions arr  
+    $.each(images, (index, image) => formData.append("images[]", image) ); //images arr  
+    
+    //ajax call to send post data to backend
+    $.ajax({
+      url: "ajax/posts_ajax.php",
+      method: "POST",
+      data: formData,
+      processData: false,
+      contentType: false,
+      cache: false,
+      dataType: "json",
+      success: function(data) {
+        
+        if(!data.success) { //upload failed
+          
+          callbackError(data.errors);
+
+        } else { //upload succeeded
+          
+          
+            
+        }
+
+      }//end callback
+    }); //end ajax
 
   }
   
@@ -277,7 +318,7 @@ function post() {
 
       } else {
         
-        callbackSuccess(data.postView, data.photosNum);
+        callbackSuccess(data.postView, 0);
 
       }
 
@@ -314,7 +355,7 @@ function post() {
 
         } else { //upload succeeded
           
-          callbackSuccess(data.postView, data.photosNum);
+          callbackSuccess(data.postView, img.length);
             
         }
 

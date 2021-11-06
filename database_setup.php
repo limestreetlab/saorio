@@ -96,7 +96,8 @@ $tables["$tablename"] = $columns;
 $tablename = "posts";
 $columns = "id VARCHAR(30) COMMENT 'generated using username and timestamp',
 user VARCHAR(20) NOT NULL COMMENT 'user making the post',
-timestamp TIMESTAMP DEFAULT NOW() COMMENT 'epoch timestamp to now whenever a post is made or modified',
+timestamp TIMESTAMP NOT NULL DEFAULT NOW() COMMENT 'epoch timestamp representing post's creation time',
+edit_timestamp TIMESTAMP DEFAULT NULL COMMENT 'epoch timestamp for post's edit time',
 post_type TINYINT(1) NOT NULL COMMENT 'different types of posts can have different contents and post-to-content relationships so put into own tables',
 PRIMARY KEY (id),
 FOREIGN KEY (user) REFERENCES members(user) ON DELETE CASCADE ON UPDATE CASCADE,

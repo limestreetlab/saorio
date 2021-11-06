@@ -307,7 +307,7 @@ final class MySQL {
   //read one text post by id
   public const readTextPostQuery = "SELECT posts.user, UNIX_TIMESTAMP(posts.timestamp) AS timestamp, text_posts.content AS post FROM posts INNER JOIN text_posts ON posts.id = text_posts.post_id WHERE posts.id = :id";
   public const updateTextPostForQuery = "UPDATE text_posts SET text_for = :for WHERE post_id = :post_id"; //specify for which non-text post this text post is associated with
-  public const updateTextPostQuery = "UPDATE text_posts SET content = :content WHERE post_id = :post_id";
+  public const updateTextPostQuery = "UPDATE text_posts SET content = :content AND edit_timestamp = NOW() WHERE post_id = :post_id";
 
   //for image posts
   public const createImagePostQuery = "INSERT INTO posts (id, user, post_type) VALUES (:id, :user, 2)";

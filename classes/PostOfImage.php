@@ -208,8 +208,7 @@ class PostOfImage extends Post {
 
           }
 
-          $this->mysql->commit();
-          break;
+          return $this->mysql->commit();
 
         case 2: //remove images
 
@@ -223,8 +222,7 @@ class PostOfImage extends Post {
 
           }
 
-          $this->mysql->commit();
-          break;
+          return $this->mysql->commit();
 
         case 3: //add images
 
@@ -238,16 +236,12 @@ class PostOfImage extends Post {
             
           }
 
-          $this->mysql->commit();
-          break;
-
-        default:
-          throw new Exception("unknown function parameter.");
+          return $this->mysql->commit();
 
         case 4: //update text
           
           $text = $data[0];
-          $this->text->update($text); //update db
+          return $this->text->update($text); //update db
 
       }
 

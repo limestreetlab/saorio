@@ -8,7 +8,7 @@ require_once "./../includes/ini.php"; //rel path to ini.php
 
 /*
 script to send a text post
-@return [bool success, array errors, string post, int photosNum] where post is the render-ready post string and photosNum is the number of images involved
+@return [bool success, array errors, string post] where post is the render-ready post string
 */
 if ($_REQUEST["type"] == "text" && $_REQUEST["action"] == "send") {
 
@@ -33,7 +33,7 @@ if ($_REQUEST["type"] == "text" && $_REQUEST["action"] == "send") {
 
   }
 
-  echo json_encode(["success" => $success, "errors" => $post->getErrors(), "postView" => $postView, "photosNum" => countNumberOfImg($postView)]);
+  echo json_encode(["success" => $success, "errors" => $post->getErrors(), "postView" => $postView]);
   exit();
 
 }
@@ -67,18 +67,116 @@ if ( $_REQUEST["action"] == "update" && isset($_REQUEST["id"]) && !isset($_REQUE
 
 /*
 script to handing updating a text post
-@
+@return [bool success, array errors, int photosNum, string newId] where photosNum is the number of photos involved and newId is new post id if post type is changed
 */
 if ( $_REQUEST["action"] == "update" && isset($_REQUEST["id"]) && $_REQUEST["type"] == "text" ) {
 
-  $post = new PostOfText(null, $_REQUEST["id"]); 
-  try {
-    $post->update($_REQUEST["text"]);
-    $success = true;
-  } catch (Exception $ex) {
-    $success = false;
+  $pm = new PostManager($user);
+  $postData = $pm->getData($_REQUEST["id"]);
+  $postType = $postData["type"];
+
+  if ($postType == 2) { //originally an image post now becoming text
+
+    //delete the original image post and create a new text post
+    $photosNum = count($postData["images"]);   
+    
+    try {
+      
+    } catch (Exception $ex) {
+      $success = false;
+    }
+  
+  } else { //originally a text post
+      
+    $post = new PostOfText(null, $_REQUEST["id"]); 
+    $photosNum = 0;
+    $newId = null;
+
+    try {
+      $post->update($_REQUEST["text"]);
+      $success = true;
+    } catch (Exception $ex) {
+      $success = false;
+    }
+
   }
-  echo json_encode(["success" => $success, "errors" => $post->getErrors()]);
+
+  echo json_encode(["success" => $success, "errors" => $post->getErrors(), "photosNum" => $photosNum, "newId" => $newId]);
+  exit();
+
+}
+
+/*
+script to handing updating an image post
+it retrieves the original post and compares with received data to check what's changed to inform frontend for update
+1 if nothing is changed, 2 if text changed, 3 if captions changed, 4 if photos changed, 5 if text and captions changed, 6 if text and photos changed, 7 if post type changed 
+@return [int changeCode, bool success, array errors, int photosNum, string newId] where photosNum is the number of photos involved and newId is new post id if post type is changed
+*/
+if ( $_REQUEST["action"] == "update" && isset($_REQUEST["id"]) && $_REQUEST["type"] == "image" ) {
+
+  //collect current variables
+  $id = $_REQUEST["id"]; //id of updating post
+  $new_text = !empty($_REQUEST["text"]) ? trim($_REQUEST["text"]) : null; //string, text data
+  $new_images = $_REQUEST["images"]; //src of images
+  $new_captions = $_REQUEST["captions"]; //array, img captions data
+  $files = fixArrayFiles($_FILES["files"]); //array, img files data, if any
+  //collect original variables
+  $pm = new PostManager($user);
+  $original_data = $pm->getData($id);
+  $original_type = $original_data["type"];
+  $original_text = $original_data["text"];
+  $original_images = $original_data["images"];
+  $original_captions = $original_data["descriptions"];
+  //data comparason, all boolean values
+  $type_changed = $original_type != 2 ? true : false; //check whether originally a non-image post
+  $text_changed = ( $new_text === $original_text ); //string equality check
+  $images_changed = ( $new_images === $original_images ); //array equality check, 1 if same size, same values, same order
+  $captions_changed = ( $new_captions === $original_captions ); //array equality check
+  $changes = [$type_changed, $text_changed, $captions_changed, $images_changed]; //arr to aggregate changes
+  
+  switch ($changes) {
+
+    case [0, 0, 0, 0]: //nothing is changed
+      $changed = 1;
+      break;
+    case [0, 1, 0, 0]: //text changed only
+      $changed = 2;
+      $post = new PostOfImage(null, $id);
+      $success = $post->update(4, [$new_text]);
+      $photosNum = 0;
+      $newId = null;
+      break;
+    case [0, 0, 1, 0]: //captions changed only, so both old and new caption arrays must have same lengths
+      $changed = 3;
+      $post = new PostOfImage(null, $id);
+      //identify which photo has its caption changed and the new caption
+      $changed_keys_values = [];
+      foreach ($original_captions as $key => $value) {
+        if ($value !== $new_captions[$key]) {
+          $changed_keys_values[] = [$key, $new_captions[$key]];
+        }
+      }
+      $success = $post->update(1, $changed_keys_values);
+      $photosNum = 0;
+      $newId = null;
+      break;
+    case [0, 0, 1, 1]: //captions and img changed
+    case [0, 0, 0, 1]: //img changed
+      $changed = 4;
+      break;
+    case [0, 1, 1, 0]: //text and captions changed
+      $changed = 5;
+      break;
+    case [0, 1, 1, 1]: //text, captions, img
+    case [0, 1, 0, 1]: //text, img
+      $changed = 6;
+      break;
+    default: //2^3 = 8 arragements when post type hasn't changed are covered above
+      $changed = 7;
+      
+  }
+
+  echo json_encode(["change" => $changed, "success" => $success, "errors" => $post->getErrors(), "photosNum" => $photosNum, "newId" => $newId]);
   exit();
 
 }
@@ -92,9 +190,10 @@ if ( $_REQUEST["action"] == "delete" && isset($_REQUEST["id"]) ) {
 
   $pm = new PostManager($user);
   $images = $pm->getData($_REQUEST["id"])["images"];
+  $numberOfPhotosDeleted = empty($images) ? 0 : count($images); 
   $success = $pm->remove($_REQUEST["id"]);
 
-  echo json_encode(["success" => $success, "photosNum" => count($images)]);
+  echo json_encode(["success" => $success, "photosNum" => $numberOfPhotosDeleted]);
   exit();
 
 }
@@ -102,7 +201,7 @@ if ( $_REQUEST["action"] == "delete" && isset($_REQUEST["id"]) ) {
 
 /*
 script to send an image post
-@return [bool success, array errors, string post, int photosNum] where post is the render-ready post string and photosNum is the number of images involved
+@return [bool success, array errors, string post] where post is the render-ready post string
 */
 if ($_REQUEST["type"] == "image" && $_REQUEST["action"] == "send") {
 
@@ -148,7 +247,7 @@ if ($_REQUEST["type"] == "image" && $_REQUEST["action"] == "send") {
 
   }
    
-  echo json_encode(["success" => $success, "errors" => $post->getErrors(), "postView" => $postView, "photosNum" => countNumberOfImg($postView)]);
+  echo json_encode(["success" => $success, "errors" => $post->getErrors(), "postView" => $postView]);
   exit();
 
 }
@@ -224,6 +323,10 @@ this function fixes the arrangement by converting it from the strange to the nat
 @see https://www.php.net/manual/en/features.file-upload.multiple.php
 */
 function fixArrayFiles(&$files) {
+
+  if (empty($files)) {
+    return null;
+  }
 
   $file_arr = [];
   $file_count = count($files['name']);
