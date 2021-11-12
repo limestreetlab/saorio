@@ -94,6 +94,7 @@ class PostOfImage extends Post {
     } else { //content not provided, so referencing an old post
       
       $postData = $this->mysql->request(MySQL::readImagePostQuery, [":id" => $this->id]);
+      $textPostId = $this->mysql->request(MySQL::readImagePostTextIdQuery, [":id" => $this->id])[0]["id"];
 
       if (!$postData) {
         array_push($this->errorCodes, 1);
@@ -102,8 +103,8 @@ class PostOfImage extends Post {
 
       $this->user = $postData[0]["user"];
       $this->timestamp = $postData[0]["timestamp"];
-      $this->text = !is_null( $postData[0]["text"] ) ? new PostOfText( $postData[0]["text"] ) : null;
       $this->numberOfImages = count($this->content);
+      $this->text = !empty($textPostId) ? new PostOfText(null, $textPostId) : null;
 
     }
 
@@ -208,7 +209,8 @@ class PostOfImage extends Post {
 
           }
 
-          return $this->mysql->commit();
+          $this->mysql->commit();
+          break;
 
         case 2: //remove images
 
@@ -222,7 +224,8 @@ class PostOfImage extends Post {
 
           }
 
-          return $this->mysql->commit();
+          $this->mysql->commit();
+          break;
 
         case 3: //add images
 
@@ -236,14 +239,19 @@ class PostOfImage extends Post {
             
           }
 
-          return $this->mysql->commit();
+          $this->mysql->commit();
+          break;
 
         case 4: //update text
           
           $text = $data[0];
-          return $this->text->update($text); //update db
+          $this->text->update($text); //update db
+          break;
 
-      }
+      } //close switch
+
+      $this->mysql->request(MySQL::updatePostEditTimestampQuery, [":id" => $this->id]);
+      return true;
 
     } catch (Exception $ex) {
 
@@ -271,10 +279,9 @@ class PostOfImage extends Post {
       return false;
     }
 
-    $params = [":description" => $description, ":id" => $imageFileObj->getId()];
-
     try {
-
+      
+      $params = [":description" => $description, ":id" => $imageFileObj->getId()];
       $this->mysql->request(MySQL::updateImagePostDescriptionQuery, $params); //update database
       return true;
 
@@ -342,8 +349,6 @@ class PostOfImage extends Post {
     //add to database
     try {
       
-      $this->mysql->beginTransanction();
-
       $this->mysql->request(MySQL::createImagePostContentQuery, [":id" => $image_id_available, ":post_id" => $this->id, ":description" => $description]);
       
       if ( !$imageFileObj->upload() ) { //upload failed
@@ -363,15 +368,11 @@ class PostOfImage extends Post {
   
       } else { //upload done
 
-        $this->mysql->commit();
         return true;
 
       }
 
-
     } catch (Exception $ex) {
-
-      $this->mysql->rollBack();
 
       if (empty($this->errorCodes)) { //no file upload related error
         array_push($this->errorCodes, -1); //is system error
@@ -467,7 +468,15 @@ class PostOfImage extends Post {
 
   }
 
+  /*
+  number of images getter
+  @return int number of images
+  */
+  public function getNumberOfImages(): int {
 
+    return $this->numberOfImages;
+
+  }
 
 
 

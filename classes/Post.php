@@ -292,6 +292,17 @@ abstract class Post {
   }
 
   /*
+  a rarely used function that allows an existing post's timestamp to be backdated
+  @param int unix timestamp to change to
+  */
+  public function backdateTimestamp(int $timestamp): void {
+
+    $this->mysql->request(MySQL::updatePostTimestampQuery, [":id" => $this->id, ":timestamp" => $timestamp]);
+    $this->mysql->request(MySQL::updatePostEditTimestampQuery, [":id" => $this->id]);
+
+  }
+
+  /*
   class utility to clean string inputs, by trimming, sanitizing, and replacing double whitespaces
   @param pre-clean string
   @return post-clean string

@@ -78,9 +78,18 @@ if ( $_REQUEST["action"] == "update" && isset($_REQUEST["id"]) && $_REQUEST["typ
   if ($postType == 2) { //originally an image post now becoming text
 
     //delete the original image post and create a new text post
-    $photosNum = count($postData["images"]);   
     
     try {
+
+      $photosNum = -1 * count($postData["images"]);   
+      $originalTimestamp = intval($postData["timestamp"]); //unix timestamp of the original img post
+      $originalImagePost = new PostOfImage(null, $_REQUEST["id"]); //the original img post
+      $originalImagePost->delete();
+      $post = new PostOfText($_REQUEST["text"], null); //a new post
+      $post->post();
+      $post->backdateTimestamp($originalTimestamp); //change the creation time back to original and edit time to now
+      $newId = $post->getData()["id"];
+      $success = true;
       
     } catch (Exception $ex) {
       $success = false;
@@ -116,7 +125,7 @@ if ( $_REQUEST["action"] == "update" && isset($_REQUEST["id"]) && $_REQUEST["typ
 
   //collect current variables
   $id = $_REQUEST["id"]; //id of updating post
-  $new_text = !empty($_REQUEST["text"]) ? trim($_REQUEST["text"]) : null; //string, text data
+  $new_text = !empty($_REQUEST["text"]) ? trim($_REQUEST["text"]) : ''; //string, text data
   $new_images = $_REQUEST["images"]; //src of images
   $new_captions = $_REQUEST["captions"]; //array, img captions data
   $files = fixArrayFiles($_FILES["files"]); //array, img files data, if any
@@ -129,54 +138,108 @@ if ( $_REQUEST["action"] == "update" && isset($_REQUEST["id"]) && $_REQUEST["typ
   $original_captions = $original_data["descriptions"];
   //data comparason, all boolean values
   $type_changed = $original_type != 2 ? true : false; //check whether originally a non-image post
-  $text_changed = ( $new_text === $original_text ); //string equality check
-  $images_changed = ( $new_images === $original_images ); //array equality check, 1 if same size, same values, same order
-  $captions_changed = ( $new_captions === $original_captions ); //array equality check
+  $text_changed = ( $new_text !== $original_text ); //string equality check
+  $images_changed = ( $new_images !== $original_images ); //array equality check, 1 if same size, same values, same order
+  $captions_changed = ( $new_captions !== $original_captions ); //array equality check
   $changes = [$type_changed, $text_changed, $captions_changed, $images_changed]; //arr to aggregate changes
   
+  $post = new PostOfImage(null, $id);
+
   switch ($changes) {
 
     case [0, 0, 0, 0]: //nothing is changed
       $changed = 1;
+      $success = true;
+      $photosNum = 0;
+      $newId = null;
       break;
+
     case [0, 1, 0, 0]: //text changed only
       $changed = 2;
-      $post = new PostOfImage(null, $id);
       $success = $post->update(4, [$new_text]);
       $photosNum = 0;
       $newId = null;
       break;
+
     case [0, 0, 1, 0]: //captions changed only, so both old and new caption arrays must have same lengths
       $changed = 3;
-      $post = new PostOfImage(null, $id);
       //identify which photo has its caption changed and the new caption
       $changed_keys_values = [];
       foreach ($original_captions as $key => $value) {
         if ($value !== $new_captions[$key]) {
-          $changed_keys_values[] = [$key, $new_captions[$key]];
+          array_push($changed_keys_values, [$key, $new_captions[$key]]);
         }
       }
       $success = $post->update(1, $changed_keys_values);
       $photosNum = 0;
       $newId = null;
       break;
+
     case [0, 0, 1, 1]: //captions and img changed
     case [0, 0, 0, 1]: //img changed
       $changed = 4;
+      //removing images one by one and adding new ones 
+      $numberOfImagesInPost = $post->getNumberOfImages();
+      $params = [];
+      for ($i = 0; $i < count($files); $i++) {
+        array_push($params, [$files[$i], $new_captions[$i]]); 
+      }
+      $post->update(3, $params);
+      $post->update(2, range(0, $numberOfImagesInPost - 1));
+      $success = true;
+      $photosNum = count($files) - $numberOfImagesInPost; //can be positive (more photos added than deleted) or negative (more deleted than added)
+      $newId = null;
       break;
+
     case [0, 1, 1, 0]: //text and captions changed
       $changed = 5;
+      $changed_keys_values = [];
+      foreach ($original_captions as $key => $value) {
+        if ($value !== $new_captions[$key]) {
+          $changed_keys_values[] = [$key, $new_captions[$key]];
+        }
+      }
+      $success = $post->update(1, $changed_keys_values) && $post->update(4, [$new_text]);
+      $photosNum = 0;
+      $newId = null;
       break;
+
     case [0, 1, 1, 1]: //text, captions, img
     case [0, 1, 0, 1]: //text, img
       $changed = 6;
+      $post->update(4, [$new_text]);
+      //removing images one by one and adding new ones 
+      $numberOfImagesInPost = $post->getNumberOfImages();
+      $params = [];
+      for ($i = 0; $i < count($files); $i++) {
+        array_push($params, [$files[$i], $new_captions[$i]]); 
+      }
+      $post->update(3, $params);
+      $post->update(2, range(0, $numberOfImagesInPost - 1));
+      $success = true;
+      $photosNum = count($files) - $numberOfImagesInPost; //can be positive (more photos added than deleted) or negative
+      $newId = null;
       break;
-    default: //2^3 = 8 arragements when post type hasn't changed are covered above
+
+    default: //2^3 = 8 arragements when post type hasn't changed are covered above, so an original text post now becoming an image post (note not applied in current template which only enables photo btn when images cancelled, so text posts can't add photos)
       $changed = 7;
+      $photosNum = count($files);   
+      $originalTimestamp = intval($original_data["timestamp"]); //unix timestamp of the original text post
+      $originalTextPost = new PostOfText(null, $id); //the original img post
+      $originalTextPost->delete();
+      $content = [$new_text]; //first element is text, follows by arrays of file and description
+      for ($i = 0; $i < count($files); $i++) { //preparing the input argument
+        array_push( $content, [$files[$i], $new_captions[$i]] );
+      }
+      $post = new PostOfImage($content, null); //a new post
+      $post->post();
+      $post->backdateTimestamp($originalTimestamp); //change the creation time back to original and edit time to now
+      $newId = $post->getData()["id"];
+      $success = true;
       
   }
 
-  echo json_encode(["change" => $changed, "success" => $success, "errors" => $post->getErrors(), "photosNum" => $photosNum, "newId" => $newId]);
+  echo json_encode(["success" => $success, "errors" => $post->getErrors(), "change" => $changed, "photosNum" => $photosNum, "newId" => $newId]);
   exit();
 
 }

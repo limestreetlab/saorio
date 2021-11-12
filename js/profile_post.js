@@ -1,6 +1,7 @@
 
 //global variables
 var files = [];
+var captionPlaceholder = "click to add a caption";
 
 $("document").ready(function(){
   
@@ -138,6 +139,7 @@ function edit(id) {
     //send post data to backend as if a new post, backend checks what's changed, persist it, and inform frontend what's changed so it can be updated without changing the whole view
     var captions = []; //to store photo captions
     $(img).each( (index, el) => captions.push($(el).attr("data-bs-original-title")) ); //retrieve captions, !NOTE that BS assigns the "title" value into dynamically created "data-bs-original-title", so title becomes empty in runtime
+    captions = captions.map( el => (el == captionPlaceholder) ? '' : el); //filter caption values to empty if its value is equal to the add-caption placeholder
     var images = []; //to store the paths of images shown, for a newly added img, the path is temporary and is very different from a URL path passed from backend, that will tell if images are new or old
     $(img).each( (index, el) => images.push($(el).attr("src")) ); //getting all src into array
     var formData = new FormData(); //potential files so use form to encapsulate the data
@@ -161,9 +163,9 @@ function edit(id) {
       cache: false,
       dataType: "json",
       success: function(data) {
-        
+        alert(JSON.stringify(data));
         if(!data.success) { //upload failed
-          
+  
           callbackError(data.errors);
 
         } else { //upload succeeded
@@ -260,7 +262,6 @@ function postReact(event) {
   , "json");
 
 }
-
 
 /*
 function for pagination, which loads post pages
@@ -594,7 +595,7 @@ function manageAttachment() {
 
    //add BS tooltip and a data-item to newly added img, the tooltip to display caption and data-item to store the caption
    if ($(this).data("caption") == undefined || $(this).data("caption") == false) { //no data-item caption yet, so a new img
-    $(this).attr({"data-bs-toggle": "tooltip", "title": "click to add a caption"}).data("caption", ""); //add BS tooltip to img
+    $(this).attr({"data-bs-toggle": "tooltip", "title": captionPlaceholder}).data("caption", ""); //add BS tooltip to img
     new bootstrap.Tooltip($(this)); //initialize the tooltip
    }
 
@@ -619,7 +620,7 @@ function addCaption(clickEvt) {
   
  $("#photo-caption-save-btn").off("click").on("click", function() {
    let caption = $("#photo-caption").val().trim(); //get caption value from input
-   caption = caption != "" ? caption : "click to add a caption"; //set caption to itself or some default string if empty
+   caption = caption != "" ? caption : captionPlaceholder; //set caption to itself or some default string if empty
    $(imgEl).attr("title", caption).data("caption", caption); //change the tooltip title and data-item to entered caption 
    tooltip.dispose(); //caption entered, destroy tooltip for a new one having a new title
    new bootstrap.Tooltip($(imgEl)).show(); //initialize this updated tooltip

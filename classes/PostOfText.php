@@ -114,20 +114,17 @@ class PostOfText extends Post {
       throw new Exception("entered texts exceed max length of " . self::MAX_LENGTH);
     }
 
-    if (!empty($newContent)) { //do nothing if empty content
+    try {
 
-      try {
+      $this->mysql->request(MySQL::updateTextPostQuery, [":content" => $newContent, ":post_id" => $this->id]); //update db
+      $this->mysql->request(MySQL::updatePostEditTimestampQuery, [":id" => $this->id]);
+      $this->content = $newContent; //update object
 
-        $this->mysql->request(MySQL::updateTextPostQuery, [":content" => $newContent, ":post_id" => $this->id]); //update db
-        $this->content = $newContent; //update object
+    } catch (Exception $ex) {
 
-      } catch (Exception $ex) {
-
-        array_push($this->errorCodes, -1);
-        throw $ex;
-      
-      }
-
+      array_push($this->errorCodes, -1);
+      throw $ex;
+    
     }
 
     return $this;

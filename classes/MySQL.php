@@ -297,6 +297,8 @@ final class MySQL {
 
                               ON posts.id = contents.id
                               ORDER BY timestamp DESC LIMIT :offset, :count";
+  public const updatePostTimestampQuery = "UPDATE posts SET timestamp = FROM_UNIXTIME(:timestamp) WHERE id = :id";
+  public const updatePostEditTimestampQuery = "UPDATE posts SET edit_timestamp = NOW() WHERE id = :id";
   public const deletePostQuery = "DELETE FROM posts WHERE id = :id";
 
   //for text posts
@@ -307,7 +309,7 @@ final class MySQL {
   //read one text post by id
   public const readTextPostQuery = "SELECT posts.user, UNIX_TIMESTAMP(posts.timestamp) AS timestamp, text_posts.content AS post FROM posts INNER JOIN text_posts ON posts.id = text_posts.post_id WHERE posts.id = :id";
   public const updateTextPostForQuery = "UPDATE text_posts SET text_for = :for WHERE post_id = :post_id"; //specify for which non-text post this text post is associated with
-  public const updateTextPostQuery = "UPDATE text_posts SET content = :content AND edit_timestamp = NOW() WHERE post_id = :post_id";
+  public const updateTextPostQuery = "UPDATE text_posts SET content = :content WHERE post_id = :post_id";
 
   //for image posts
   public const createImagePostQuery = "INSERT INTO posts (id, user, post_type) VALUES (:id, :user, 2)";
@@ -322,7 +324,7 @@ final class MySQL {
   public const readImagePostQuery = "SELECT images.*, text_posts.content AS text FROM 
                                 (SELECT posts.user, posts.id, UNIX_TIMESTAMP(posts.timestamp) AS timestamp, image_posts.id AS image_id ,image_posts.imageURL AS image, image_posts.imageMIME AS mime, image_posts.description FROM posts INNER JOIN image_posts ON posts.id = image_posts.post_id WHERE posts.id = :id) AS images 
                                 LEFT JOIN text_posts ON images.id = text_posts.text_for";
-  //read the ids of a certain number of images
+  //read the ids of a certain number of images by a user
   public const readImagePostIdQuery = "SELECT DISTINCT * FROM (SELECT posts.id FROM posts INNER JOIN image_posts ON posts.id = image_posts.post_id WHERE posts.user = :user ORDER BY posts.timestamp DESC LIMIT :count) AS image_ids";
   //read the one single specific image inside image posts table using the table primary key
   public const readImagePostImageQuery = "SELECT imageURL AS image from image_posts WHERE id = :id";
@@ -345,4 +347,3 @@ final class MySQL {
 } //end class
 
 ?>
-
