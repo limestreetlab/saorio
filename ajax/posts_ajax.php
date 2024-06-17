@@ -119,7 +119,7 @@ if ( $_REQUEST["action"] == "update" && isset($_REQUEST["id"]) && $_REQUEST["typ
 script to handing updating an image post
 it retrieves the original post and compares with received data to check what's changed to inform frontend for update
 1 if nothing is changed, 2 if text changed, 3 if captions changed, 4 if photos changed, 5 if text and captions changed, 6 if text and photos changed, 7 if post type changed 
-@return [int changeCode, bool success, array errors, int photosNum, string newId] where photosNum is the number of photos involved and newId is new post id if post type is changed
+@return [int changeCode, bool success, array errors, int photosNum, string newId, array ImageCss] where photosNum is the number of photos involved, newId is new post id if post type is changed, ImageCss is array of css config classes
 */
 if ( $_REQUEST["action"] == "update" && isset($_REQUEST["id"]) && $_REQUEST["type"] == "image" ) {
 
@@ -138,11 +138,10 @@ if ( $_REQUEST["action"] == "update" && isset($_REQUEST["id"]) && $_REQUEST["typ
   $original_captions = $original_data["descriptions"];
   //data comparason, all boolean values
   $type_changed = $original_type != 2 ? true : false; //check whether originally a non-image post
-  $text_changed = ( $new_text !== $original_text ); //string equality check
+  $text_changed = ( $new_text != $original_text ); //string equality check
   $images_changed = ( $new_images !== $original_images ); //array equality check, 1 if same size, same values, same order
   $captions_changed = ( $new_captions !== $original_captions ); //array equality check
   $changes = [$type_changed, $text_changed, $captions_changed, $images_changed]; //arr to aggregate changes
-  
   $post = new PostOfImage(null, $id);
 
   switch ($changes) {
@@ -184,11 +183,16 @@ if ( $_REQUEST["action"] == "update" && isset($_REQUEST["id"]) && $_REQUEST["typ
       for ($i = 0; $i < count($files); $i++) {
         array_push($params, [$files[$i], $new_captions[$i]]); 
       }
-      $post->update(3, $params);
       $post->update(2, range(0, $numberOfImagesInPost - 1));
+      $post->update(3, $params);
       $success = true;
       $photosNum = count($files) - $numberOfImagesInPost; //can be positive (more photos added than deleted) or negative (more deleted than added)
       $newId = null;
+      $urls = []; //web paths
+      foreach ($post->getContent() as $row) {
+        array_push($urls, ($row[0])->getFileWebPath());
+      }
+      $css = PostManager::getImageCssClasses($urls);
       break;
 
     case [0, 1, 1, 0]: //text and captions changed
@@ -239,7 +243,7 @@ if ( $_REQUEST["action"] == "update" && isset($_REQUEST["id"]) && $_REQUEST["typ
       
   }
 
-  echo json_encode(["success" => $success, "errors" => $post->getErrors(), "change" => $changed, "photosNum" => $photosNum, "newId" => $newId]);
+  echo json_encode(["success" => $success, "errors" => $post->getErrors(), "change" => $changed, "photosNum" => $photosNum, "newId" => $newId, "ImageCss" => $css]);
   exit();
 
 }
@@ -281,12 +285,13 @@ if ($_REQUEST["type"] == "image" && $_REQUEST["action"] == "send") {
   
   $post = new PostOfImage($content, null); //create post obj
   $success = $post->post(); //post it
-  $postId = $post->getData()["id"];
-
-  $userObj->notifyFollowers($postId);
 
   if ($success) { //successfully posted to database, now display in frontend
     
+    //notify followers
+    $postId = $post->getData()["id"];
+    $userObj->notifyFollowers($postId);
+
     //collect data for front-end view
     $profile = $userObj->getProfile(true);
     extract($profile->getData());
@@ -294,11 +299,11 @@ if ($_REQUEST["type"] == "image" && $_REQUEST["action"] == "send") {
     $date = (new DateTime("@$now"))->format("M d, Y");
     //image data
     $content = $post->getContent();
-    $images = []; //array of image file relative paths
+    $images = []; //array of image file URLs
     $descriptions = []; //array of image captions
     
     foreach ($content as $el) {
-      array_push($images, $el[0]->getFileWebPath()); //relative paths for data bind
+      array_push($images, $el[0]->getFileWebPath()); //image URLs for data bind
       array_push($descriptions, $el[1]); //photo descriptions for data bind
     }
     

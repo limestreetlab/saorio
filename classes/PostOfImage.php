@@ -244,8 +244,20 @@ class PostOfImage extends Post {
 
         case 4: //update text
           
-          $text = $data[0];
-          $this->text->update($text); //update db
+          $text = trim($data[0]);
+
+          if (empty($this->text) && !empty($text)) { //no existing text associated with this image post
+
+            $this->text = new PostOfText($text, null);
+            $this->text->post(); //post the text post, which creates a post of text type and a text post
+            $text_post_id = $this->text->getData()["id"]; //retrieve the id of the contained text post
+            $this->mysql->request(MySQL::updateTextPostForQuery, [":for" => $this->id, ":post_id" => $text_post_id]); //declaring the text post belongs to this image post
+      
+          } else {
+
+            $this->text->update($text); //update db
+
+          }
           break;
 
       } //close switch
@@ -301,12 +313,13 @@ class PostOfImage extends Post {
   protected function removeImage(int $index): bool {
 
     $imageFileObj = $this->content[$index][0];
-    unset($this->content[$index]); //update object
-    $this->numberOfImages -= 1;
     
-    try { //update database
+    try { 
       
       $this->mysql->request(MySQL::deleteImagePostQuery, [":id" => $imageFileObj->getId()]); 
+      unset($this->content[$index]); //update object
+      unlink($imageFileObj->getFilePath()); //remove file from server
+      $this->numberOfImages -= 1;
       return true;
 
     } catch (Exception $ex) {

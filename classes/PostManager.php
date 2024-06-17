@@ -481,7 +481,7 @@ class PostManager {
   $orientations = []; //array of landscape vs portrait in matching order as images array
   foreach ($images as $image) {
 
-    $image = $image[0] == "/" ? $_SERVER["DOCUMENT_ROOT"] . $image : $image; //if path is URL convert it to system file path as file path is needed for reading
+    $image = ($image[0] == "/") ? $_SERVER["DOCUMENT_ROOT"] . $image : $image; //if path is URL convert it to system file path as file path is needed for reading
     list($width, $height) = getimagesize($image); //read width and height of image
     $width >= $height ? array_push($orientations, "landscape") : array_push($orientations, "portrait");  //tag each img as either portrait or landscape
 

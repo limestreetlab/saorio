@@ -28,7 +28,7 @@
   <!--post body-->
   <section class="card-body pt-1">
 
-    {{IF !empty('{{text}}')}}<div class="post-text mb-2">{{text}}</div>{{ENDIF}}
+    <div class="post-text mb-2">{{text}}</div>
     {{IF !empty('{{images}}')}}
       <div class="post-attachment w-100 p-0 position-relative">
       {{FOREACH {{images}} AS image {{configs}} AS config {{descriptions}} AS description}}

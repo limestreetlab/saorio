@@ -1,16 +1,22 @@
 
 //global variables
 var files = [];
-var captionPlaceholder = "click to add a caption";
+var captionPlaceholder = "click to add a caption"; //the default caption
 
 $("document").ready(function(){
   
   //initialization block
-  //put input text to focus
   let modal = document.querySelector('#new-post-modal');
+  //put input text to focus
   let text = document.querySelector('#new-post-text');
   modal.addEventListener('shown.bs.modal', function () {
     text.focus();
+  });
+  //re-set files array on modal hide
+  modal.addEventListener('hidden.bs.modal', function(){
+    if (event.target.id == "new-post-modal") { //when the modal going into hidden is the one for new posts
+      files = []; //reset files array to empty
+    }
   });
   //initialize tooltips
   var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
@@ -40,7 +46,7 @@ function to identify which post options is chosen and switch handling codes
 */
 function postOptions(event) {
 
-  let id = $(this).closest("[data-id]").data("id"); //get the data-id embedded in each post
+  let id = $(this).closest(".post").attr("data-id"); //get the data-id embedded in each post
   let text = $(this).text().toLowerCase(); //the text of the option clicked on
   
   //check which potential options has been clicked on, which will show a positive int or else -1
@@ -90,6 +96,7 @@ function postOptions(event) {
       //display modal and ensure it is purged on hide
       $("#edit-post-modal").modal("show");
       $("#edit-post-modal").on('hidden.bs.modal', function () {
+        files = []; //reset files array
         $("#edit-post-modal").remove(); //remove the modal when it is not active as some modal elements overlap between new-post-modal and edit-post-modal
       });     
 
@@ -125,10 +132,23 @@ function edit(id) {
         
         callbackError(data.errors);
 
-      } else { //update recorded, reflect in frontend
+      } else { //update recorded, proceed to reflect in frontend
 
-        let postElement = $('.post[data-id=' + id + ']');
-        $(postElement).find(".post-text").text(text); //replace old text with new
+        let postElement = $('.post[data-id=' + id + ']'); //referencing the post element using its id
+
+        //there are two cases, one where text post changing its text content or an image post having its images deleted and becoming a text post resulting in a new post id
+        if (data.newId != null) { //an image post becoming a text post
+
+          updateStatistics(2, data.photosNum);
+          $(postElement).find(".post-attachment").remove(); //clear all photos
+          $(postElement).find(".post-text").text(text); //replace old text with new
+          $(postElement).attr("data-id", data.newId); //replace old post id with new id
+
+        } else { //a text post having its text changed
+
+          $(postElement).find(".post-text").text(text); //replace old text with new
+
+        }
 
       }
 
@@ -163,15 +183,63 @@ function edit(id) {
       cache: false,
       dataType: "json",
       success: function(data) {
-        alert(JSON.stringify(data));
+        
         if(!data.success) { //upload failed
   
           callbackError(data.errors);
 
-        } else { //upload succeeded
+        } else { //update recorded, proceed to reflect in frontend
           
-          
-            
+          let postElement = $('.post[data-id=' + id + ']'); //referencing the post element using its id
+
+          //there are two cases, one where an image post updating its parts and one where a text post adding images to become an image post; but currently, the photo upload btn is disabled and re-enabled only when images are deleted, so text posts can't add images
+          //different updates, 1 if nothing is changed, 2 if text changed, 3 if captions changed, 4 if photos changed, 5 if text and captions changed, 6 if text and photos changed, 7 if post type changed
+          switch(data.change) {
+
+            case 2: //update text
+              $(postElement).find(".post-text").text(text);
+              break;
+
+            case 3: //update captions through tooltips
+              $(postElement).find(".post-attachment img").each( function(index) { //setting tooltip titles to caption values
+                $(this).attr("data-bs-original-title", captions[index]);
+              });
+              break;
+
+            case 4: //update images
+              let area = $(postElement).find(".post-attachment");
+              let css = data.ImageCss;
+              area.empty();
+              $.each(images, function(index, image) {
+                let img = $("<img>").attr({"src":image, "title":captions[index]}).addClass(css[index]);
+                area.append(img)
+                new bootstrap.Tooltip($(img));
+              });
+              break;
+
+            case 5: //update text and captions
+              $(postElement).find(".post-text").text(text);
+              $(postElement).find(".post-attachment img").each(function(index) {
+                $(this).attr("data-bs-original-title", captions[index]);
+              });
+              break;
+        
+            case 6: //update text and images
+              $(postElement).find(".post-text").text(text);
+              let area = $(postElement).find(".post-attachment");
+              let css = data.ImageCss;
+              area.empty();
+              $.each(images, function(index, image) {
+                let img = $("<img>").attr({"src":image, "title":captions[index]}).addClass(css[index]);
+                area.append(img)
+                new bootstrap.Tooltip($(img));
+              });
+              break;
+
+          }        
+           
+          updateStatistics(2, data.photosNum);
+
         }
 
       }//end callback
@@ -302,13 +370,13 @@ function post() {
   let text = $("#new-post-text").val().trim(); //get text data
   let img = $("#post-attachment img"); //get image data
   
-  $("#new-post-modal").modal('hide'); //hide the modal
-    
   //switch JSON data depending on input
   if (img.length == 0 && text.length > 0) { //text post
     
     //send data as an object when no files involved
     let dataSend = {action: "send", type: "text", text: text};
+    
+    $("#new-post-modal").modal('hide'); //hide the modal which will trigger hidden.bs.modal event
     
     //ajax call to send post data to backend
     $.post("ajax/posts_ajax.php", dataSend, function(data) {
@@ -337,7 +405,9 @@ function post() {
     formData.set("text", text);
     //can't directly add an array as value in FormData, must suffix varname with [] so PHP will see as array and pick up all values assigned to it instead of only last one (JS treats both x[] and x as strings)
     $.each(files.reverse(), (index, file) => formData.append("images[]", file) ); //files arr in first-to-last order but attached images (which contain captions) in last-to-first order due to prepending, reverse one to match the other
-    $.each(captions, (index, caption) => formData.append("captions[]", caption) );    
+    $.each(captions, (index, caption) => formData.append("captions[]", caption) );   
+
+    $("#new-post-modal").modal('hide'); //hide the modal which will trigger hidden.bs.modal event
 
     //ajax call to send post data to backend
     $.ajax({
@@ -382,7 +452,7 @@ function post() {
     let id = post.match(idRegex)[1]; //1st captured group is id
     let postSelector = ".post[data-id='" + id + "']" + " " + "[data-bs-toggle='tooltip']"; //selector of the tooltip elements
     $(postSelector).each( function(){new bootstrap.Tooltip($(this));} ) //initialize tooltip(s)
-    
+  
     //when there is pagination (1+ pages), and page 1 not currently active, move back to the first page
     if ( $("#main-menu").children("#pagination") && !$("#main-menu").find("#pagination .page-item").eq(0).hasClass("active") ) {
 
@@ -444,6 +514,11 @@ function updateStatistics(action, photosNum = 0) {
       $("#posts-stat").text(++posts); //increment posts by 1
       $("#photos-stat").text(photos + photosNum); //increment images by number included in the post
       break;
+
+    case 2: //update post
+      $("#photos-stat").text(photos + photosNum); //increment or decrement 
+      break;
+
     case 3: //delete post
       $("#posts-stat").text(--posts); //decrement posts by 1
       $("#photos-stat").text(photos - photosNum); //decrement images by number deleted in the post
@@ -525,83 +600,83 @@ function to organize attachments in the attachment div
 */
 function manageAttachment() { 
  
- //disable other attachment buttons
- if ($("#post-attachment img").length > 0){
-   $("#new-post-link button, #new-post-poll button").addClass("disabled");
- } 
- 
- //store img orientations in array
- let orientation = [];
- $("#post-attachment img").each(function() {
-  $(this).hasClass("portrait") ? orientation.push("portrait") : orientation.push("landscape"); 
- });
- 
- //get number of images, how many are portrait vs landscape
- let numberOfImg = $("#post-attachment img").length;
- let numberOfPortrait = 0;
- let numberOfLandscape = 0;
- orientation.forEach(function(img) {
-   img == "portrait" ? numberOfPortrait++ : numberOfLandscape++;
- });
- 
- //array to assign style classes to each img, from most recently added to oldest
- let config = [];
- switch (numberOfImg) {
+  //disable other attachment buttons
+  if ($("#post-attachment img").length > 0){
+    $("#new-post-link button, #new-post-poll button").addClass("disabled");
+  } 
+  
+  //store img orientations in array
+  let orientation = [];
+  $("#post-attachment img").each(function() {
+    $(this).hasClass("portrait") ? orientation.push("portrait") : orientation.push("landscape"); 
+  });
+  
+  //get number of images, how many are portrait vs landscape
+  let numberOfImg = $("#post-attachment img").length;
+  let numberOfPortrait = 0;
+  let numberOfLandscape = 0;
+  orientation.forEach(function(img) {
+    img == "portrait" ? numberOfPortrait++ : numberOfLandscape++;
+  });
+  
+  //array to assign style classes to each img, from most recently added to oldest
+  let config = [];
+  switch (numberOfImg) {
+      
+    case 1:
+      numberOfPortrait > 0 ? config.push("portrait-1-in-1-portrait") : config.push("landscape-1-in-1-landscape");
+      break;
+      
+    case 2:
+      if (numberOfPortrait == 2) { //both portraits
+        config.push("portrait-1-in-2-portrait", "portrait-2-in-2-portrait");
+      } else if (numberOfLandscape == 2) { //both landscape
+        config.push("landscape-1-in-2-landscape", "landscape-2-in-2-landscape");
+      } else { //1 landscape, 2 portrait
+        config.push("landscape-1-in-2-mixed", "landscape-2-in-2-mixed"); 
+      }
+      break;
+      
+    case 3:
+      if (orientation[0] == "portrait") { //most recent image is a portrait 
+        config.push("portrait-1-in-3-portrait", "portrait-2-in-3-portrait", "portrait-3-in-3-portrait");
+      } else {
+        config.push("landscape-1-in-3-landscape", "landscape-2-in-3-landscape", "landscape-3-in-3-landscape");
+      }
+      break;
+
+    case 4:
+      if (orientation[0] == "portrait") { //most recent image is a portrait
+        config.push("portrait-1-in-4-portrait", "portrait-2-in-4-portrait", "portrait-3-in-4-portrait", "portrait-4-in-4-portrait");
+      } else {
+        config.push("landscape-1-in-4-landscape", "landscape-2-in-4-landscape", "landscape-3-in-4-landscape", "landscape-4-in-4-landscape");
+      } 
+      break;
+
+    case 5:
+      if (orientation[0] == "portrait") { //most recent image is a portrait
+        config.push("portrait-1-in-5-portrait", "portrait-2-in-5-portrait", "portrait-3-in-5-portrait", "portrait-4-in-5-portrait", "portrait-5-in-5-portrait");
+      } else {
+        config.push("landscape-1-in-5-landscape", "landscape-2-in-5-landscape", "landscape-3-in-5-landscape", "landscape-4-in-5-landscape", "landscape-5-in-5-landscape");
+      }
      
-   case 1:
-     numberOfPortrait > 0 ? config.push("portrait-1-in-1-portrait") : config.push("landscape-1-in-1-landscape");
-     break;
-     
-   case 2:
-     if (numberOfPortrait == 2) { //both portraits
-      config.push("portrait-1-in-2-portrait", "portrait-2-in-2-portrait");
-     } else if (numberOfLandscape == 2) { //both landscape
-      config.push("landscape-1-in-2-landscape", "landscape-2-in-2-landscape");
-     } else { //1 landscape, 2 portrait
-      config.push("landscape-1-in-2-mixed", "landscape-2-in-2-mixed"); 
-     }
-     break;
-     
-   case 3:
-    if (orientation[0] == "portrait") { //most recent image is a portrait 
-      config.push("portrait-1-in-3-portrait", "portrait-2-in-3-portrait", "portrait-3-in-3-portrait");
-     } else {
-      config.push("landscape-1-in-3-landscape", "landscape-2-in-3-landscape", "landscape-3-in-3-landscape");
-     }
-     break;
+  } 
+  
+  //add the declared css classes and tooltips to each img
+  $("#post-attachment img").each( function() {
 
-   case 4:
-    if (orientation[0] == "portrait") { //most recent image is a portrait
-      config.push("portrait-1-in-4-portrait", "portrait-2-in-4-portrait", "portrait-3-in-4-portrait", "portrait-4-in-4-portrait");
-    } else {
-      config.push("landscape-1-in-4-landscape", "landscape-2-in-4-landscape", "landscape-3-in-4-landscape", "landscape-4-in-4-landscape");
-    } 
-    break;
+    let cls = config.shift(); //get the first img configuration element off array
+    $(this).removeClass().addClass(cls); //assign config class
 
-   case 5:
-     if (orientation[0] == "portrait") { //most recent image is a portrait
-       config.push("portrait-1-in-5-portrait", "portrait-2-in-5-portrait", "portrait-3-in-5-portrait", "portrait-4-in-5-portrait", "portrait-5-in-5-portrait");
-     } else {
-       config.push("landscape-1-in-5-landscape", "landscape-2-in-5-landscape", "landscape-3-in-5-landscape", "landscape-4-in-5-landscape", "landscape-5-in-5-landscape");
-     }
-     
- } 
- 
- //add the declared css classes and tooltips to each img
- $("#post-attachment img").each( function() {
+    //add BS tooltip and a data-item to newly added img, the tooltip to display caption and data-item to store the caption
+    if ($(this).data("caption") == undefined || $(this).data("caption") == false) { //no data-item caption yet, so a new img
+      $(this).attr({"data-bs-toggle": "tooltip", "title": captionPlaceholder}).data("caption", ""); //add BS tooltip to img
+      new bootstrap.Tooltip($(this)); //initialize the tooltip
+    }
 
-   let cls = config.shift(); //get the first img configuration element off array
-   $(this).removeClass().addClass(cls); //assign config class
+  });
 
-   //add BS tooltip and a data-item to newly added img, the tooltip to display caption and data-item to store the caption
-   if ($(this).data("caption") == undefined || $(this).data("caption") == false) { //no data-item caption yet, so a new img
-    $(this).attr({"data-bs-toggle": "tooltip", "title": captionPlaceholder}).data("caption", ""); //add BS tooltip to img
-    new bootstrap.Tooltip($(this)); //initialize the tooltip
-   }
-
- });
-
-$("#post-attachment img").off("click").on("click", addCaption); //add a click handler for adding photo captions
+  $("#post-attachment img").off("click").on("click", addCaption); //add a click handler for adding photo captions
 
 }//end function
 
@@ -610,24 +685,34 @@ function for adding photo captions
 */
 function addCaption(clickEvt) {
   
- let index = Array.from(document.querySelectorAll('#post-attachment img')).indexOf(clickEvt.target); //index of img clicked on
+  let index = Array.from(document.querySelectorAll('#post-attachment img')).indexOf(clickEvt.target); //identify index of the image clicked on
+    
+  let imgEl = $("#post-attachment img").eq(index); //get the img element clicked on
+  let tooltip = bootstrap.Tooltip.getInstance(imgEl); //get the BS tooltip instance of this img element
+  tooltip.hide(); //hide tooltip
+  let captionModal = new bootstrap.Modal(document.querySelector('#photo-caption-modal')); //display a higher modal for writing/editing captions
+  captionModal.show(); //show the caption modal
   
- let imgEl = $("#post-attachment img").eq(index); //get the img element clicked on
- let tooltip = bootstrap.Tooltip.getInstance(imgEl); //get the BS tooltip instance of this img element
- tooltip.hide(); //hide tooltip
- let captionModal = new bootstrap.Modal(document.querySelector('#photo-caption-modal')); //display a higher modal for writing/editing captions
- captionModal.show();
+  let imgCaption = $(imgEl).attr("data-bs-original-title"); //get the current caption of that img element
+  if (imgCaption != captionPlaceholder && imgCaption != "") { //insert the current caption to the caption textarea if it's not the default dummy
+    $("#photo-caption").val(imgCaption);
+  }
+
+  //reset caption textarea to empty when modal hides
+  $("#photo-caption-modal").on('hidden.bs.modal', function(event) { 
+    event.stopPropagation();
+    $("#photo-caption").val("");
+  });
   
- $("#photo-caption-save-btn").off("click").on("click", function() {
-   let caption = $("#photo-caption").val().trim(); //get caption value from input
-   caption = caption != "" ? caption : captionPlaceholder; //set caption to itself or some default string if empty
-   $(imgEl).attr("title", caption).data("caption", caption); //change the tooltip title and data-item to entered caption 
-   tooltip.dispose(); //caption entered, destroy tooltip for a new one having a new title
-   new bootstrap.Tooltip($(imgEl)).show(); //initialize this updated tooltip
- });
-  
-  $("#photo-caption").val(""); //reset the input area
-  
+  //click handler for the save btn
+  $("#photo-caption-save-btn").off("click").on("click", function() {
+  let caption = $("#photo-caption").val().trim(); //get caption value from input
+  caption = (caption != "") ? caption : captionPlaceholder; //set caption to itself or some default string if empty
+  $(imgEl).attr("title", caption).data("caption", caption); //change the tooltip title and data-item to entered caption 
+  tooltip.dispose(); //destroy tooltip for a new one having a new title
+  new bootstrap.Tooltip($(imgEl)).show(); //initialize this updated tooltip
+  }); 
+
 }
 
 /*

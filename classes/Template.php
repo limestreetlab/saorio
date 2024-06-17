@@ -31,7 +31,7 @@ class Template {
     } 
 
     ob_start();
-    include $path; //include, not _once, because the same file $path might be included repeatedly in a loop
+    require $path; //import, not _once, because the same file $path might be imported repeatedly in a loop
     $this->view = ob_get_contents(); 
     ob_end_clean();
 
@@ -76,7 +76,7 @@ class Template {
   } //function bind end
 
   /*
-  function to output the loaded and data-bound (if any data) template
+  function to display (print out) the loaded and data-bound (if any data) template
   */
   public function render(): void {
 
